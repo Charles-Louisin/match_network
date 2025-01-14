@@ -25,7 +25,7 @@ export default function NotificationsPage() {
         }
       });
 
-      if (!response.ok) throw new Error(&apos;Erreur lors de la récupération des notifications&apos;);
+      if (!response.ok) throw new Error('Erreur lors de la récupération des notifications');
       
       const data = await response.json();
       setNotifications(data);

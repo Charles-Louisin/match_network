@@ -20,7 +20,7 @@ export default function Register() {
     e.preventDefault()
     
     if (formData.password !== formData.confirmPassword) {
-      setError(&apos;Les mots de passe ne correspondent pas&apos;)
+      setError('Les mots de passe ne correspondent pas')
       return
     }
 
@@ -41,7 +41,7 @@ export default function Register() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || &apos;Erreur lors de l&apos;inscription&apos;)
+        throw new Error(data.message || `Erreur lors de l'inscription`)
       }
 
       // Stocker le token et rediriger

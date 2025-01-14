@@ -28,7 +28,7 @@ export default function ForgotPassword() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || &apos;Erreur lors de l&apos;envoi du code&apos;)
+        throw new Error(data.message || 'Erreur lors de l&apos;envoi du code')
       }
 
       setSuccess('Code envoyé avec succès ! Vérifiez votre email.')

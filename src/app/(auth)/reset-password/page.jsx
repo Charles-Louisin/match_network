@@ -17,12 +17,12 @@ export default function ResetPassword() {
     setError('')
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setError(&apos;Les mots de passe ne correspondent pas&apos;)
+      setError('Les mots de passe ne correspondent pas')
       return
     }
 
     if (formData.newPassword.length < 6) {
-      setError(&apos;Le mot de passe doit contenir au moins 6 caractères&apos;)
+      setError('Le mot de passe doit contenir au moins 6 caractères')
       return
     }
 
@@ -45,7 +45,7 @@ export default function ResetPassword() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || &apos;Erreur lors de la réinitialisation&apos;)
+        throw new Error(data.message || 'Erreur lors de la réinitialisation')
       }
 
       // Nettoyer le localStorage

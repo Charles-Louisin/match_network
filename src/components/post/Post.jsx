@@ -75,7 +75,7 @@ export default function Post({ post, onPostUpdate }) {
       const token = localStorage.getItem('token')
       const user = JSON.parse(localStorage.getItem('user'))
       if (!token) {
-        alert(&apos;Vous devez être connecté pour liker&apos;)
+        alert('Vous devez être connecté pour liker')
         return
       }
 
