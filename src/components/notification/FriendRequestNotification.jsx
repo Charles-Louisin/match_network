@@ -10,20 +10,20 @@ const FriendRequestNotification = ({ request, onActionComplete }) => {
   const handleAccept = async () => {
     try {
       await acceptFriendRequest(request._id);
-      toast.success('Demande d\'ami acceptée !');
+      toast.success(&apos;Demande d&apos;ami acceptée !&apos;);
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error('Erreur lors de l\'acceptation de la demande');
+      toast.error(&apos;Erreur lors de l&apos;acceptation de la demande&apos;);
     }
   };
 
   const handleReject = async () => {
     try {
       await rejectFriendRequest(request._id);
-      toast.success('Demande d\'ami refusée');
+      toast.success(&apos;Demande d&apos;ami refusée&apos;);
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error('Erreur lors du refus de la demande');
+      toast.error(&apos;Erreur lors du refus de la demande&apos;);
     }
   };
 
@@ -41,7 +41,7 @@ const FriendRequestNotification = ({ request, onActionComplete }) => {
         </div>
         <span className={styles.username}>{request.sender.username}</span>
       </Link>
-      <p className={styles.message}>vous a envoyé une demande d'ami</p>
+      <p className={styles.message}>vous a envoyé une demande d&apos;ami</p>
       <div className={styles.actions}>
         <button
           className={`${styles.actionButton} ${styles.acceptButton}`}

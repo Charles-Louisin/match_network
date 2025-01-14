@@ -25,7 +25,7 @@ export default function NotificationsPage() {
         }
       });
 
-      if (!response.ok) throw new Error('Erreur lors de la récupération des notifications');
+      if (!response.ok) throw new Error(&apos;Erreur lors de la récupération des notifications&apos;);
       
       const data = await response.json();
       setNotifications(data);
@@ -59,7 +59,7 @@ export default function NotificationsPage() {
         {/* Demandes d'amitié */}
         {pendingRequests.length > 0 && (
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Demandes d'amitié</h2>
+            <h2 className={styles.sectionTitle}>Demandes d&apos;amitié</h2>
             <div className={styles.requestsContainer}>
               {pendingRequests.map(request => (
                 <FriendRequestNotification

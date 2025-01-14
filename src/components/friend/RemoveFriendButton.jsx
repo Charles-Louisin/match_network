@@ -10,7 +10,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
   const router = useRouter();
 
   const handleRemoveFriend = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet ami ? Cela supprimera également toutes les demandes d\'ami associées.')) {
+    if (!confirm(&apos;Êtes-vous sûr de vouloir supprimer cet ami ? Cela supprimera également toutes les demandes d&apos;ami associées.&apos;)) {
       return;
     }
 
@@ -18,7 +18,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Non authentifié');
+        throw new Error(&apos;Non authentifié&apos;);
       }
 
       // Supprimer l'ami et toutes les demandes associées
@@ -33,15 +33,15 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
       const data = await response.text();
       
       if (!response.ok) {
-        throw new Error(data || 'Erreur lors de la suppression');
+        throw new Error(data || &apos;Erreur lors de la suppression&apos;);
       }
 
       // Essayer de parser la réponse comme JSON
       try {
         const jsonData = JSON.parse(data);
-        toast.success(jsonData.message || 'Ami et demandes associées supprimés');
+        toast.success(jsonData.message || &apos;Ami et demandes associées supprimés&apos;);
       } catch {
-        toast.success('Ami et demandes associées supprimés');
+        toast.success(&apos;Ami et demandes associées supprimés&apos;);
       }
 
       // Actualiser la liste des amis
@@ -53,7 +53,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
       router.refresh();
     } catch (error) {
       console.error('Error removing friend:', error);
-      toast.error(error.message || 'Erreur lors de la suppression');
+      toast.error(error.message || &apos;Erreur lors de la suppression&apos;);
     } finally {
       setIsLoading(false);
     }

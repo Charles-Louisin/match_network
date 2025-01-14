@@ -36,7 +36,7 @@ export default function CreatePost() {
         body: formData
       })
 
-      if (!response.ok) throw new Error('Erreur lors de la création du post')
+      if (!response.ok) throw new Error(&apos;Erreur lors de la création du post&apos;)
 
       setContent('')
       setSelectedImage(null)

@@ -75,7 +75,7 @@ export default function Post({ post, onPostUpdate }) {
       const token = localStorage.getItem('token')
       const user = JSON.parse(localStorage.getItem('user'))
       if (!token) {
-        alert('Vous devez être connecté pour liker')
+        alert(&apos;Vous devez être connecté pour liker&apos;)
         return
       }
 
@@ -95,7 +95,7 @@ export default function Post({ post, onPostUpdate }) {
         console.log(updatedPost.likes?.length);
       } else {
         const error = await response.json()
-        throw new Error(error.message || 'Erreur lors du like')
+        throw new Error(error.message || &apos;Erreur lors du like&apos;)
       }
     } catch (error) {
       console.error('Erreur like:', error)

@@ -72,11 +72,12 @@ const AddFriendButton = ({ targetUserId, onRequestSent }) => {
         }
       }
 
-      toast.success(data.message);
+      toast.success(&apos;Demande d&apos;ami envoyée avec succès!&apos;);
       router.refresh();
     } catch (error) {
       console.error('Error sending friend request:', error);
-      toast.error('Une erreur est survenue lors de l\'envoi de la demande');
+      throw new Error(data.message || &apos;Erreur lors de l&apos;envoi de la demande&apos;);
+      toast.error(error.message || &apos;Une erreur est survenue&apos;);
     } finally {
       setIsLoading(false);
     }

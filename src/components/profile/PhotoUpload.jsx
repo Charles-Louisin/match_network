@@ -14,13 +14,15 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
     const file = e.target.files[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError('La taille du fichier doit être inférieure à 5MB')
+        setError(&apos;L&apos;image ne doit pas dépasser 5MB&apos;)
         return
       }
       setSelectedImage(file)
       setPreviewUrl(URL.createObjectURL(file))
       setIsModalOpen(true)
       setError(null)
+    } else {
+      toast.error(&apos;Veuillez sélectionner une image&apos;)
     }
   }
 
@@ -32,15 +34,18 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
         setSelectedImage(null)
         setPreviewUrl(null)
         setError(null)
+        toast.success(&apos;Photo de profil mise à jour avec succès&apos;)
       } catch (error) {
-        setError(error.message || 'Erreur lors du téléchargement')
-        console.error('Erreur lors du téléchargement:', error)
+        setError(error.message || &apos;Erreur lors de l&apos;upload de l&apos;image&apos;)
+        console.error(&apos;Erreur lors de l&apos;upload:&apos;, error)
       }
+    } else {
+      throw new Error(&apos;Non authentifié&apos;)
     }
   }
 
   useEffect(() => {
-    // Nettoyer l'URL de prévisualisation lors du démontage du composant
+    // Nettoyer l&apos;URL de prévisualisation lors du démontage du composant
     return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl)
@@ -66,7 +71,7 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
       {isModalOpen && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
-            <h3>Aperçu de l'image</h3>
+            <h3>Aperçu de l&apos;image</h3>
             
             <div className={styles.previewContainer}>
               <Image

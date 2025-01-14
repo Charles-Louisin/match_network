@@ -19,7 +19,7 @@ const NotificationCard = ({ notification, onAccept, onReject }) => {
           <Link href={`/profile/${sender._id}`} className={styles.username}>
             {sender.username}
           </Link>
-          <p className={styles.message}>vous a envoyé une demande d'ami</p>
+          <p className={styles.message}>vous a envoyé une demande d&apos;ami</p>
         </div>
       </div>
       <div className={styles.actions}>

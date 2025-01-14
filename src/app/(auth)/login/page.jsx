@@ -67,7 +67,7 @@ export default function Login() {
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Nom d&apos;utilisateur ou email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -95,7 +95,7 @@ export default function Login() {
 
         <div className={styles.links}>
           <Link href="/register">
-            Pas encore de compte ? S'inscrire
+            Pas encore inscrit ? S&apos;inscrire
           </Link>
           <Link href="/forgot-password">
             Mot de passe oublié ?

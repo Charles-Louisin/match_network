@@ -18,7 +18,7 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        throw new Error('Vous devez être connecté pour modifier votre profil')
+        throw new Error(&apos;Vous devez être connecté pour modifier votre profil&apos;)
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`, {
@@ -32,7 +32,7 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Erreur lors de la mise à jour du profil')
+        throw new Error(data.message || &apos;Erreur lors de la mise à jour du profil&apos;)
       }
 
       const updatedProfile = await response.json()
