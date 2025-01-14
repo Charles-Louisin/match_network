@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import styles from './Stories.module.css'
@@ -11,32 +11,22 @@ export default function Stories() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-    fetchStories()
-  }, [fetchStories, router])
-
-  const fetchStories = async () => {
+  const fetchStories = useCallback(async () => {
     try {
+      setLoading(true)
       const token = localStorage.getItem('token')
       if (!token) {
         throw new Error('Vous devez être connecté pour voir les stories')
       }
 
-      const response = await fetch('http://localhost:5000/api/stories', {
-        method: 'GET',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (response.status === 401) {
-        localStorage.removeItem('token') // Supprimer le token invalide
+        localStorage.removeItem('token')
         localStorage.removeItem('user')
         router.push('/login')
         throw new Error('Session expirée, veuillez vous reconnecter')
@@ -46,7 +36,7 @@ export default function Stories() {
         const errorData = await response.json()
         throw new Error(errorData.message || 'Erreur lors du chargement des stories')
       }
-      
+
       const data = await response.json()
       const user = JSON.parse(localStorage.getItem('user'))
       
@@ -61,14 +51,22 @@ export default function Stories() {
         },
         ...data
       ])
-      setError(null)
     } catch (error) {
-      console.error('Erreur stories:', error)
+      console.error('Error fetching stories:', error)
       setError(error.message)
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, setLoading, setStories, setError])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+    fetchStories()
+  }, [fetchStories, router])
 
   const handleCreateStory = async (e) => {
     const file = e.target.files[0]

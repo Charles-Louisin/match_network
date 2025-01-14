@@ -1,72 +1,60 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Post from './Post'
 import styles from './PostList.module.css'
 
 export default function PostList({ userId }) {
   const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    // console.log('PostList mounted with userId:', userId)
-    fetchPosts()
-  }, [userId, fetchPosts])
 
   const fetchPosts = async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
+      setIsLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
+      // Utiliser l'URL appropriée en fonction de si on est sur un profil ou sur le feed
       const url = userId 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${userId}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/posts/feed`
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${userId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/posts/feed`;
+
+      console.log("Fetching posts from:", url); // Debug log
 
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch posts: ${response.status}`)
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch posts');
       }
 
-      const data = await response.json()
-      
-      // Traiter les données pour s'assurer que les commentaires sont correctement formatés
-      const processedPosts = (userId ? data.posts : data).map(post => ({
-        ...post,
-        comments: post.comments?.map(comment => ({
-          ...comment,
-          user: comment.user || {
-            _id: comment.userId,
-            username: 'Utilisateur inconnu',
-            avatar: null
-          }
-        })) || []
-      }))
-
-      setPosts(processedPosts)
-      setError(null)
-    } catch (err) {
-      console.error('Error fetching posts:', err)
-      setError(err.message)
+      const data = await response.json();
+      console.log("Posts fetched:", data); // Debug log
+      setPosts(data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setError(error.message);
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [userId]);
 
   const handlePostUpdate = () => {
     console.log('Post updated, refreshing posts...')
-    fetchPosts()
+    fetchPosts();
   }
 
-  if (loading) {
+  if (isLoading) {
     return <div className={styles.loading}>Chargement des posts...</div>
   }
 

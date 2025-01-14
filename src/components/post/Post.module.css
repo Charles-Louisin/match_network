@@ -1,21 +1,18 @@
 .post {
-  background: var(--background-primary);
+  background-color: white;
   border-radius: 8px;
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  padding: 1rem;
 }
 
-.header {
+.postHeader {
   display: flex;
   align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
 }
 
-.userInfo {
+.userInfo, .commentUserInfo {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,87 +21,62 @@
   transition: opacity 0.2s;
 }
 
-.userInfo:hover {
+.userInfo:hover, .commentUserInfo:hover {
   opacity: 0.8;
 }
 
-.userInfo div {
+.avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+}
+
+.commentAvatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+}
+
+.userDetails {
   display: flex;
   flex-direction: column;
 }
 
-.userInfo h3 {
-  margin: 0;
-  font-size: 0.95rem;
+.username {
   font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.2;
+  color: #1a1a1a;
 }
 
-.postTime {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  line-height: 1.2;
-  font-weight: normal;
-}
-
-.userInfo span {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+.postDate {
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .content {
-  margin: 12px 0;
-  font-size: 0.95rem;
-  color: var(--text-primary);
+  margin-bottom: 1rem;
 }
 
 .imageContainer {
-  margin: 12px -16px;
   position: relative;
-  height: 400px;
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .postImage {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
+  max-height: 400px;
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 0;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  margin: 12px 0;
-}
-
-.actionButton {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.actionButton:hover {
-  background: var(--background-hover);
-  color: var(--text-primary);
-}
-
-.liked {
-  color: var(--primary-color) !important;
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem;
 }
 
 .comments {
@@ -123,10 +95,24 @@
   border-radius: 8px;
 }
 
-.commentAvatar {
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  object-fit: cover;
+.commentContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentUsername {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.commentText {
+  color: var(--text-primary);
+}
+
+.commentTime {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 .commentHeader {
@@ -136,31 +122,6 @@
   gap: 0.5rem;
   margin-bottom: 0.25rem;
   line-height: 1.2;
-}
-
-.commentTime {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: normal;
-  white-space: nowrap;
-}
-
-.commentContent {
-  flex: 1;
-}
-
-.commentContent strong {
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  margin: 0;
-  padding: 0;
-  line-height: 1.2;
-}
-
-.commentContent p {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 0.9rem;
 }
 
 .commentForm {

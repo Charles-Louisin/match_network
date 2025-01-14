@@ -21,8 +21,25 @@ export default function Navbar() {
     // Écouter les changements dans le localStorage
     const handleStorageChange = () => {
       const userStr = localStorage.getItem('user');
-      if (userStr) {
-        setUser(JSON.parse(userStr));
+      const token = localStorage.getItem('token');
+      
+      if (userStr && token) {
+        try {
+          const userData = JSON.parse(userStr);
+          // Normaliser l'ID utilisateur
+          if (userData && (userData._id || userData.id)) {
+            const normalizedUser = {
+              ...userData,
+              _id: userData._id || userData.id // Utiliser _id ou id
+            };
+            setUser(normalizedUser);
+          } else {
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -34,14 +51,14 @@ export default function Navbar() {
     // Ajouter l'écouteur d'événements
     window.addEventListener('storage', handleStorageChange);
     
-    // Vérifier les changements toutes les 5 secondes
-    const interval = setInterval(handleStorageChange, 5000);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    console.log('Current user state:', user);
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -58,8 +75,8 @@ export default function Navbar() {
           <Image 
             src="/images/logo.png" 
             alt="Logo" 
-            width={40} 
-            height={40}
+            width={70} 
+            height={70}
             priority
           />
           <span className={styles.appName}>MATCH</span>
@@ -103,14 +120,23 @@ export default function Navbar() {
           {theme === 'light' ? <FaMoon className={styles.icon} /> : <FaSun className={styles.icon} />}
         </button>
 
-        {user && (
+        {user && (user._id || user.id) && (
           <>
-            <Link href={`/profile/${user._id}`} className={styles.profileLink}>
-              <Avatar
-                src={user.avatar}
-                alt={user.username}
-                size="medium"
-                priority
+            <Link 
+              href={`/profile/${user._id || user.id}`} 
+              className={styles.profileLink}
+            >
+              <Image
+                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+                alt="Profile"
+                width={40}
+                height={40}
+                className={styles.userAvatar}
+                onError={(e) => {
+                  if (!e.target.src.includes("/images/default-avatar.jpg")) {
+                    e.target.src = "/images/default-avatar.jpg";
+                  }
+                }}
               />
             </Link>
             <button onClick={handleLogout} className={styles.logoutButton}>

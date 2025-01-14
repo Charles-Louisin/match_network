@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import PostList from "@/components/post/PostList";
 import PhotoUpload from "@/components/profile/PhotoUpload";
-import Avatar from '@/components/common/Avatar';
-import AddFriendButton from '@/components/friend/AddFriendButton';
-import RemoveFriendButton from '@/components/friend/RemoveFriendButton';
+import Avatar from "@/components/common/Avatar";
+import AddFriendButton from "@/components/friend/AddFriendButton";
+import RemoveFriendButton from "@/components/friend/RemoveFriendButton";
 import LocationIcon from "@/components/icons/LocationIcon";
 import CalendarIcon from "@/components/icons/CalendarIcon";
 import formatDate from "@/utils/formatDate";
@@ -16,21 +16,32 @@ import styles from "./profile.module.css";
 import Navbar from "@/components/layout/Navbar";
 import CreatePost from "@/components/post/CreatePost";
 import EditProfileModal from "@/components/profile/EditProfileModal";
-import { FaCamera } from "react-icons/fa";
-import ProfilePosts from '@/components/profile/ProfilePosts';
+import { FaCamera, FaEdit } from "react-icons/fa";
+import ProfilePosts from "@/components/profile/ProfilePosts";
+import { useRef } from "react";
 
 export default function Profile() {
-  const { id } = useParams();
+  const params = useParams();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [postContent, setPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [isFriend, setIsFriend] = useState(false);
+  const [editData, setEditData] = useState({
+    username: "",
+    bio: "",
+    avatar: null,
+    coverPhoto: null,
+    location: "",
+    birthDate: "",
+    birthPlace: "",
+  });
   const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const avatarInputRef = useRef(null);
+  const coverPhotoInputRef = useRef(null);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -49,88 +60,102 @@ export default function Profile() {
 
   useEffect(() => {
     // console.log("Current user:", currentUser);
-    // console.log("Profile ID:", id);
+    // console.log("Profile ID:", params.id);
     fetchProfileData();
-  }, [id, currentUser]);
+  }, [params.id, currentUser]);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const currentUser = JSON.parse(userStr);
+      const isOwner =
+        currentUser.id === params.id || currentUser._id === params.id;
+      setIsCurrentUser(isOwner);
+    }
+  }, [params.id]);
 
   useEffect(() => {
     if (profile) {
-      setEditedProfile({
-        username: profile.username || "",
+      setEditData({
+        username: profile.username,
         bio: profile.bio || "",
+        avatar: null,
+        coverPhoto: null,
         location: profile.location || "",
         birthDate: profile.birthDate || "",
         birthPlace: profile.birthPlace || "",
-        gender: profile.gender || "",
-        interests: profile.interests || [],
-        education: profile.education || "",
-        occupation: profile.occupation || "",
       });
     }
   }, [profile]);
 
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem("token");
+
       if (!token) {
-        toast.error('Veuillez vous connecter pour voir ce profil');
+        toast.error("Veuillez vous connecter pour voir ce profil");
         return;
       }
 
       // Récupération du profil
-      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const profileResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (!profileResponse.ok) {
         const error = await profileResponse.text();
         try {
           const jsonError = JSON.parse(error);
-          throw new Error(jsonError.message || 'Erreur lors du chargement du profil');
+          throw new Error(
+            jsonError.message || "Erreur lors du chargement du profil"
+          );
         } catch {
-          throw new Error('Erreur lors du chargement du profil');
+          throw new Error("Erreur lors du chargement du profil");
         }
       }
 
       const profileData = await profileResponse.json();
+      console.log("Profile data received:", profileData); // Debug log
       setProfile(profileData);
 
       // Vérification du statut d'ami
-      const friendshipResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const friendshipResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
       if (friendshipResponse.ok) {
         const friendshipData = await friendshipResponse.json();
         setIsFriend(friendshipData.isFriend);
-        setIsCurrentUser(friendshipData.isCurrentUser);
       } else {
-        console.warn('Impossible de vérifier le statut d\'ami');
+        console.warn("Impossible de vérifier le statut d'ami");
         setIsFriend(false);
-        setIsCurrentUser(false);
       }
-
     } catch (error) {
-      console.error('Error loading profile:', error);
-      toast.error(error.message || 'Erreur lors du chargement du profil');
+      console.error("Error loading profile:", error);
+      toast.error(error.message || "Erreur lors du chargement du profil");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
-    if (id) {
+    if (params.id) {
       fetchProfileData();
     }
-  }, [id]);
+  }, [params.id, fetchProfileData]);
 
   const handleCreatePost = async () => {
     if (!postContent.trim()) return;
@@ -169,14 +194,19 @@ export default function Profile() {
     }
   };
 
-  const handlePhotoUpload = async (type, file) => {
+  const handleUpdateAvatar = async (file) => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Veuillez vous reconnecter");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("image", file);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/upload-${type}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/upload-avatar`,
         {
           method: "POST",
           headers: {
@@ -187,93 +217,240 @@ export default function Profile() {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        setProfile((prev) => ({
-          ...prev,
-          [type]: data.url,
-        }));
-        toast.success(
-          `${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`
-        );
+        const result = await response.json();
+        // Mettre à jour le localStorage avec la nouvelle photo
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userData = JSON.parse(userStr);
+          const updatedUser = {
+            ...userData,
+            avatar: result.avatar
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+        
+        toast.success("Photo de profil mise à jour avec succès");
+        // Forcer le rafraîchissement de la page pour mettre à jour tous les composants
+        window.location.reload();
       } else {
-        toast.error("Failed to upload photo");
+        const error = await response.text();
+        console.error("Erreur upload avatar:", error);
+        toast.error("Erreur lors de la mise à jour de la photo de profil");
       }
     } catch (error) {
-      console.error(`Error uploading ${type}:`, error);
-      toast.error("Failed to upload photo");
+      console.error("Error updating avatar:", error);
+      toast.error("Erreur lors de la mise à jour de la photo de profil");
     }
   };
 
-  const handleProfileUpdate = async (updatedProfile) => {
+  const handleUpdateCoverPhoto = async (file) => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Sending updated profile:", updatedProfile);
-      
+      if (!token) {
+        toast.error("Veuillez vous reconnecter");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("image", file);
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/upload-coverPhoto`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedProfile),
+          body: formData,
         }
       );
 
       if (response.ok) {
-        const updatedData = await response.json();
-        console.log("Profile updated successfully:", updatedData);
-        setProfile(updatedData);
-        setShowEditModal(false);
-        toast.success("Profile updated successfully");
+        const result = await response.json();
+        // Mettre à jour le localStorage avec la nouvelle photo de couverture
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userData = JSON.parse(userStr);
+          const updatedUser = {
+            ...userData,
+            coverPhoto: result.coverPhoto
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+        
+        toast.success("Photo de couverture mise à jour avec succès");
+        // Forcer le rafraîchissement de la page pour mettre à jour tous les composants
+        window.location.reload();
       } else {
-        const error = await response.json();
-        console.error("Error updating profile:", error);
-        toast.error(error.message || "Failed to update profile");
+        const error = await response.text();
+        console.error("Erreur upload cover:", error);
+        toast.error("Erreur lors de la mise à jour de la photo de couverture");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
+      console.error("Error updating cover photo:", error);
+      toast.error("Erreur lors de la mise à jour de la photo de couverture");
+    }
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditData({
+      username: profile.username,
+      bio: profile.bio || "",
+      avatar: null,
+      coverPhoto: null,
+      location: profile.location || "",
+      birthDate: profile.birthDate || "",
+      birthPlace: profile.birthPlace || "",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditData({
+      username: "",
+      bio: "",
+      avatar: null,
+      coverPhoto: null,
+      location: "",
+      birthDate: "",
+      birthPlace: "",
+    });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditData((prev) => ({
+        ...prev,
+        avatar: file,
+      }));
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Veuillez vous reconnecter");
+        return;
+      }
+
+      // Vérifier les champs obligatoires
+      if (!editData.username.trim()) {
+        toast.error("Le nom d'utilisateur est requis");
+        return;
+      }
+
+      // Préparer les données
+      const profileData = {
+        username: editData.username.trim(),
+        bio: editData.bio.trim(),
+        location: editData.location.trim(),
+        birthDate: editData.birthDate,
+        birthPlace: editData.birthPlace.trim()
+      };
+
+      // Log des données envoyées
+      console.log("Données à envoyer:", profileData);
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`;
+      console.log("URL de l'API:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      console.log("Status de la réponse:", response.status);
+      console.log("Status text:", response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Texte d'erreur complet:", errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error("Données d'erreur parsées:", errorData);
+          toast.error(errorData.message || "Erreur lors de la mise à jour du profil");
+        } catch (e) {
+          console.error("Erreur lors du parsing de l'erreur:", e);
+          toast.error(`Erreur ${response.status}: ${response.statusText}`);
+        }
+        return;
+      }
+
+      const updatedProfile = await response.json();
+      console.log("Profil mis à jour:", updatedProfile);
+
+      setProfile(updatedProfile);
+      
+      // Mettre à jour le localStorage
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        const updatedUser = {
+          ...userData,
+          username: updatedProfile.username
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      setShowEditModal(false);
+      toast.success("Profil mis à jour avec succès");
+      fetchProfileData();
+    } catch (error) {
+      console.error("Erreur complète:", error);
+      toast.error("Erreur lors de la mise à jour du profil");
     }
   };
 
   const fetchProfilePosts = async () => {
     try {
       const token = localStorage.getItem("token");
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${params.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        setPosts(data);
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts");
       }
+
+      const data = await response.json();
+      // S'assurer que chaque post a les informations complètes de l'utilisateur
+      const postsWithUser = data.map((post) => ({
+        ...post,
+        user: {
+          _id: profile._id,
+          username: profile.username,
+          avatar: profile.avatar,
+          // Ajouter d'autres champs du profil si nécessaire
+          email: profile.email,
+          bio: profile.bio,
+        },
+      }));
+
+      setPosts(postsWithUser);
     } catch (error) {
       console.error("Error fetching posts:", error);
-      toast.error("Impossible de charger les posts");
     }
   };
 
   useEffect(() => {
-    if (id) {
+    if (params.id && profile) {
       fetchProfilePosts();
     }
-  }, [id]);
-
-  const isOwnProfile = useMemo(() => {
-    if (!currentUser || !profile) {
-      return false;
-    }
-    
-    const isOwn = currentUser.id === profile._id;
-    return isOwn;
-  }, [currentUser, profile, id]);
+  }, [params.id, profile]);
 
   if (isLoading) {
     return <div className={styles.loadingContainer}>Loading...</div>;
@@ -288,122 +465,91 @@ export default function Profile() {
       <Navbar />
       <div className={styles.profilePage}>
         <div className={styles.coverSection}>
-          <div className={styles.coverPhotoContainer}>
-            {profile.coverPhoto ? (
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`}
-                alt="Cover photo"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          {profile.coverPhoto ? (
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`}
+              alt="Cover photo"
+              width={1200}
+              height={300}
+              className={styles.coverPhoto}
+            />
+          ) : (
+            <div className={styles.defaultCover} />
+          )}
+          {isCurrentUser && (
+            <div className={styles.cameraIcon} onClick={() => coverPhotoInputRef.current?.click()}>
+              <FaCamera />
+              <input
+                type="file"
+                ref={coverPhotoInputRef}
+                hidden
+                accept="image/*"
+                onChange={(e) => handleUpdateCoverPhoto(e.target.files[0])}
               />
-            ) : (
-              <div className={styles.defaultCover} />
-            )}
-            {isOwnProfile && (
-              <div className={styles.editCoverPhoto}>
-                <PhotoUpload
-                  onUpload={(file) => handlePhotoUpload("coverPhoto", file)}
-                />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <div className={styles.profileHeader}>
-          <div className={styles.avatarContainer}>
-            {profile.avatar ? (
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`}
-                alt={profile.username}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : (
-              <img
-                src="/images/default-avatar.jpg"
-                alt="Default avatar"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            )}
-            {isOwnProfile && (
-              <div className={styles.editAvatar}>
-                <PhotoUpload
-                  onUpload={(file) => handlePhotoUpload("avatar", file)}
-                />
-                <FaCamera className={styles.cameraIcon} />
-              </div>
-            )}
-          </div>
-
-          <div className={styles.userInfo}>
-            <div className={styles.userInfoLeft}>
-              {isEditing ? (
-                <div className={styles.usernameEdit}>
-                  <input
-                    type="text"
-                    className={styles.usernameInput}
-                    value={editedProfile.username}
-                    onChange={(e) =>
-                      setEditedProfile((prev) => ({
-                        ...prev,
-                        username: e.target.value,
-                      }))
+        <div className={styles.profileContainer}>
+          <div className={styles.profileHeader}>
+            <div className={styles.profileInfo}>
+              <div className={styles.leftSection}>
+                <div className={styles.avatarContainer}>
+                  <Image
+                    src={
+                      profile.avatar
+                        ? `${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`
+                        : "/images/default-avatar.jpg"
                     }
-                    placeholder="Enter username"
+                    alt="Profile"
+                    width={150}
+                    height={150}
+                    className={styles.avatar}
                   />
+                  {isCurrentUser && (
+                    <div className={styles.cameraIcon} onClick={() => avatarInputRef.current?.click()}>
+                      <FaCamera />
+                      <input
+                        type="file"
+                        ref={avatarInputRef}
+                        hidden
+                        accept="image/*"
+                        onChange={(e) => handleUpdateAvatar(e.target.files[0])}
+                      />
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <h1>{profile.username}</h1>
-              )}
-              {isEditing ? (
-                <textarea
-                  className={styles.bioEdit}
-                  value={editedProfile.bio}
-                  onChange={(e) =>
-                    setEditedProfile((prev) => ({
-                      ...prev,
-                      bio: e.target.value,
-                    }))
-                  }
-                  placeholder="Write something about yourself..."
-                />
-              ) : (
-                <p className={styles.bio}>{profile.bio || "No bio yet"}</p>
-              )}
-            </div>
-
-            {isOwnProfile ? (
-              <div className={styles.editButtonContainer}>
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className={styles.editButton}
-                >
-                  Modifier le profil
-                </button>
+                <div className={styles.userDetails}>
+                  <h1>{profile.username}</h1>
+                  <p className={styles.bio}>{profile.bio || "Aucune bio"}</p>
+                </div>
               </div>
-            ) : (
-              <div className={styles.profileActions}>
+
+              <div className={styles.rightSection}>
                 {isCurrentUser ? (
                   <button
                     onClick={() => setShowEditModal(true)}
                     className={styles.editButton}
                   >
-                    Modifier le profil
+                    <FaEdit /> Modifier le profil
                   </button>
                 ) : (
                   <div className={styles.friendButtons}>
-                    {!isFriend ? (
-                      <AddFriendButton 
-                        targetUserId={id} 
+                    {!isFriend && (
+                      <AddFriendButton
+                        targetUserId={params.id}
                         onRequestSent={() => {
-                          toast.success('Demande d\'ami envoyée!');
+                          toast.success("Demande d'ami envoyée!");
                           fetchProfileData();
                         }}
                       />
-                    ) : (
-                      <RemoveFriendButton 
-                        targetUserId={id}
+                    )}
+                    {isFriend && (
+                      <RemoveFriendButton
+                        targetUserId={params.id}
                         onFriendRemoved={() => {
                           setIsFriend(false);
-                          toast.success('Ami supprimé avec succès');
+                          toast.success("Ami supprimé avec succès");
                           fetchProfileData();
                         }}
                       />
@@ -411,165 +557,64 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-            )}
+            </div>
           </div>
         </div>
-
-        {showEditModal && (
-          <EditProfileModal
-            profile={profile}
-            onClose={() => setShowEditModal(false)}
-            onSave={(updatedProfile) => handleProfileUpdate(updatedProfile)}
-          />
-        )}
 
         <div className={styles.profileContent}>
           <div className={styles.leftColumn}>
             <div className={styles.infoSection}>
               <h3>About</h3>
-              {isEditing ? (
-                <div className={styles.editInfo}>
-                  <div className={styles.infoField}>
-                    <label>Location</label>
-                    <input
-                      type="text"
-                      value={editedProfile.location}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          location: e.target.value,
-                        }))
-                      }
-                      placeholder="Add your location"
-                    />
-                  </div>
-                  <div className={styles.infoField}>
-                    <label>Birth Date</label>
-                    <input
-                      type="date"
-                      value={editedProfile.birthDate}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          birthDate: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className={styles.infoField}>
-                    <label>Birth Place</label>
-                    <input
-                      type="text"
-                      value={editedProfile.birthPlace}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          birthPlace: e.target.value,
-                        }))
-                      }
-                      placeholder="Add your birth place"
-                    />
-                  </div>
-                  <div className={styles.infoField}>
-                    <label>Gender</label>
-                    <select
-                      value={editedProfile.gender}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          gender: e.target.value,
-                        }))
-                      }
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className={styles.infoField}>
-                    <label>Education</label>
-                    <input
-                      type="text"
-                      value={editedProfile.education}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          education: e.target.value,
-                        }))
-                      }
-                      placeholder="Add your education"
-                    />
-                  </div>
-                  <div className={styles.infoField}>
-                    <label>Occupation</label>
-                    <input
-                      type="text"
-                      value={editedProfile.occupation}
-                      onChange={(e) =>
-                        setEditedProfile((prev) => ({
-                          ...prev,
-                          occupation: e.target.value,
-                        }))
-                      }
-                      placeholder="Add your occupation"
-                    />
-                  </div>
+              <div className={styles.infoItem}>
+                <LocationIcon className={styles.infoIcon} />
+                <span className={styles.infoValue}>
+                  {profile.location || "Location not set"}
+                </span>
+              </div>
+              <div className={styles.infoItem}>
+                <CalendarIcon className={styles.infoIcon} />
+                <span className={styles.infoValue}>
+                  {profile.birthDate
+                    ? formatDate(profile.birthDate)
+                    : "Birth date not set"}
+                </span>
+              </div>
+              {profile.birthPlace && (
+                <div className={styles.infoItem}>
+                  <LocationIcon className={styles.infoIcon} />
+                  <span className={styles.infoValue}>
+                    Born in {profile.birthPlace}
+                  </span>
                 </div>
-              ) : (
-                <>
-                  <div className={styles.infoItem}>
-                    <LocationIcon className={styles.infoIcon} />
-                    <span className={styles.infoValue}>
-                      {profile.location || "Location not set"}
-                    </span>
-                  </div>
-                  <div className={styles.infoItem}>
-                    <CalendarIcon className={styles.infoIcon} />
-                    <span className={styles.infoValue}>
-                      {profile.birthDate
-                        ? formatDate(profile.birthDate)
-                        : "Birth date not set"}
-                    </span>
-                  </div>
-                  {profile.birthPlace && (
-                    <div className={styles.infoItem}>
-                      <LocationIcon className={styles.infoIcon} />
-                      <span className={styles.infoValue}>
-                        Born in {profile.birthPlace}
-                      </span>
-                    </div>
-                  )}
-                  {profile.gender && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoValue}>
-                        {profile.gender.charAt(0).toUpperCase() +
-                          profile.gender.slice(1)}
-                      </span>
-                    </div>
-                  )}
-                  {profile.education && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoValue}>
-                        Studied at {profile.education}
-                      </span>
-                    </div>
-                  )}
-                  {profile.occupation && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoValue}>
-                        Works as {profile.occupation}
-                      </span>
-                    </div>
-                  )}
-                  <div className={styles.infoItem}>
-                    <CalendarIcon className={styles.infoIcon} />
-                    <span className={styles.infoValue}>
-                      Joined {formatDate(profile.createdAt)}
-                    </span>
-                  </div>
-                </>
               )}
+              {profile.gender && (
+                <div className={styles.infoItem}>
+                  <span className={styles.infoValue}>
+                    {profile.gender.charAt(0).toUpperCase() +
+                      profile.gender.slice(1)}
+                  </span>
+                </div>
+              )}
+              {profile.education && (
+                <div className={styles.infoItem}>
+                  <span className={styles.infoValue}>
+                    Studied at {profile.education}
+                  </span>
+                </div>
+              )}
+              {profile.occupation && (
+                <div className={styles.infoItem}>
+                  <span className={styles.infoValue}>
+                    Works as {profile.occupation}
+                  </span>
+                </div>
+              )}
+              <div className={styles.infoItem}>
+                <CalendarIcon className={styles.infoIcon} />
+                <span className={styles.infoValue}>
+                  Joined {formatDate(profile.createdAt)}
+                </span>
+              </div>
             </div>
 
             <div className={styles.statsSection}>
@@ -593,13 +638,116 @@ export default function Profile() {
           </div>
 
           <div className={styles.mainColumn}>
-            {isOwnProfile && (
-              <CreatePost onPostCreated={fetchProfilePosts} />
-            )}
-            <ProfilePosts posts={posts} userId={profile._id}/>
+            {isCurrentUser && <CreatePost onPostCreated={fetchProfilePosts} />}
+            <ProfilePosts posts={posts} userId={profile._id} />
           </div>
         </div>
       </div>
+
+      {showEditModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>Modifier le profil</h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className={styles.closeButton}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              
+
+              <div className={styles.editSection}>
+                <div className={styles.formGroup}>
+                  <label>Nom d'utilisateur</label>
+                  <input
+                    type="text"
+                    value={editData.username}
+                    onChange={(e) =>
+                      setEditData((prev) => ({
+                        ...prev,
+                        username: e.target.value,
+                      }))
+                    }
+                    className={styles.editInput}
+                    placeholder="Nom d'utilisateur"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Bio</label>
+                  <textarea
+                    className={styles.editInput}
+                    placeholder="DItes quelque choses sur vous..."
+                    value={editData.bio}
+                    onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                  />
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Date de naissance</label>
+                    <input
+                      type="date"
+                      value={editData.birthDate ? editData.birthDate.split('T')[0] : ''}
+                      onChange={(e) =>
+                        setEditData({ ...editData, birthDate: e.target.value })
+                      }
+                      className={styles.editInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Lieu de naissance</label>
+                    <input
+                      type="text"
+                      value={editData.birthPlace}
+                      onChange={(e) =>
+                        setEditData({ ...editData, birthPlace: e.target.value })
+                      }
+                      className={styles.editInput}
+                      placeholder="Ville de naissance"
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Localisation actuelle</label>
+                  <input
+                    type="text"
+                    value={editData.location}
+                    onChange={(e) =>
+                      setEditData((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
+                    className={styles.editInput}
+                    placeholder="Ville actuelle"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className={styles.cancelButton}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  className={styles.saveButton}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

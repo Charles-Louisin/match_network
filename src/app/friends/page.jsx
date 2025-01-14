@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import styles from './page.module.css';
@@ -55,7 +55,7 @@ const FriendsPage = () => {
     }
   };
 
-  const fetchPendingRequests = async () => {
+  const fetchPendingRequests = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -65,8 +65,7 @@ const FriendsPage = () => {
       console.log('Récupération des demandes en attente...');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/pending`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -76,47 +75,19 @@ const FriendsPage = () => {
       }
 
       const data = await response.json();
-      console.log('Toutes les demandes reçues:', data);
+      console.log('Demandes en attente reçues:', data);
 
-      // Récupérer l'utilisateur courant directement depuis le localStorage
-      const userStr = localStorage.getItem('user');
-      const currentUser = userStr ? JSON.parse(userStr) : null;
-      console.log('Utilisateur courant:', currentUser);
+      // Filtrer les demandes reçues (où l'utilisateur est le destinataire)
+      const receivedRequests = data.filter(request => 
+        request.receiver === currentUser?._id && request.status === 'pending'
+      );
 
-      if (!currentUser) {
-        console.log('Aucun utilisateur connecté trouvé');
-        return;
-      }
-
-      // Utiliser currentUser.id au lieu de currentUser._id
-      const receivedRequests = data.filter(request => {
-        const isRecipient = request.recipient === currentUser.id || request.recipient._id === currentUser.id;
-        const isNotSender = request.sender !== currentUser.id && request.sender._id !== currentUser.id;
-        console.log('Demande:', {
-          requestId: request._id,
-          isRecipient,
-          isNotSender,
-          recipient: request.recipient,
-          sender: request.sender,
-          currentUserId: currentUser.id
-        });
-        return isRecipient && isNotSender;
-      });
-
-      console.log('Demandes filtrées (reçues):', receivedRequests);
-
-      // Vérifier s'il y a de nouvelles demandes
-      if (receivedRequests.length > lastRequestCount) {
-        setNewRequests(true);
-      }
-      
-      setLastRequestCount(receivedRequests.length);
       setPendingRequests(receivedRequests);
     } catch (error) {
       console.error('Error fetching pending requests:', error);
       toast.error(error.message || 'Erreur lors de la récupération des demandes en attente');
     }
-  };
+  }, [currentUser?._id, toast]);
 
   const handleAcceptRequest = async (requestId) => {
     try {

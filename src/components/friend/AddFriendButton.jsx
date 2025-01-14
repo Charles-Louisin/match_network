@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import styles from './FriendButton.module.css';
@@ -11,11 +11,7 @@ const AddFriendButton = ({ targetUserId, onRequestSent }) => {
   const router = useRouter();
 
   // Vérifier le statut initial de la demande
-  useEffect(() => {
-    checkRequestStatus();
-  }, [targetUserId]);
-
-  const checkRequestStatus = async () => {
+  const checkRequestStatus = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -26,12 +22,20 @@ const AddFriendButton = ({ targetUserId, onRequestSent }) => {
         }
       });
 
+      if (!response.ok) {
+        throw new Error('Erreur lors de la vérification du statut');
+      }
+
       const data = await response.json();
       setRequestStatus(data.status);
     } catch (error) {
       console.error('Error checking request status:', error);
     }
-  };
+  }, [targetUserId]);
+
+  useEffect(() => {
+    checkRequestStatus();
+  }, [checkRequestStatus, targetUserId]);
 
   const handleAddFriend = async () => {
     if (requestStatus === 'pending') {

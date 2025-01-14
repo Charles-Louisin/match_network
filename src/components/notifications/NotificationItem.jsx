@@ -1,6 +1,7 @@
 import { useFriends } from '@/hooks/useFriends';
 import { useState } from 'react';
 import styles from './NotificationItem.module.css';
+import Image from 'next/image';
 
 const NotificationItem = ({ notification }) => {
   const { acceptFriendRequest, rejectFriendRequest } = useFriends();
@@ -34,11 +35,15 @@ const NotificationItem = ({ notification }) => {
     return (
       <div className={styles.notificationItem}>
         <div className={styles.content}>
-          <img 
-            src={notification.sender.avatar || '/default-avatar.png'} 
-            alt={notification.sender.username}
-            className={styles.avatar}
-          />
+          <div className={styles.avatarContainer}>
+            <Image
+              src={notification.sender.avatar || '/default-avatar.png'}
+              alt={`${notification.sender.username}'s avatar`}
+              width={40}
+              height={40}
+              className={styles.avatar}
+            />
+          </div>
           <span className={styles.message}>
             <strong>{notification.sender.username}</strong> {notification.content}
           </span>
@@ -66,11 +71,15 @@ const NotificationItem = ({ notification }) => {
   return (
     <div className={styles.notificationItem}>
       <div className={styles.content}>
-        <img 
-          src={notification.sender.avatar || '/default-avatar.png'} 
-          alt={notification.sender.username}
-          className={styles.avatar}
-        />
+        <div className={styles.avatarContainer}>
+          <Image
+            src={notification.sender.avatar || '/default-avatar.png'}
+            alt={`${notification.sender.username}'s avatar`}
+            width={40}
+            height={40}
+            className={styles.avatar}
+          />
+        </div>
         <span className={styles.message}>
           <strong>{notification.sender.username}</strong> {notification.content}
         </span>

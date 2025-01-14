@@ -110,11 +110,12 @@
   align-items: center;
 }
 
-.profilePic {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
+.userAvatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  cursor: pointer;
 }
 
 .logoutButton {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import styles from './ProfileInfo.module.css'
 
@@ -14,6 +14,18 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
     birthPlace: profile.birthPlace
   })
   const [error, setError] = useState('')
+
+  const isOwnProfile = useMemo(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return false;
+      const user = JSON.parse(userStr);
+      return user._id === profile._id;
+    } catch (error) {
+      console.error('Error checking own profile:', error);
+      return false;
+    }
+  }, [profile._id]);
 
   const handleSave = async () => {
     try {
@@ -56,6 +68,12 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
           >
             {isEditing ? 'Annuler' : 'Modifier'}
           </button>
+        )}
+        {!isOwnProfile && (
+          <div className={styles.friendshipActions}>
+            {/* TODO: Ajouter la logique pour vérifier si l'utilisateur est déjà ami */}
+            {/* TODO: Ajouter le bouton d'ajout d'ami */}
+          </div>
         )}
       </div>
 
