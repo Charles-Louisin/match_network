@@ -1,0 +1,283 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background-primary: #ffffff;
+  --background-secondary: #f8f9fa;
+  --background-hover: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --primary-color: #007bff;
+  --primary-hover: #0056b3;
+  --success: #28a745;
+  --danger: #dc3545;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --background: #ffffff;
+  --text: #000000;
+  --primary: #1a73e8;
+  --secondary: #f1f3f4;
+  --border: #e0e0e0;
+  --card-bg: #ffffff;
+  --hover-bg: #f5f5f5;
+  --navbar-bg: #ffffff;
+  --navbar-text: #000000;
+}
+
+[data-theme='dark'] {
+  --background: #121212;
+  --text: #ffffff;
+  --primary: #4285f4;
+  --secondary: #2d2d2d;
+  --border: #404040;
+  --card-bg: #1e1e1e;
+  --hover-bg: #2a2a2a;
+  --navbar-bg: #1e1e1e;
+  --navbar-text: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Styles existants */
+
+/* Styles généraux pour les conteneurs */
+.container {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Styles pour les inputs */
+input, textarea, select {
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* Styles pour les boutons */
+button {
+  background-color: var(--primary-color);
+  color: var(--button-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+  opacity: 0.9;
+}
+
+button.secondary {
+  background-color: var(--background-hover);
+  color: var(--text-primary);
+}
+
+/* Styles pour les liens */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Styles pour le texte */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+/* Styles pour les cartes */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Styles pour les dividers */
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 16px 0;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Styles pour les avatars */
+.avatar-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* Crée un ratio 1:1 */
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Styles spécifiques pour les tailles d'avatar */
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-md {
+  width: 60px;
+  height: 60px;
+}
+
+.avatar-lg {
+  width: 120px;
+  height: 120px;
+}
+
+/* Styles pour les notifications Sonner */
+:root {
+  --toaster-success: #10B981;
+  --toaster-error: #EF4444;
+  --toaster-background: #FFFFFF;
+  --toaster-text: #1F2937;
+}
+
+/* Style personnalisé pour les notifications */
+[data-sonner-toaster] {
+  --border-radius: 12px !important;
+  font-family: inherit !important;
+}
+
+[data-sonner-toast] {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  background: var(--toaster-success) !important;
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: var(--toaster-error) !important;
+  color: white !important;
+}
+
+/* Animation d'entrée et de sortie des notifications */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+[data-sonner-toast][data-visible="true"] {
+  animation: slideIn 0.3s ease-out;
+}
+
+[data-sonner-toast][data-visible="false"] {
+  animation: slideOut 0.3s ease-in;
+}
+
+/* Responsive design pour les notifications */
+@media (max-width: 768px) {
+  [data-sonner-toaster] {
+    max-width: 90% !important;
+    right: 5% !important;
+  }
+}
+
+/* Classes utilitaires pour les thèmes */
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.hover-effect:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

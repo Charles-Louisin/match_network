@@ -1,0 +1,82 @@
+.notificationCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.notificationCard:hover {
+  transform: translateY(-2px);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.username {
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.username:hover {
+  color: #0066cc;
+}
+
+.message {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.acceptButton,
+.rejectButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.acceptButton {
+  background-color: #0066cc;
+  color: white;
+}
+
+.acceptButton:hover {
+  background-color: #0052a3;
+}
+
+.rejectButton {
+  background-color: #f2f2f2;
+  color: #666;
+}
+
+.rejectButton:hover {
+  background-color: #e6e6e6;
+}

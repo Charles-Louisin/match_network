@@ -1,0 +1,35 @@
+frontend-match/
+├── src/
+│   ├── app/
+│   │   ├── auth/
+│   │   │   ├── login/page.jsx
+│   │   │   ├── register/page.jsx
+│   │   │   ├── forgot-password/page.jsx
+│   │   │   ├── verify-otp/page.jsx
+│   │   │   └── reset-password/page.jsx
+│   │   ├── profile/
+│   │   │   └── [username]/page.jsx
+│   │   ├── layout.jsx
+│   │   └── page.jsx
+│   ├── components/
+│   │   ├── auth/
+│   │   │   ├── LoginForm.jsx
+│   │   │   ├── RegisterForm.jsx
+│   │   │   └── ForgotPasswordForm.jsx
+│   │   ├── layout/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   └── RightSidebar.jsx
+│   │   ├── home/
+│   │   │   ├── CreatePost.jsx
+│   │   │   ├── Feed.jsx
+│   │   │   ├── Post.jsx
+│   │   │   └── Stories.jsx
+│   │   └── profile/
+│   │       ├── ProfileHeader.jsx
+│   │       ├── ProfileInfo.jsx
+│   │       └── ProfilePosts.jsx
+│   └── styles/
+│       ├── auth/
+│       ├── components/
+│       └── pages/ 

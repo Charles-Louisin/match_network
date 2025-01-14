@@ -1,0 +1,63 @@
+.friendCard {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  width: 250px;
+}
+
+.friendCard:hover {
+  transform: translateY(-5px);
+}
+
+.avatarContainer {
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0066cc;
+  padding: 3px;
+}
+
+.username {
+  font-size: 1.25rem;
+  color: #1a1a1a;
+  margin: 0.5rem 0 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profileButton,
+.messageButton {
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.profileButton {
+  background-color: #0066cc;
+  color: white;
+}
+
+.profileButton:hover {
+  background-color: #0052a3;
+}
+
+.messageButton {
+  background-color: #f2f2f2;
+  color: #1a1a1a;
+}
+
+.messageButton:hover {
+  background-color: #e6e6e6;
+}

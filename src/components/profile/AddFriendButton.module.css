@@ -1,0 +1,106 @@
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button:focus {
+  outline: none;
+  ring: 2px solid #0066cc;
+  ring-offset: 2px;
+}
+
+.icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addButton {
+  background: linear-gradient(135deg, #0066cc, #0052a3);
+  color: white;
+}
+
+.addButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0052a3, #003d7a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.addButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.friendButton {
+  background: #f0f2f5;
+  color: #65676b;
+  border: 1px solid #dadde1;
+}
+
+.friendButton:hover {
+  background: #e4e6eb;
+}
+
+.sentButton {
+  background: #e4e6eb;
+  color: #65676b;
+  border: 1px solid #dadde1;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Animation pour le chargement */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.button:disabled .icon {
+  animation: pulse 1.5s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 140px;
+  }
+
+  .icon {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    min-width: 120px;
+  }
+
+  .buttonContainer {
+    margin: 0.75rem 0;
+  }
+}

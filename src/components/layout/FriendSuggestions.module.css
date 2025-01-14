@@ -1,0 +1,118 @@
+.suggestions {
+  background: var(--background-primary);
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.suggestions h2 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.searchContainer {
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.searchInput::placeholder {
+  color: var(--text-secondary);
+}
+
+.suggestionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.suggestionCard:last-child {
+  border-bottom: none;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.avatar {
+  border-radius: 50%;
+}
+
+.userDetails h3 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.userDetails span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.addButton {
+  background: var(--background-hover);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background: var(--primary-color);
+  color: var(--button-text);
+}
+
+.showMoreButton {
+  width: 100%;
+  padding: 8px;
+  margin-top: 16px;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showMoreButton:hover {
+  background: var(--background-hover);
+}
+
+.noUsers {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 16px 0;
+  font-size: 0.9rem;
+}

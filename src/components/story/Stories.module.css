@@ -1,0 +1,98 @@
+.storiesContainer {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.storiesWrapper {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 110px;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.storiesWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.storiesWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.storiesWrapper::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.storyCard {
+  position: relative;
+  height: 180px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.storyCard:hover {
+  transform: scale(1.02);
+}
+
+.storyBackground {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.createStory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--white);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+
+.createIcon {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-color);
+  /* background-color: yellow; */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  /* margin-bottom: 8px; */
+}
+
+.storyUser {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: var(--white);
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--primary-color);
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+.userName {
+  font-size: 0.85rem;
+  font-weight: 500;
+} 

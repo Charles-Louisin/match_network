@@ -1,0 +1,45 @@
+:root {
+  /* Light theme (default) */
+  --background-primary: #ffffff;
+  --background-secondary: #f0f2f5;
+  --background-hover: #e4e6e9;
+  --text-primary: #1c1e21;
+  --text-secondary: #65676b;
+  --primary-color: #1877f2;
+  --primary-hover: #166fe5;
+  --error-color: #ff3b30;
+  --success-color: #34c759;
+  --warning-color: #ff9500;
+  --border-color: #dddfe2;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --card-background: #ffffff;
+  --input-background: #ffffff;
+  --button-text: #ffffff;
+}
+
+[data-theme="dark"] {
+  --background-primary: #18191a;
+  --background-secondary: #242526;
+  --background-hover: #3a3b3c;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --primary-color: #2d88ff;
+  --primary-hover: #1877f2;
+  --error-color: #ff453a;
+  --success-color: #32d74b;
+  --warning-color: #ff9f0a;
+  --border-color: #3e4042;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --card-background: #242526;
+  --input-background: #3a3b3c;
+  --button-text: #ffffff;
+}
+
+/* Transitions pour les changements de thème */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
