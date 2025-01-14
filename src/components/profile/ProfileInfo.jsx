@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import styles from './ProfileInfo.module.css'
 
 export default function ProfileInfo({ profile, onProfileUpdate }) {
@@ -18,7 +19,7 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        throw new Error(&apos;Vous devez être connecté pour modifier votre profil&apos;)
+        throw new Error('Vous devez être connecté pour modifier votre profil')
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`, {
@@ -126,6 +127,15 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
           <div className={styles.infoItem}>
             <i className="fas fa-home"></i>
             <p>De {profile.birthPlace}</p>
+          </div>
+          <div className={styles.infoItem}>
+            <Image
+              src={profile.profilePicture || '/default-avatar.png'}
+              alt="Profile picture"
+              width={100}
+              height={100}
+              className={styles.profilePicture}
+            />
           </div>
         </div>
       )}

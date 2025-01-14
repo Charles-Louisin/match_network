@@ -18,7 +18,7 @@ export default function Stories() {
       return
     }
     fetchStories()
-  }, [router])
+  }, [fetchStories, router])
 
   const fetchStories = async () => {
     try {

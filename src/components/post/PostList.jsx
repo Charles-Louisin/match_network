@@ -12,7 +12,7 @@ export default function PostList({ userId }) {
   useEffect(() => {
     // console.log('PostList mounted with userId:', userId)
     fetchPosts()
-  }, [userId])
+  }, [userId, fetchPosts])
 
   const fetchPosts = async () => {
     try {

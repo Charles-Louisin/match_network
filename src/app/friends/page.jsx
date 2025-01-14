@@ -219,7 +219,11 @@ const FriendsPage = () => {
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
     }
-  }, [currentUser]);
+  }, [currentUser, fetchPendingRequests]);
+
+  useEffect(() => {
+    fetchPendingRequests()
+  }, [fetchPendingRequests])
 
   if (isLoading) {
     return (

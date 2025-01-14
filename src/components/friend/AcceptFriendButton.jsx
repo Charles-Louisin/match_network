@@ -14,7 +14,7 @@ const AcceptFriendButton = ({ requestId, onAccepted }) => {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error(&apos;Non authentifié&apos;);
+        throw new Error('Non authentifié');
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/accept/${requestId}`, {

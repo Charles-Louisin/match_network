@@ -154,7 +154,7 @@ export default function FriendSuggestions() {
   if (loading) {
     return (
       <div className={styles.suggestions}>
-        <h2>Suggestions d'amis</h2>
+        <h2>Suggestions d&apos;amis</h2>
         <p>Chargement...</p>
       </div>
     )
@@ -163,7 +163,7 @@ export default function FriendSuggestions() {
   if (error) {
     return (
       <div className={styles.suggestions}>
-        <h2>Suggestions d'amis</h2>
+        <h2>Suggestions d&apos;amis</h2>
         <p className={styles.error}>{error}</p>
       </div>
     )
@@ -171,7 +171,7 @@ export default function FriendSuggestions() {
 
   return (
     <div className={styles.suggestions}>
-      <h2>Suggestions d'amis</h2>
+      <h2>Suggestions d&apos;amis</h2>
       
       <div className={styles.searchContainer}>
         <input

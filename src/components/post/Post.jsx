@@ -221,11 +221,12 @@ export default function Post({ post, onPostUpdate }) {
       {post.image && (
         <div className={styles.imageContainer}>
           <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-            alt="Post"
-            width={600}
-            height={400}
-            className={styles.postImage}
+            src={post.image}
+            alt="Post image"
+            width={500}
+            height={300}
+            layout="responsive"
+            objectFit="cover"
           />
         </div>
       )}
@@ -273,7 +274,7 @@ export default function Post({ post, onPostUpdate }) {
                 onClick={handleLike}
               >
                 <FaThumbsUp className={styles.buttonIcon} />
-                <span>J'aime</span>
+                <span>J&apos;aime</span>
               </button>
 
               <button
