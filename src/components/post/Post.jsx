@@ -59,7 +59,7 @@ export default function Post({ post, onPostUpdate }) {
         const response = error.response;
         const errorData = await response.json();
         console.error("Error fetching post data:", errorData);
-        throw new Error(errorData.message || 'Erreur lors de la récupération du post');
+        throw new Error(errorData.message || &apos;Erreur lors de la récupération du post&apos;);
       }
     };
 
@@ -111,7 +111,7 @@ export default function Post({ post, onPostUpdate }) {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Vous devez être connecté pour commenter');
+        throw new Error(&apos;Vous devez être connecté pour commenter&apos;);
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/comment`, {
@@ -127,7 +127,7 @@ export default function Post({ post, onPostUpdate }) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Erreur lors de l\'ajout du commentaire');
+        throw new Error(error.message || &apos;Erreur lors de l&apos;ajout du commentaire&apos;);
       }
 
       const newComment = await response.json();

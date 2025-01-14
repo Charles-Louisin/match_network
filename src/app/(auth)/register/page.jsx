@@ -41,7 +41,7 @@ export default function Register() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de l\'inscription')
+        throw new Error(data.message || 'Erreur lors de l&apos;inscription')
       }
 
       // Stocker le token et rediriger
@@ -60,7 +60,7 @@ export default function Register() {
         
         <input
           type="text"
-          placeholder="Nom d'utilisateur"
+          placeholder="Nom d&apos;utilisateur"
           value={formData.username}
           onChange={(e) => setFormData({...formData, username: e.target.value})}
         />
@@ -96,7 +96,7 @@ export default function Register() {
           onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
         />
 
-        <button type="submit">S'inscrire</button>
+        <button type="submit">S&apos;inscrire</button>
 
         <div className={styles.links}>
           <Link href="/login">Déjà inscrit ? Se connecter</Link>

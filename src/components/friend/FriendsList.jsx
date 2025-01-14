@@ -17,7 +17,7 @@ const FriendsList = () => {
   if (friends.length === 0) {
     return (
       <div className={styles.empty}>
-        <p>Vous n'avez pas encore d'amis.</p>
+        <p>Vous n&apos;avez pas encore d&apos;amis.</p>
         <p>Découvrez des personnes intéressantes dans les suggestions !</p>
       </div>
     );

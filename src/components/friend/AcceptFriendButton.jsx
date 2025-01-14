@@ -14,7 +14,7 @@ const AcceptFriendButton = ({ requestId, onAccepted }) => {
       setIsLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Non authentifié');
+        throw new Error(&apos;Non authentifié&apos;);
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/accept/${requestId}`, {
@@ -49,11 +49,11 @@ const AcceptFriendButton = ({ requestId, onAccepted }) => {
         }
         throw new Error(errorData.message);
       } catch {
-        throw new Error("Impossible d'accepter l'invitation");
+        throw new Error(&apos;Impossible d&apos;accepter l&apos;invitation&apos;);
       }
     } catch (error) {
       console.error('Error accepting friend request:', error);
-      toast.error(error.message || "Une erreur s'est produite");
+      toast.error(error.message || &apos;Une erreur s&apos;est produite&apos;);
     } finally {
       setIsLoading(false);
     }
