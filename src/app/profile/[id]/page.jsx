@@ -661,7 +661,7 @@ export default function Profile() {
 
               <div className={styles.editSection}>
                 <div className={styles.formGroup}>
-                  <label>Nom d'utilisateur</label>
+                  <label>Nom d&apos;utilisateur</label>
                   <input
                     type="text"
                     value={editData.username}

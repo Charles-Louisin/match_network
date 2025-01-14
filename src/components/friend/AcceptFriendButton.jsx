@@ -49,11 +49,11 @@ const AcceptFriendButton = ({ requestId, onAccepted }) => {
         }
         throw new Error(errorData.message);
       } catch {
-        throw new Error(&apos;Impossible d&apos;accepter l&apos;invitation&apos;);
+        throw new Error(`Impossible d'accepter l'invitation`);
       }
     } catch (error) {
       console.error('Error accepting friend request:', error);
-      toast.error(error.message || &apos;Une erreur s&apos;est produite&apos;);
+      toast.error(error.message || `Une erreur s'est produite`);
     } finally {
       setIsLoading(false);
     }

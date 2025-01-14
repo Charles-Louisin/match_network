@@ -45,7 +45,7 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || &apos;Erreur lors de la mise à jour du profil&apos;)
+        throw new Error(data.message || 'Erreur lors de la mise à jour du profil')
       }
 
       const updatedProfile = await response.json()
