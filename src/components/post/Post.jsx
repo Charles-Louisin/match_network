@@ -59,7 +59,7 @@ export default function Post({ post, onPostUpdate }) {
         const response = error.response;
         const errorData = await response.json();
         console.error("Error fetching post data:", errorData);
-        throw new Error(errorData.message || &apos;Erreur lors de la récupération du post&apos;);
+        throw new Error(errorData.message || 'Erreur lors de la récupération du post');
       }
     };
 

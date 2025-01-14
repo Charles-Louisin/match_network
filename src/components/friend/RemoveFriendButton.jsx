@@ -10,7 +10,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
   const router = useRouter();
 
   const handleRemoveFriend = async () => {
-    if (!confirm(&apos;Êtes-vous sûr de vouloir supprimer cet ami ? Cela supprimera également toutes les demandes d&apos;ami associées.&apos;)) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet ami ? Cela supprimera également toutes les demandes d&apos;ami associées.')) {
       return;
     }
 

@@ -14,7 +14,7 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
     const file = e.target.files[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError(&apos;L&apos;image ne doit pas dépasser 5MB&apos;)
+        setError(`L'image ne doit pas dépasser 5MB`)
         return
       }
       setSelectedImage(file)

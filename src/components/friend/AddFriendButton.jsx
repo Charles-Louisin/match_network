@@ -72,7 +72,7 @@ const AddFriendButton = ({ targetUserId, onRequestSent }) => {
         }
       }
 
-      toast.success(&apos;Demande d&apos;ami envoyée avec succès!&apos;);
+      toast.success('Demande d&apos;ami envoyée avec succès!');
       router.refresh();
     } catch (error) {
       console.error('Error sending friend request:', error);
