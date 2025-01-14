@@ -24,7 +24,7 @@ export default function Stories() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        throw new Error(&apos;Vous devez être connecté pour voir les stories&apos;)
+        throw new Error('Vous devez être connecté pour voir les stories')
       }
 
       const response = await fetch('http://localhost:5000/api/stories', {
@@ -39,12 +39,12 @@ export default function Stories() {
         localStorage.removeItem('token') // Supprimer le token invalide
         localStorage.removeItem('user')
         router.push('/login')
-        throw new Error(&apos;Session expirée, veuillez vous reconnecter&apos;)
+        throw new Error('Session expirée, veuillez vous reconnecter')
       }
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || &apos;Erreur lors du chargement des stories&apos;)
+        throw new Error(errorData.message || 'Erreur lors du chargement des stories')
       }
       
       const data = await response.json()
@@ -86,7 +86,7 @@ export default function Stories() {
         body: formData
       })
 
-      if (!response.ok) throw new Error(&apos;Erreur lors de la création de la story&apos;)
+      if (!response.ok) throw new Error('Erreur lors de la création de la story')
       
       fetchStories() // Rafraîchir les stories
     } catch (error) {

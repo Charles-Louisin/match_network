@@ -22,7 +22,7 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
       setIsModalOpen(true)
       setError(null)
     } else {
-      toast.error(&apos;Veuillez sélectionner une image&apos;)
+      toast.error('Veuillez sélectionner une image')
     }
   }
 
@@ -34,13 +34,13 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
         setSelectedImage(null)
         setPreviewUrl(null)
         setError(null)
-        toast.success(&apos;Photo de profil mise à jour avec succès&apos;)
+        toast.success('Photo de profil mise à jour avec succès')
       } catch (error) {
-        setError(error.message || &apos;Erreur lors de l&apos;upload de l&apos;image&apos;)
-        console.error(&apos;Erreur lors de l&apos;upload:&apos;, error)
+        setError(error.message || `Erreur lors de l'upload de l'image`)
+        console.error('Erreur lors de l&apos;upload:', error)
       }
     } else {
-      throw new Error(&apos;Non authentifié&apos;)
+      throw new Error('Non authentifié')
     }
   }
 

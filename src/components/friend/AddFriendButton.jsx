@@ -76,8 +76,8 @@ const AddFriendButton = ({ targetUserId, onRequestSent }) => {
       router.refresh();
     } catch (error) {
       console.error('Error sending friend request:', error);
-      throw new Error(data.message || &apos;Erreur lors de l&apos;envoi de la demande&apos;);
-      toast.error(error.message || &apos;Une erreur est survenue&apos;);
+      throw new Error(data.message || 'Erreur lors de l&apos;envoi de la demande');
+      toast.error(error.message || 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }

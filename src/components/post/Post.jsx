@@ -95,7 +95,7 @@ export default function Post({ post, onPostUpdate }) {
         console.log(updatedPost.likes?.length);
       } else {
         const error = await response.json()
-        throw new Error(error.message || &apos;Erreur lors du like&apos;)
+        throw new Error(error.message || 'Erreur lors du like')
       }
     } catch (error) {
       console.error('Erreur like:', error)
@@ -111,7 +111,7 @@ export default function Post({ post, onPostUpdate }) {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error(&apos;Vous devez être connecté pour commenter&apos;);
+        throw new Error('Vous devez être connecté pour commenter');
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/comment`, {
@@ -127,7 +127,7 @@ export default function Post({ post, onPostUpdate }) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || &apos;Erreur lors de l&apos;ajout du commentaire&apos;);
+        throw new Error(error.message || 'Erreur lors de l&apos;ajout du commentaire');
       }
 
       const newComment = await response.json();
