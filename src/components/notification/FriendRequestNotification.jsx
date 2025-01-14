@@ -10,20 +10,20 @@ const FriendRequestNotification = ({ request, onActionComplete }) => {
   const handleAccept = async () => {
     try {
       await acceptFriendRequest(request._id);
-      toast.success(&apos;Demande d&apos;ami acceptée !&apos;);
+      toast.success(`Demande d'ami acceptée !`);
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error(&apos;Erreur lors de l&apos;acceptation de la demande&apos;);
+      toast.error(`Erreur lors de l'acceptation de la demande`);
     }
   };
 
   const handleReject = async () => {
     try {
       await rejectFriendRequest(request._id);
-      toast.success(&apos;Demande d&apos;ami refusée&apos;);
+      toast.success(`Demande d'ami refusée`);
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error(&apos;Erreur lors du refus de la demande&apos;);
+      toast.error('Erreur lors du refus de la demande');
     }
   };
 
