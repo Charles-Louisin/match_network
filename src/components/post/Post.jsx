@@ -21,17 +21,19 @@ const Post = ({ post, onPostUpdate }) => {
   const [isLoadingComments, setIsLoadingComments] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        setUser(userData);
-        if (post.likes) {
-          setIsLiked(post.likes.includes(userData.id));
+    setIsClient(true)
+    if (typeof window !== 'undefined') {
+      const userStr = window.localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+          if (post.likes) {
+            setIsLiked(post.likes.includes(userData.id));
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
         }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
       }
     }
   }, [post.likes]);
@@ -50,7 +52,7 @@ const Post = ({ post, onPostUpdate }) => {
           return;
         }
 
-        const token = localStorage.getItem("token");
+        const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
         if (!token) return;
 
         const response = await fetch(
@@ -103,7 +105,7 @@ const Post = ({ post, onPostUpdate }) => {
         return;
       }
 
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
       if (!token) {
         toast.error("Vous devez être connecté pour liker");
         return;
@@ -171,7 +173,7 @@ const Post = ({ post, onPostUpdate }) => {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem("token");
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
       if (!token) {
         throw new Error("Vous devez être connecté pour commenter");
       }
@@ -214,7 +216,7 @@ const Post = ({ post, onPostUpdate }) => {
       
       try {
         setIsLoadingComments(true);
-        const token = localStorage.getItem("token");
+        const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
         if (!token) return;
 
         const response = await fetch(
@@ -272,6 +274,10 @@ const Post = ({ post, onPostUpdate }) => {
       </div>
     );
   };
+
+  if (!isClient) {
+    return null; // ou un composant de chargement
+  }
 
   return (
     <div className={styles.post}>

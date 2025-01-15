@@ -11,12 +11,13 @@ import styles from './page.module.css'
 
 export default function Home() {
   const router = useRouter()
+  const [isClient, setIsClient] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const user = JSON.parse(localStorage.getItem('user'))
-    console.log(token);
+    setIsClient(true)
+    const token = window?.localStorage?.getItem('token')
+    const user = window?.localStorage?.getItem('user')
     if (!token || !user) {
       router.push('/login')
     }
@@ -24,6 +25,10 @@ export default function Home() {
 
   const handlePostCreated = () => {
     setRefreshKey(prevKey => prevKey + 1)
+  }
+
+  if (!isClient) {
+    return null // ou un loader
   }
 
   return (
