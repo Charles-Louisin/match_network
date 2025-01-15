@@ -341,8 +341,9 @@ const Post = ({ post, onPostUpdate }) => {
           onClick={handleLike}
         >
           <FaThumbsUp className={`${styles.buttonIcon} ${isLiked ? styles.liked : ''}`} />
-          J'aime
+          J&apos;aime
         </button>
+        
         <button
           type="button"
           className={styles.actionButton}
