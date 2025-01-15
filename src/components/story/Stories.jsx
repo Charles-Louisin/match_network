@@ -1,18 +1,45 @@
-import React from 'react';
-import Image from 'next/image';
+'use client';
+
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { FaPlus } from 'react-icons/fa';
-import styles from './Stories.module.css';
+import styles from "./Stories.module.css";
+import { toast } from "react-hot-toast";
 
 const Stories = () => {
-  const [stories, setStories] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [isClient, setIsClient] = useState(false);
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const fetchStories = React.useCallback(async () => {
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== 'undefined') {
+      const userStr = window.localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+        }
+      }
+    }
+    fetchStories();
+  }, []);
+
+  const getImageUrl = (path) => {
+    if (!path) return '/images/default-avatar.jpg';
+    if (path.startsWith('http')) return path;
+    return `${process.env.NEXT_PUBLIC_API_URL}${path}`;
+  };
+
+  const fetchStories = useCallback(async () => {
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
+      if (typeof window === 'undefined') return;
+      
+      const token = window.localStorage.getItem("token");
       if (!token) {
         throw new Error('Vous devez être connecté pour voir les stories');
       }
@@ -24,8 +51,8 @@ const Stories = () => {
       });
 
       if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        window.localStorage.removeItem('token');
+        window.localStorage.removeItem('user');
         throw new Error('Session expirée, veuillez vous reconnecter');
       }
 
@@ -49,6 +76,7 @@ const Stories = () => {
           id: story.id,
           username: story.user.username,
           image: story.image,
+          userImage: story.user.avatar,
           hasStory: story.hasStory
         }))
       ]);
@@ -58,15 +86,7 @@ const Stories = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  React.useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('Vous devez être connecté pour voir les stories');
-    }
-    fetchStories();
-  }, [fetchStories]);
+  }, [user]);
 
   const handleCreateStory = async (e) => {
     const file = e.target.files[0];
@@ -76,21 +96,32 @@ const Stories = () => {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:5000/api/stories', {
+      const token = window.localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Vous devez être connecté pour créer une story');
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
 
       if (!response.ok) throw new Error('Erreur lors de la création de la story');
 
-      fetchStories(); // Rafraîchir les stories
+      toast.success('Story créée avec succès');
+      fetchStories();
     } catch (error) {
       console.error(error.message);
+      toast.error(error.message);
     }
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   if (error) return <div className={styles.error}>{error}</div>;
   if (loading) return <div className={styles.loading}>Chargement...</div>;
@@ -101,7 +132,7 @@ const Stories = () => {
       <div className={styles.storyItem}>
         <div className={styles.createStoryContainer}>
           <Image
-            src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
+            src={getImageUrl(user?.avatar)}
             alt="Votre photo"
             width={80}
             height={80}
@@ -126,7 +157,7 @@ const Stories = () => {
           {story.isCreate ? (
             <div className={styles.createStoryContainer}>
               <Image
-                src={story.user.image ? `${process.env.NEXT_PUBLIC_API_URL}${story.user.image}` : '/images/default-avatar.jpg'}
+                src={getImageUrl(story.user.image)}
                 alt={story.user.name}
                 width={80}
                 height={80}
@@ -136,7 +167,7 @@ const Stories = () => {
           ) : (
             <div className={`${styles.storyImageContainer} ${!story.hasStory && styles.noStory}`}>
               <Image
-                src={story.image}
+                src={getImageUrl(story.userImage)}
                 alt={story.username}
                 width={80}
                 height={80}
