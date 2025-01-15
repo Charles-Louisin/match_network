@@ -1,130 +1,111 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaThumbsUp, FaComment, FaPaperPlane } from "react-icons/fa";
 import TimeAgo from "../utils/TimeAgo";
 import styles from "./Post.module.css";
+import { toast } from 'react-hot-toast';
 
-export default function Post({ post, onPostUpdate }) {
+const Post = ({ post, onPostUpdate }) => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState(null);
-  const [postUser, setPostUser] = useState(null);
+  const [postUser, setPostUser] = useState(post.user || null);
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likes?.length);
+  const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState(post.comments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        if (post.likes) {
+          setIsLiked(post.likes.includes(userData.id));
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, [post.likes]);
 
   useEffect(() => {
     const fetchPostUser = async () => {
+      if (!post.user || (typeof post.user === 'object' && post.user.username && post.user.avatar)) {
+        setPostUser(post.user);
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
-        
-        // Si l'utilisateur est déjà un objet complet avec username et avatar
-        if (post.user && typeof post.user === 'object' && post.user.username && post.user.avatar) {
-          setPostUser(post.user);
+        const userId = typeof post.user === 'string' ? post.user : post.user?.id || post.user?._id;
+        if (!userId) {
+          console.error('User ID not found in post:', post);
           return;
         }
 
-        // Récupérer l'ID de l'utilisateur
-        const userId = typeof post.user === 'string' ? post.user : post.user?._id;
-        if (!token || !userId) return;
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
             },
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch user");
-        }
+        if (!response.ok) throw new Error("Failed to fetch user data");
 
         const userData = await response.json();
         setPostUser(userData);
       } catch (error) {
         console.error("Error fetching post user:", error);
+        setPostUser({
+          username: "Utilisateur inconnu",
+          avatar: "/images/default-avatar.jpg"
+        });
       }
     };
 
     fetchPostUser();
   }, [post.user]);
 
-  useEffect(() => {
-    setIsClient(true);
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const parsedUser = JSON.parse(userStr);
-      setUser(parsedUser);
-      setIsLiked(post.likes?.includes(parsedUser._id));
+  const checkIfLiked = useCallback((currentUser, postLikes) => {
+    if (!currentUser || !postLikes) return false;
+    const userId = currentUser.id; 
+    return Array.isArray(postLikes) && postLikes.includes(userId);
+  }, []);
+
+  const handleLike = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-  }, [post.likes]);
-
-  useEffect(() => {
-    console.log("Post data:", post); // Debug log
-    console.log("Post user data:", post.user); // Debug log
-  }, [post]);
-
-  useEffect(() => {
-    const fetchPostData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        console.log("Token utilisé:", token);
-        if (!token) return;
-
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`;
-        console.log("Fetching post data from:", apiUrl);
-
-        const response = await fetch(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const updatedPost = await response.json();
-          setLikesCount(updatedPost.likes?.length || 0);
-          if (updatedPost.comments) {
-            const processedComments = updatedPost.comments.map((comment) => ({
-              ...comment,
-              user: comment.user || updatedPost.user,
-            }));
-            setComments(processedComments);
-          }
-        }
-      } catch (error) {
-        const response = error.response;
-        const errorData = await response.json();
-        console.error("Error fetching post data:", errorData);
-        throw new Error(
-          errorData.message || "Erreur lors de la récupération du post"
-        );
-      }
-    };
-
-    if (showComments) {
-      fetchPostData();
-    }
-  }, [post._id, showComments]);
-
-  const isMyLike = (likeId) => {
-    return user && likeId === user._id;
-  };
-
-  const handleLike = async () => {
+    
     try {
+      if (!user) {
+        toast.error("Vous devez être connecté pour liker");
+        return;
+      }
+
+      const userId = user.id; 
+      if (!userId) {
+        console.error("User ID not found:", user);
+        toast.error("Erreur: ID utilisateur non trouvé");
+        return;
+      }
+
       const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user"));
       if (!token) {
-        alert("Vous devez être connecté pour liker");
+        toast.error("Vous devez être connecté pour liker");
         return;
       }
 
@@ -136,28 +117,57 @@ export default function Post({ post, onPostUpdate }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userId: user._id }),
+          body: JSON.stringify({ userId }),
         }
       );
 
       if (response.ok) {
         const updatedPost = await response.json();
-        setIsLiked(!isLiked);
-        setLikesCount(updatedPost.likes?.length || 0);
-        console.log(updatedPost.likes?.length);
+        const newIsLiked = checkIfLiked(user, updatedPost.likes);
+        setIsLiked(newIsLiked);
+        setLikesCount(updatedPost.likes.length);
       } else {
         const error = await response.json();
         throw new Error(error.message || "Erreur lors du like");
       }
     } catch (error) {
       console.error("Erreur like:", error);
-      alert(error.message);
+      toast.error(error.message);
+    }
+  };
+
+  const getLikeText = () => {
+    if (!user) return "Connectez-vous pour liker";
+    
+    if (likesCount === 0) {
+      return "Soyez le premier à liker";
+    }
+    
+    if (isLiked) {
+      if (likesCount === 1) {
+        return "Vous avez liké";
+      } else if (likesCount === 2) {
+        return "Vous et une autre personne avez liké";
+      } else {
+        return `Vous et ${likesCount - 1} autres personnes avez liké`;
+      }
+    } else {
+      if (likesCount === 1) {
+        return "1 personne a liké";
+      } else {
+        return `${likesCount} personnes ont liké`;
+      }
     }
   };
 
   const handleComment = async (e) => {
     e.preventDefault();
-    if (!isClient || !user || !comment.trim() || isSubmitting) return;
+    if (!comment.trim() || isSubmitting) return;
+
+    if (!user) {
+      toast.error("Vous devez être connecté pour commenter");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -182,93 +192,115 @@ export default function Post({ post, onPostUpdate }) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(
-          error.message || "Erreur lors de l&apos;ajout du commentaire"
-        );
+        throw new Error(error.message || "Erreur lors de l'ajout du commentaire");
       }
 
       const newComment = await response.json();
-      console.log("New comment received:", newComment);
-
-      // Ajouter le nouveau commentaire à la liste
-      setComments((prevComments) => [...prevComments, newComment]);
+      setComments(prevComments => [newComment, ...prevComments]);
       setComment("");
+      toast.success("Commentaire ajouté avec succès");
 
-      // Notifier le parent pour rafraîchir les données si nécessaire
-      if (onPostUpdate) {
-        onPostUpdate();
-      }
     } catch (error) {
       console.error("Erreur commentaire:", error);
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Rendu des commentaires
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!showComments) return;
+      
+      try {
+        setIsLoadingComments(true);
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erreur lors du chargement des commentaires");
+        }
+
+        const data = await response.json();
+        if (data.comments) {
+          setComments(data.comments);
+        }
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+        toast.error("Impossible de charger les commentaires");
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
+    fetchComments();
+  }, [post._id, showComments]);
+
   const renderComment = (comment, index) => {
     return (
       <div key={index} className={styles.comment}>
-        <Link
-          href={`/profile/${comment.user?._id}`}
-          className={styles.commentUserInfo}
-        >
+        <Link href={`/profile/${typeof comment.user === 'string' ? comment.user : comment.user?.id || comment.user?._id}`} className={styles.commentUserInfo}>
           <Image
             src={comment.user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
             alt={comment.user?.username || "User"}
-            width={32}
-            height={32}
+            width={40}
+            height={40}
             className={styles.commentAvatar}
-            onError={(e) => {
-              if (!e.target.src.includes("/images/default-avatar.jpg")) {
-                e.target.src = "/images/default-avatar.jpg";
-              }
-            }}
           />
-          <div className={styles.commentContent}>
-            <span className={styles.commentUsername}>
-              {comment.user.username}
-              <span className={styles.commentTime}>
-                <TimeAgo timestamp={comment.createdAt} />
-              </span>
-            </span>
-
-            <span className={styles.commentText}>{comment.content}</span>
-          </div>
         </Link>
+        <div className={styles.commentContent}>
+          <div className={styles.commentHeader}>
+            <span className={styles.commentUsername}>
+              {comment.user?.username}
+            </span>
+            <span className={styles.commentTime}>
+              <TimeAgo timestamp={comment.createdAt} />
+            </span>
+          </div>
+          <p className={styles.commentText}>{comment.content}</p>
+        </div>
       </div>
     );
   };
 
   return (
     <div className={styles.post}>
-      <div className={styles.header}>
-        <Link
-          href={`/profile/${postUser?._id}`}
+      {/* En-tête du post */}
+      <div className={styles.postHeader}>
+        <Link 
+          href={`/profile/${typeof postUser === 'string' ? postUser : postUser?.id || postUser?._id}`} 
           className={styles.userInfo}
         >
           <Image
             src={postUser?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${postUser.avatar}` : "/images/default-avatar.jpg"}
-            alt={postUser?.username || "User"}
+            alt={postUser?.username || "Utilisateur"}
             width={40}
             height={40}
             className={styles.avatar}
             onError={(e) => {
-              if (!e.target.src.includes("/images/default-avatar.jpg")) {
-                e.target.src = "/images/default-avatar.jpg";
-              }
+              e.target.src = "/images/default-avatar.jpg";
             }}
           />
-          <div>
-            <h3>{postUser?.username || "User"}</h3>
-            <span className={styles.postTime}>
+          <div className={styles.userDetails}>
+            <span className={styles.username}>{postUser?.username || "Utilisateur inconnu"}</span>
+            <span className={styles.postDate}>
               <TimeAgo timestamp={post.createdAt} />
             </span>
           </div>
         </Link>
       </div>
 
+      {/* Contenu du post */}
       {post.content && (
         <div className={styles.content}>
           <p>{post.content}</p>
@@ -281,93 +313,99 @@ export default function Post({ post, onPostUpdate }) {
             src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
             alt="Post image"
             width={500}
-            height={300}
-            style={{ objectFit: "contain", maxHeight: "400px", width: "100%" }}
+            height={500}
+            className={styles.postImage}
+            priority
           />
         </div>
       )}
-      <div className={styles.actions}>
-        <div className={styles.likeContainer}>
-          <div className={styles.postFooter}>
-            {/* Affichage du nombre de likes et commentaires */}
-            <div className={styles.interactionStats}>
-              <div className={styles.likeSummary}>
-                <FaThumbsUp className={`${styles.thumbIcon} ${styles.liked}`} />
-                <span>
-                  {likesCount === 0
-                    ? "Soyez le premier à aimer"
-                    : isMyLike
-                    ? likesCount === 1
-                      ? "Vous aimez"
-                      : likesCount === 2
-                      ? "Vous et 1 autre personne"
-                      : `Vous et ${likesCount - 1} autres personnes`
-                    : `${likesCount} ${
-                        likesCount === 1 ? "personne aime" : "personnes aiment"
-                      }`}
-                </span>
-              </div>
-              <div className={styles.commentSummary}>
-                <span>
-                  {comments.length}{" "}
-                  {comments.length === 1 ? "commentaire" : "commentaires"}
-                </span>
-              </div>
-            </div>
-            {/* Boutons d'action */}
-            <div className={styles.actionButtons}>
-              <button
-                className={`${styles.actionButton} ${
-                  isLiked ? styles.liked : ""
-                }`}
-                onClick={handleLike}
-              >
-                <FaThumbsUp className={styles.buttonIcon} />
-                <span>J&apos;aime</span>
-              </button>
-              <button
-                className={styles.actionButton}
-                onClick={() => setShowComments(!showComments)}
-              >
-                <FaComment className={styles.buttonIcon} />
-                <span>Commenter</span>
-              </button>
-            </div>
-          </div>
-          {showComments && (
-            <div className={styles.comments}>
-              {comments.map((comment, index) => renderComment(comment, index))}
-              <form onSubmit={handleComment} className={styles.commentForm}>
-                <Image
-                  src={
-                    user?.avatar
-                      ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`
-                      : "/images/default-avatar.jpg"
-                  }
-                  alt="Your avatar"
-                  width={32}
-                  height={32}
-                  className={styles.commentAvatar}
-                />
-                <input
-                  type="text"
-                  placeholder="Écrire un commentaire..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  className={styles.commentInput}
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !comment.trim()}
-                  className={styles.sendButton}
-                >
-                  <FaPaperPlane />
-                </button>
-              </form>
-            </div>
-          )}
+
+      {/* Section des interactions */}
+      <div className={styles.interactionStats}>
+        <div className={styles.likeSummary}>
+          <FaThumbsUp 
+            className={`${styles.thumbIcon} ${isLiked ? styles.liked : ''}`}
+          />
+          <span>{getLikeText()}</span>
+        </div>
+        <div className={styles.commentSummary}>
+          {comments.length} commentaire{comments.length !== 1 ? 's' : ''}
         </div>
       </div>
+
+      {/* Boutons d'action */}
+      <div className={styles.actionButtons}>
+        <button
+          type="button"
+          className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
+          onClick={handleLike}
+        >
+          <FaThumbsUp className={`${styles.buttonIcon} ${isLiked ? styles.liked : ''}`} />
+          J'aime
+        </button>
+        <button
+          type="button"
+          className={styles.actionButton}
+          onClick={() => setShowComments(!showComments)}
+        >
+          <FaComment className={styles.buttonIcon} />
+          Commenter
+        </button>
+      </div>
+
+      {/* Section des commentaires */}
+      {showComments && (
+        <div className={styles.comments}>
+          <form onSubmit={handleComment} className={styles.commentForm}>
+            <Image
+              src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+              alt="Your avatar"
+              width={32}
+              height={32}
+              className={styles.commentAvatar}
+              onError={(e) => {
+                e.target.src = "/images/default-avatar.jpg";
+              }}
+            />
+            <div className={styles.commentInputWrapper}>
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Écrivez un commentaire..."
+                className={styles.commentInput}
+                disabled={isSubmitting}
+              />
+              <button
+                type="submit"
+                className={`${styles.commentSubmit} ${isSubmitting ? styles.loading : ''}`}
+                disabled={!comment.trim() || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className={styles.spinnerSmall}></div>
+                ) : (
+                  <FaPaperPlane />
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className={styles.commentsList}>
+            {isLoadingComments ? (
+              <div className={styles.loadingComments}>
+                <div className={styles.spinner}></div>
+                <span>Chargement des commentaires...</span>
+              </div>
+            ) : comments.length > 0 ? (
+              comments.map((comment, index) => renderComment(comment, index))
+            ) : (
+              <p className={styles.noComments}>Aucun commentaire pour le moment</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default Post;

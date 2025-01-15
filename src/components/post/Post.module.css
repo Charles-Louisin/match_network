@@ -1,28 +1,56 @@
 .post {
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
-  padding: 1rem;
+  overflow: hidden;
 }
 
 .postHeader {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  padding: 12px;
 }
 
-.userInfo, .commentUserInfo {
+.userInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
   color: inherit;
-  transition: opacity 0.2s;
 }
 
-.userInfo:hover, .commentUserInfo:hover {
+.userInfo:hover {
   opacity: 0.8;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 12px;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.postDate {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.moreOptions {
+  background: none;
+  border: none;
+  color: #65676b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
 }
 
 .avatar {
@@ -32,212 +60,276 @@
   object-fit: cover !important;
 }
 
-.commentAvatar {
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
-}
-
-.userDetails {
-  display: flex;
-  flex-direction: column;
-}
-
-.username {
-  font-weight: 600;
+.content {
+  padding: 0 12px 12px;
   color: #1a1a1a;
 }
 
-.postDate {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.content {
-  margin-bottom: 1rem;
-}
-
 .imageContainer {
-  position: relative;
   width: 100%;
-  max-height: 400px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f2f5;
+  min-height: 300px;
+  max-height: 600px;
   overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 1rem;
 }
 
 .postImage {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  max-height: 400px;
-}
-
-.actions {
-  border-top: 1px solid #eee;
-  padding-top: 0.5rem;
-}
-
-.comments {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: var(--background-secondary);
-  border-radius: 8px;
-}
-
-.comment {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: white;
-  border-radius: 8px;
-}
-
-.commentContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.commentUsername {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.commentText {
-  color: var(--text-primary);
-}
-
-.commentTime {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.commentHeader {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-  line-height: 1.2;
-}
-
-.commentForm {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background-color: white;
-  border-radius: 20px;
-}
-
-.commentInput {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  background: transparent;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-}
-
-.commentInput:focus {
-  outline: none;
-}
-
-.sendButton {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.sendButton:hover {
-  color: var(--primary-hover);
-}
-
-.sendButton:disabled {
-  color: var(--text-secondary);
-  cursor: not-allowed;
-}
-
-.postFooter {
-  padding: 12px;
-  border-top: 1px solid var(--border-color);
+  width: 100% !important;
+  height: auto !important;
+  max-height: 600px !important;
+  object-fit: contain !important;
 }
 
 .interactionStats {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 0 4px;
+  padding: 10px 12px;
+  color: #65676b;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ced0d4;
 }
 
 .likeSummary, .commentSummary {
   display: flex;
   align-items: center;
+  gap: 4px;
+}
+
+.likeSummary {
+  display: flex;
+  align-items: center;
   gap: 6px;
+  color: #65676b;
   font-size: 0.9rem;
-  color: var(--text-secondary);
 }
 
 .thumbIcon {
-  font-size: 0.9rem;
-  color: var(--primary-color);
+  font-size: 1.1rem;
+  color: #65676b;
+}
+
+.thumbIcon.liked {
+  color: #1877f2;
 }
 
 .actionButtons {
   display: flex;
-  gap: 8px;
-  padding: 4px 0;
-  border-top: 1px solid var(--border-color);
+  padding: 4px 12px;
+  border-bottom: 1px solid #ced0d4;
 }
 
 .actionButton {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px;
   background: none;
   border: none;
-  border-radius: 8px;
-  color: var(--text-secondary);
+  color: #65676b;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .actionButton:hover {
-  background-color: var(--background-hover);
+  background-color: #f2f2f2;
+  border-radius: 4px;
 }
 
 .actionButton.liked {
-  color: var(--primary-color);
+  color: #1877f2;
+}
+
+.actionButton.liked .buttonIcon {
+  color: #1877f2;
 }
 
 .buttonIcon {
   font-size: 1.1rem;
 }
 
-.likeContainer {
-  display: flex;
-  flex-direction: column;
+.comments {
+  padding: 12px;
+  background-color: white;
 }
 
-.likeContainer2 {
+.commentForm {
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.commentInputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
   align-items: center;
 }
 
-.actionButton.unLiked {
+.commentInput {
+  width: 100%;
+  padding: 8px 40px 8px 12px;
+  border: none;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.commentInput:disabled {
+  background: #e4e6eb;
+  cursor: not-allowed;
+}
+
+.commentSubmit {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #1877f2;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.commentSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.commentSubmit.loading {
+  cursor: wait;
+}
+
+.spinnerSmall {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #1877f2;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loadingComments {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #65676b;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #1877f2;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.noComments {
+  text-align: center;
+  color: #65676b;
+  padding: 20px;
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.commentAvatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sendButton {
+  background: none;
+  border: none;
+  color: #1877f2;
+  cursor: pointer;
+  padding: 8px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.sendButton:hover {
+  opacity: 1;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+.commentUserInfo {
+  display: flex;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+}
+
+.commentContent {
+  margin-left: 12px;
+  flex: 1;
+  background-color: #f0f2f5;
+  padding: 8px 12px;
+  border-radius: 18px;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.commentUsername {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.commentTime {
+  font-size: 0.8rem;
   color: var(--text-secondary);
+}
+
+.commentText {
+  font-size: 0.9rem;
+  color: #050505;
+  margin: 0;
+  line-height: 1.3;
 }
