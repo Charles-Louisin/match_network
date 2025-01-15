@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Stories from '@/components/story/Stories'
@@ -11,6 +11,7 @@ import styles from './page.module.css'
 
 export default function Home() {
   const router = useRouter()
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -21,14 +22,18 @@ export default function Home() {
     }
   }, [router])
 
+  const handlePostCreated = () => {
+    setRefreshKey(prevKey => prevKey + 1)
+  }
+
   return (
     <>
       <Navbar />
       <main className={styles.main}>
         <div className={styles.feedContainer}>
           <Stories />
-          <CreatePost />
-          <PostList />
+          <CreatePost onPostCreated={handlePostCreated} />
+          <PostList key={refreshKey} />
         </div>
 
         <aside className={styles.sidebar}>
