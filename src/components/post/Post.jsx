@@ -343,6 +343,7 @@ const Post = ({ post, onPostUpdate }) => {
           <FaThumbsUp className={`${styles.buttonIcon} ${isLiked ? styles.liked : ''}`} />
           J&apos;aime
         </button>
+        
         <button
           type="button"
           className={styles.actionButton}
