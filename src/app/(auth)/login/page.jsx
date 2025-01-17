@@ -44,49 +44,45 @@ export default function Login() {
     }
 
     try {
+      console.log('Sending login request to:', `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        let errorMessage = 'Une erreur est survenue';
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
         
-        // Messages d'erreur spécifiques basés sur le code d'erreur
-        switch (response.status) {
-          case 401:
-            errorMessage = 'Email ou mot de passe incorrect';
-            break;
-          case 404:
-            errorMessage = 'Compte non trouvé. Veuillez vous inscrire';
-            break;
-          case 422:
-            errorMessage = 'Format d\'email invalide';
-            break;
-          default:
-            errorMessage = data.message || 'Erreur de connexion';
+        let errorMessage = 'Une erreur est survenue';
+        try {
+          const parsedError = JSON.parse(errorData);
+          errorMessage = parsedError.message || errorMessage;
+        } catch (e) {
+          console.error('Error parsing error response:', e);
         }
         
         throw new Error(errorMessage);
       }
 
-      // Stocker les informations de l'utilisateur
+      const data = await response.json();
+      console.log('Login successful:', data);
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Afficher un message de succès avec le nom d'utilisateur
-      toast.success(`Bienvenue ${data.user.username} ! Vous allez être redirigé vers la page d'accueil.`);
-
-      // Rediriger après un court délai
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
+      toast.success(`Bienvenue ${data.user.username} !`);
+      router.push('/');
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.message);
       toast.error(error.message);
     } finally {
