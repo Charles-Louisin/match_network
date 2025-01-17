@@ -61,7 +61,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleRemoveFriend}
         title="Supprimer cet ami"
-        message="Êtes-vous sûr de vouloir supprimer cet ami ? Cela supprimera également toutes les demandes d'ami associées."
+        message="Êtes-vous sûr de vouloir supprimer cet ami ?"
       />
     </>
   );

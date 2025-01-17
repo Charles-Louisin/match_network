@@ -191,7 +191,7 @@ const FriendsPage = () => {
 
     return (
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Demandes d'amitié</h2>
+        <h2 className={styles.sectionTitle}>Demandes d&apos;amitié</h2>
         <div className={styles.requestsGrid}>
           {filteredPendingRequests.map((request) => {
             const otherUser = request.isCurrentUserSender ? request.recipient : request.sender;

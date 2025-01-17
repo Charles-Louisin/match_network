@@ -134,7 +134,7 @@ export default function Register() {
 
           <div className={styles.inputGroup}>
             <label htmlFor="username" className={styles.label}>
-              Nom d'utilisateur
+              Nom d&apos;utilisateur
             </label>
             <input
               type="text"
