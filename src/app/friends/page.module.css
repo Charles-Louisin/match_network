@@ -1,179 +1,196 @@
 .container {
   min-height: 100vh;
-  background-color: var(--background-color);
-  padding-top: 64px; /* Hauteur de la navbar */
+  background-color: var(--background-secondary);
 }
 
 .content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  padding: 20px;
+  padding-top: 80px;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--text-primary);
 }
 
 .section {
-  background: var(--card-background);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin: 2rem 0;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  position: relative;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--success-color, #48bb78);
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(72, 187, 120, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0);
-  }
-}
-
-.requestsGrid,
-.friendsGrid {
+.requestsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.requestCard,
-.friendCard {
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
+.requestCard {
+  background-color: var(--background-secondary);
   border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.2s ease;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+  transition: transform 0.2s ease;
 }
 
-.requestCard:hover,
-.friendCard:hover {
+.requestCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-color, #3182ce);
 }
 
 .userInfo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
   text-decoration: none;
   color: inherit;
-  padding: 1rem;
-  background: var(--card-background);
-  flex: 1;
 }
 
-.userInfo:hover {
-  background: var(--hover-background, rgba(0, 0, 0, 0.02));
+.avatarContainer {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .username {
   font-weight: 600;
-  color: var(--text-color);
-  font-size: 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.requestStatus {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 .requestActions {
   display: flex;
   gap: 0.5rem;
-  padding: 1rem;
-  background: var(--card-background);
-  border-top: 1px solid var(--border-color);
+  justify-content: center;
 }
 
 .acceptButton,
 .rejectButton {
-  flex: 1;
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  transition: opacity 0.2s ease;
 }
 
 .acceptButton {
-  background-color: var(--success-color, #48bb78);
+  background-color: var(--primary-color);
   color: white;
-}
-
-.acceptButton:hover {
-  background-color: var(--success-hover-color, #38a169);
-  transform: translateY(-1px);
 }
 
 .rejectButton {
-  background-color: var(--danger-color, #f56565);
-  color: white;
+  background-color: var(--background-hover);
+  color: var(--text-primary);
 }
-
+.acceptButton:hover,
 .rejectButton:hover {
-  background-color: var(--danger-hover-color, #e53e3e);
-  transform: translateY(-1px);
+  opacity: 0.9;
+}
+.rejectButton:hover {
+  background-color: #6c757d97;
+  color: #fff;
 }
 
-.loading {
+.acceptButton:disabled,
+.rejectButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Style pour la barre de recherche */
+.searchContainer {
+  margin-bottom: 1rem;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 200px;
-  color: var(--text-color);
-  font-size: 1.125rem;
+  gap: 0.5rem;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
-.emptyMessage {
-  text-align: center;
-  color: var(--text-secondary, #718096);
-  padding: 2rem;
-  font-size: 0.875rem;
-  background: var(--background-color);
-  border: 1px dashed var(--border-color);
-  border-radius: 8px;
-  margin: 1rem 0;
+.searchInput {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Style pour la liste des amis */
+.friendsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.friendCard {
+  background-color: var(--background-secondary);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: transform 0.2s ease;
+  width: fit-content;
+}
+
+.friendCard:hover {
+  transform: translateY(-2px);
+}
+
+.friendInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Media queries pour le responsive */
+@media (max-width: 768px) {
+  .requestsGrid,
+  .friendsList {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .requestsGrid,
+  .friendsList {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -218,25 +235,49 @@
 
 @media (max-width: 640px) {
   .container {
-    padding-top: 56px; /* Navbar plus petite sur mobile */
+    padding: 60px 0 70px 0; /* Navbar plus petite sur mobile */
+  }
+
+  .content {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .title {
+    margin-left: 10px;
     font-size: 1.5rem;
+  }
+
+  .section {
+    border-radius: 0;
+    padding: 20px 10px;
+  }
+  
+  .sectionTitle {
+    font-size: 1.0rem;
   }
 
   .requestsGrid,
   .friendsGrid {
     grid-template-columns: 1fr;
   }
+  
+  .requestCard {
+    border-radius: 10px;
+    padding: 0;
+    border: 1px solid #eee;
+  }
 
   .requestCard,
   .friendCard {
-    margin: 0 0.5rem;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
   }
-
+  
   .userInfo {
-    padding: 0.75rem;
+    padding: 0.2rem;
   }
 
   .requestActions {
@@ -248,5 +289,14 @@
   .rejectButton {
     padding: 0.5rem;
     font-size: 0.875rem;
+  }
+
+  .searchContainer {
+    margin: 10px;
+  }
+  
+  .searchInput {
+    font-size: 13px;
+    padding: 8px 10px;
   }
 }

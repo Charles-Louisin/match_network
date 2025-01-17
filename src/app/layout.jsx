@@ -1,7 +1,7 @@
 'use client';
 
 import { Inter } from 'next/font/google';
-import { Toaster } from 'sonner';
+import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { NotificationProvider } from '@/context/NotificationContext';
@@ -24,7 +24,16 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <SessionProvider>
             <NotificationProvider>
-              <Toaster position="top-center" richColors />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#333',
+                    color: '#fff',
+                  },
+                }}
+              />
               {!isAuthPage && <Navbar />}
               <main className="container">
                 {children}

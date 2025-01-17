@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { IoImageOutline } from 'react-icons/io5'
+import { FaUserTag } from 'react-icons/fa'
 import styles from './CreatePost.module.css'
 import { toast } from 'react-hot-toast'
 
@@ -145,7 +147,7 @@ export default function CreatePost({ onPostCreated }) {
       )}
 
       <div className={styles.actions}>
-        <label className={`${styles.mediaButton} ${isLoading ? styles.disabled : ''}`}>
+        <label className={`${styles.actionButton} ${isLoading ? styles.disabled : ''}`}>
           <input
             type="file"
             accept="image/*"
@@ -158,9 +160,18 @@ export default function CreatePost({ onPostCreated }) {
             disabled={isLoading}
             hidden
           />
-          <i className="fas fa-image"></i>
-          Photo
+          <IoImageOutline className={styles.icon} />
+          <span className={styles.actionButtonText}>Photo</span>
         </label>
+
+        <button 
+          className={`${styles.actionButton} ${isLoading ? styles.disabled : ''}`}
+          onClick={() => toast.error('Fonctionnalité à venir')}
+          disabled={isLoading}
+        >
+          <FaUserTag className={styles.icon} />
+          <span className={styles.actionButtonText}>Taguer</span>
+        </button>
 
         <button
           onClick={handleSubmit}

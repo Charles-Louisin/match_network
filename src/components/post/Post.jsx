@@ -149,7 +149,7 @@ const Post = ({ post, onPostUpdate }) => {
       if (likesCount === 1) {
         return "Vous avez liké";
       } else if (likesCount === 2) {
-        return "Vous et une autre personne avez liké";
+        return "Vous et 1 personne avez liké";
       } else {
         return `Vous et ${likesCount - 1} autres personnes avez liké`;
       }

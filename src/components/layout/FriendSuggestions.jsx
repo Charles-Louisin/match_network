@@ -188,50 +188,31 @@ export default function FriendSuggestions() {
           {searchTerm ? 'Aucun utilisateur trouvé' : 'Aucun utilisateur pour le moment'}
         </p>
       ) : (
-        <>
-          {filteredUsers.slice(0, displayCount).map(user => {
-            // console.log('Rendering user:', user, 'Avatar path:', user.avatar || '/default-avatar.jpg')
-            return (
-              <div key={user._id} className={styles.suggestionCard}>
-                <Link href={`/profile/${user._id}`} className={styles.userInfo}>
-                  <div className={styles.avatarContainer}>
-                    <Image
-                      src={user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
-                      alt={`${user.username}'s avatar`}
-                      width={40}
-                      height={40}
-                      className={styles.avatar}
-                      priority={true}
-                      style={{ objectFit: 'cover', borderRadius: '50%' }}
-                      onError={(e) => {
-                        {handleImageError}
-                      }}
-                    />
-                  </div>
-                  <div className={styles.userDetails}>
-                    <h3>{user.username}</h3>
-                    <span>{user.email}</span>
-                  </div>
-                </Link>
-                
-                <button 
-                  className={styles.addButton}
-                  onClick={() => handleAddFriend(user._id)}
-                >
-                  Ajouter
-                </button>
-              </div>
-            )
-          })}
-          {filteredUsers.length > displayCount && (
-            <button 
-              className={styles.showMoreButton}
-              onClick={handleShowMore}
-            >
-              Voir plus
-            </button>
-          )}
-        </>
+        <div className={styles.userList}>
+          {filteredUsers.slice(0, displayCount).map(user => (
+            <div key={user._id} className={styles.userCard}>
+              <Link href={`/profile/${user._id}`} className={styles.userInfo}>
+                <Image
+                  src={user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
+                  alt={user.username}
+                  width={40}
+                  height={40}
+                  className={styles.avatar}
+                  onError={() => handleImageError(user.username)}
+                />
+                <span className={styles.username}>{user.username}</span>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+      {filteredUsers.length > displayCount && (
+        <button 
+          className={styles.showMoreButton}
+          onClick={handleShowMore}
+        >
+          Voir plus
+        </button>
       )}
     </div>
   )

@@ -7,6 +7,8 @@ import styles from './page.module.css';
 import Avatar from '@/components/common/Avatar';
 import RemoveFriendButton from '@/components/friend/RemoveFriendButton';
 import Navbar from '@/components/layout/Navbar';
+import UsersList from '@/components/users/UsersList';
+import Image from 'next/image';
 
 const FriendsPage = () => {
   const [friends, setFriends] = useState([]);
@@ -15,6 +17,15 @@ const FriendsPage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [newRequests, setNewRequests] = useState(false);
   const [lastRequestCount, setLastRequestCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filtrer les amis en fonction de la recherche
+  const filteredFriends = friends.filter(friend => 
+    friend.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Utiliser directement les demandes en attente sans filtrage supplémentaire
+  const filteredPendingRequests = pendingRequests;
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -57,37 +68,36 @@ const FriendsPage = () => {
 
   const fetchPendingRequests = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Non authentifié');
-      }
+      console.log('Fetching pending requests...');
+      console.log('Current user from state:', currentUser);
+      const userFromStorage = JSON.parse(localStorage.getItem('user'));
+      console.log('Current user from storage:', userFromStorage);
 
-      console.log('Récupération des demandes en attente...');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/pending`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/pending`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erreur lors de la récupération des demandes en attente');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Demandes en attente reçues:', data);
-
-      // Filtrer les demandes reçues (où l'utilisateur est le destinataire)
-      const receivedRequests = data.filter(request => 
-        request.receiver === currentUser?._id && request.status === 'pending'
-      );
-
-      setPendingRequests(receivedRequests);
+      console.log('Raw data from API:', data);
+      
+      setPendingRequests(data);
+      
+      // Mettre à jour le compteur de nouvelles demandes
+      const newCount = data.length;
+      if (newCount > lastRequestCount) {
+        setNewRequests(true);
+      }
+      setLastRequestCount(newCount);
     } catch (error) {
       console.error('Error fetching pending requests:', error);
-      toast.error(error.message || 'Erreur lors de la récupération des demandes en attente');
     }
-  }, [currentUser?._id, toast]);
+  }, [currentUser, lastRequestCount]);
 
   const handleAcceptRequest = async (requestId) => {
     try {
@@ -174,6 +184,62 @@ const FriendsPage = () => {
     }
   };
 
+  const renderPendingRequests = () => {
+    if (!filteredPendingRequests || filteredPendingRequests.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Demandes d'amitié</h2>
+        <div className={styles.requestsGrid}>
+          {filteredPendingRequests.map((request) => {
+            const otherUser = request.isCurrentUserSender ? request.recipient : request.sender;
+            const actionText = request.isCurrentUserSender ? 'Demande envoyée' : '';
+
+            return (
+              <div key={request._id} className={styles.requestCard}>
+                <Link href={`/profile/${otherUser._id}`} className={styles.userInfo}>
+                  <div className={styles.avatarContainer}>
+                    <Image
+                      src={otherUser.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${otherUser.avatar}` : '/images/default-avatar.jpg'}
+                      alt={otherUser.username}
+                      width={80}
+                      height={80}
+                      className={styles.avatar}
+                      priority={true}
+                      unoptimized={true}
+                    />
+                  </div>
+                  <span className={styles.username}>{otherUser.username}</span>
+                  {actionText && <span className={styles.requestStatus}>{actionText}</span>}
+                </Link>
+                {!request.isCurrentUserSender && (
+                  <div className={styles.requestActions}>
+                    <button
+                      onClick={() => handleAcceptRequest(request._id)}
+                      className={styles.acceptButton}
+                      disabled={isLoading}
+                    >
+                      Accepter
+                    </button>
+                    <button
+                      onClick={() => handleRejectRequest(request._id)}
+                      className={styles.rejectButton}
+                      disabled={isLoading}
+                    >
+                      Refuser
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (currentUser) {
       const loadData = async () => {
@@ -211,71 +277,51 @@ const FriendsPage = () => {
       <main className={styles.content}>
         <h1 className={styles.title}>Amis</h1>
 
-        {/* Section des demandes en attente - toujours affichée pour le débogage */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            Invitations reçues
-            {newRequests && <span className={styles.badge}>{pendingRequests.length} nouvelle{pendingRequests.length > 1 ? 's' : ''}</span>}
-          </h2>
-          {pendingRequests.length > 0 ? (
-            <div className={styles.requestsGrid}>
-              {pendingRequests.map((request) => (
-                <div key={request._id} className={styles.requestCard}>
-                  <Link href={`/profile/${request.sender._id}`} className={styles.userInfo}>
+        {/* Section des demandes en attente */}
+        {renderPendingRequests()}
+
+        {/* Liste des amis */}
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Mes amis</h2>
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="Rechercher un ami..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+          {friends.length === 0 ? (
+            <p className={styles.noFriends}>Vous n&apos;avez pas encore d&apos;amis</p>
+          ) : (
+            <div className={styles.friendsContainer}>
+              {filteredFriends.map(friend => (
+                <div key={friend._id || friend.id} className={styles.friendCard}>
+                  <Link href={`/profile/${friend._id || friend.id}`} className={styles.userInfo}>
                     <Avatar
-                      src={request.sender.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${request.sender.avatar}` : null}
-                      alt={request.sender.username}
+                      src={friend.avatar}
+                      alt={friend.username}
                       size="medium"
+                      priority={true}
                     />
-                    <span className={styles.username}>{request.sender.username}</span>
+                    <span className={styles.username}>{friend.username}</span>
                   </Link>
-                  <div className={styles.requestActions}>
-                    <button
-                      onClick={() => handleAcceptRequest(request._id)}
-                      className={styles.acceptButton}
-                    >
-                      Accepter
-                    </button>
-                    <button
-                      onClick={() => handleRejectRequest(request._id)}
-                      className={styles.rejectButton}
-                    >
-                      Refuser
-                    </button>
-                  </div>
+                  <RemoveFriendButton
+                    friendId={friend._id || friend.id}
+                    onFriendRemoved={fetchFriends}
+                  />
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className={styles.emptyMessage}>
-              Aucune invitation en attente
+              {filteredFriends.length === 0 && searchQuery && (
+                <p className={styles.noResults}>Aucun ami ne correspond à votre recherche</p>
+              )}
             </div>
           )}
-        </section>
+        </div>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            Mes amis ({friends.length})
-          </h2>
-          <div className={styles.friendsGrid}>
-            {friends.map((friend) => (
-              <div key={friend._id || friend.id} className={styles.friendCard}>
-                <Link href={`/profile/${friend._id || friend.id}`} className={styles.userInfo}>
-                  <Avatar
-                    src={friend.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${friend.avatar}` : null}
-                    alt={friend.username}
-                    size="medium"
-                  />
-                  <span className={styles.username}>{friend.username}</span>
-                </Link>
-                <RemoveFriendButton
-                  friendId={friend._id || friend.id}
-                  onFriendRemoved={fetchFriends}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Liste de tous les utilisateurs */}
+        <UsersList />
       </main>
     </div>
   );

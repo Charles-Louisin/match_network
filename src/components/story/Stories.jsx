@@ -119,6 +119,10 @@ const Stories = () => {
     }
   };
 
+  const handleViewStory = (story) => {
+    // Implement story viewing logic here
+  };
+
   if (!isClient) {
     return null;
   }
@@ -128,56 +132,50 @@ const Stories = () => {
 
   return (
     <div className={styles.storiesContainer}>
-      {/* Create Story Button */}
-      <div className={styles.storyItem}>
-        <div className={styles.createStoryContainer}>
-          <Image
-            src={getImageUrl(user?.avatar)}
-            alt="Votre photo"
-            width={80}
-            height={80}
-            className={styles.storyImage}
-          />
-          <div className={styles.plusIconOverlay}>
-            <FaPlus className={styles.plusIcon} />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleCreateStory}
-              hidden
-            />
+      <div className={styles.storiesList}>
+        {stories.map((story) => (
+          <div key={story.id} className={styles.storyItem}>
+            {story.isCreate ? (
+              <>
+                <div className={styles.storyAvatarWrapper}>
+                  <Image
+                    src={getImageUrl(user?.avatar)}
+                    alt="Votre story"
+                    width={85}
+                    height={85}
+                    className={styles.storyAvatar}
+                  />
+                  <label htmlFor="storyUpload" className={styles.addStoryButton}>
+                    <FaPlus />
+                  </label>
+                  <input
+                    type="file"
+                    id="storyUpload"
+                    accept="image/*"
+                    onChange={handleCreateStory}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+                <span className={styles.storyUsername}>Creez une story</span>
+              </>
+            ) : (
+              <>
+                <div className={styles.storyAvatarWrapper}>
+                  <Image
+                    src={getImageUrl(story.userImage)}
+                    alt={story.username}
+                    width={85}
+                    height={85}
+                    className={styles.storyAvatar}
+                    onClick={() => handleViewStory(story)}
+                  />
+                </div>
+                <span className={styles.storyUsername}>{story.username}</span>
+              </>
+            )}
           </div>
-        </div>
-        <span className={styles.createStoryText}>Créer une story</span>
+        ))}
       </div>
-
-      {/* Story Items */}
-      {stories.map((story) => (
-        <div key={story.id} className={styles.storyItem}>
-          {story.isCreate ? (
-            <div className={styles.createStoryContainer}>
-              <Image
-                src={getImageUrl(story.user.image)}
-                alt={story.user.name}
-                width={80}
-                height={80}
-                className={styles.storyImage}
-              />
-            </div>
-          ) : (
-            <div className={`${styles.storyImageContainer} ${!story.hasStory && styles.noStory}`}>
-              <Image
-                src={getImageUrl(story.userImage)}
-                alt={story.username}
-                width={80}
-                height={80}
-                className={styles.storyImage}
-              />
-            </div>
-          )}
-          <span className={styles.username}>{story.isCreate ? 'Vous' : story.username}</span>
-        </div>
-      ))}
     </div>
   );
 };
