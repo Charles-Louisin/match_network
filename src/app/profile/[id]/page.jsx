@@ -3,12 +3,11 @@
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import PostList from "@/components/post/PostList";
 import PhotoUpload from "@/components/profile/PhotoUpload";
 import Avatar from "@/components/common/Avatar";
-import AddFriendButton from "@/components/friend/AddFriendButton";
-import RemoveFriendButton from "@/components/friend/RemoveFriendButton";
+import FriendActionButtons from '@/components/friend/FriendActionButtons';
 import LocationIcon from "@/components/icons/LocationIcon";
 import CalendarIcon from "@/components/icons/CalendarIcon";
 import formatDate from "@/utils/formatDate";
@@ -38,6 +37,7 @@ export default function Profile() {
     birthPlace: "",
   });
   const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [friendshipStatus, setFriendshipStatus] = useState('none');
   const [isFriend, setIsFriend] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const avatarInputRef = useRef(null);
@@ -126,22 +126,12 @@ export default function Profile() {
       setProfile(profileData);
 
       // Vérification du statut d'ami
-      const friendshipResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (friendshipResponse.ok) {
-        const friendshipData = await friendshipResponse.json();
-        setIsFriend(friendshipData.isFriend);
+      if (!isCurrentUser) {  
+        fetchFriendshipStatus();
       } else {
-        console.warn("Impossible de vérifier le statut d'ami");
+        // Si c'est le profil de l'utilisateur courant
         setIsFriend(false);
+        setFriendshipStatus('self');
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -149,7 +139,7 @@ export default function Profile() {
     } finally {
       setIsLoading(false);
     }
-  }, [params.id]);
+  }, [params.id, isCurrentUser]);
 
   useEffect(() => {
     if (params.id) {
@@ -452,6 +442,60 @@ export default function Profile() {
     }
   }, [params.id, profile]);
 
+  // Fonction pour charger le statut d'ami
+  const fetchFriendshipStatus = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFriendshipStatus(data.status);
+        setIsFriend(data.isFriend);
+
+        // Mettre à jour le localStorage pour les demandes en attente
+        if (data.status === 'pending_sent') {
+          const pendingRequests = JSON.parse(localStorage.getItem('pendingFriendRequests') || '[]');
+          if (!pendingRequests.includes(params.id)) {
+            pendingRequests.push(params.id);
+            localStorage.setItem('pendingFriendRequests', JSON.stringify(pendingRequests));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching friendship status:', error);
+    }
+  }, [params.id]);
+
+  // Gestionnaire de changement de statut d'ami
+  const handleFriendshipStatusChange = useCallback((newStatus) => {
+    setFriendshipStatus(newStatus);
+    if (newStatus === 'friends') {
+      setIsFriend(true);
+    } else if (newStatus === 'none') {
+      setIsFriend(false);
+      // Nettoyer le localStorage des demandes en attente
+      const pendingRequests = JSON.parse(localStorage.getItem('pendingFriendRequests') || '[]');
+      const updatedRequests = pendingRequests.filter(id => id !== params.id);
+      localStorage.setItem('pendingFriendRequests', JSON.stringify(updatedRequests));
+    }
+  }, [params.id]);
+
+  // Charger le statut d'ami au chargement de la page
+  useEffect(() => {
+    if (!isCurrentUser) {
+      fetchFriendshipStatus();
+    }
+  }, [isCurrentUser, fetchFriendshipStatus]);
+
   if (isLoading) {
     return <div className={styles.loadingContainer}>Loading...</div>;
   }
@@ -467,7 +511,10 @@ export default function Profile() {
         <div className={styles.coverSection}>
           {profile.coverPhoto ? (
             <Image
-              src={`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`}
+              src={
+                profile.coverPhoto
+                  ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
+                  : "/images/default-cover.jpg"}
               alt="Cover photo"
               width={1200}
               height={300}
@@ -477,7 +524,7 @@ export default function Profile() {
             <div className={styles.defaultCover} />
           )}
           {isCurrentUser && (
-            <div className={styles.cameraIcon} onClick={() => coverPhotoInputRef.current?.click()}>
+            <div className={`${styles.cameraIcon} ${styles.cameraIconMobile}`} onClick={() => coverPhotoInputRef.current?.click()}>
               <FaCamera />
               <input
                 type="file"
@@ -534,26 +581,12 @@ export default function Profile() {
                     <FaEdit /> Modifier le profil
                   </button>
                 ) : (
-                  <div className={styles.friendButtons}>
-                    {!isFriend && (
-                      <AddFriendButton
-                        targetUserId={params.id}
-                        onRequestSent={() => {
-                          toast.success("Demande d'ami envoyée!");
-                          fetchProfileData();
-                        }}
-                      />
-                    )}
-                    {isFriend && (
-                      <RemoveFriendButton
-                        targetUserId={params.id}
-                        onFriendRemoved={() => {
-                          setIsFriend(false);
-                          toast.success("Ami supprimé avec succès");
-                          fetchProfileData();
-                        }}
-                      />
-                    )}
+                  <div className={styles.friendActionContainer}>
+                    <FriendActionButtons
+                      userId={params.id}
+                      friendshipStatus={friendshipStatus}
+                      onStatusChange={handleFriendshipStatusChange}
+                    />
                   </div>
                 )}
               </div>

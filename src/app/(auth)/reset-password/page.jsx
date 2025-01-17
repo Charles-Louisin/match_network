@@ -1,96 +1,118 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import styles from './reset-password.module.css'
+import { useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import styles from '../styles/auth.module.css';
 
 export default function ResetPassword() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    newPassword: '',
-    confirmPassword: ''
-  })
-  const [error, setError] = useState('')
+    password: '',
+    confirmPassword: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
 
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
-      return
-    }
-
-    if (formData.newPassword.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères')
-      return
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas');
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const email = localStorage.getItem('resetEmail')
-      const otp = localStorage.getItem('verifiedOtp')
-
-      const response = await fetch('http://localhost:5000/api/auth/reset-password', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
-          otp,
-          newPassword: formData.newPassword
-        })
-      })
+          token: new URLSearchParams(window.location.search).get('token'),
+          password: formData.password,
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la réinitialisation')
+        throw new Error(data.message || 'Une erreur est survenue');
       }
 
-      // Nettoyer le localStorage
-      localStorage.removeItem('resetEmail')
-      localStorage.removeItem('verifiedOtp')
-      
-      // Rediriger vers la page de connexion
-      router.push('/login')
+      toast.success('Mot de passe réinitialisé avec succès !');
+      router.push('/login');
     } catch (error) {
-      setError(error.message)
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   return (
-    <div className={styles.container}>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <h1>Réinitialiser le mot de passe</h1>
-        
-        {error && <div className={styles.error}>{error}</div>}
-
-        <input
-          type="password"
-          placeholder="Nouveau mot de passe"
-          value={formData.newPassword}
-          onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <Image
+          src="/images/logo.png"
+          alt="Match Logo"
+          width={80}
+          height={80}
+          className={styles.logo}
+          priority
         />
+        <h1 className={styles.title}>Réinitialiser le mot de passe</h1>
+        <p className={styles.subtitle}>
+          Choisissez un nouveau mot de passe sécurisé
+        </p>
 
-        <input
-          type="password"
-          placeholder="Confirmer le nouveau mot de passe"
-          value={formData.confirmPassword}
-          onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-        />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.label}>
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={styles.input}
+              placeholder="••••••••"
+              required
+            />
+          </div>
 
-        <div className={styles.requirements}>
-          <p>Le mot de passe doit contenir :</p>
-          <ul>
-            <li>Au moins 6 caractères</li>
-            <li>Au moins une lettre majuscule</li>
-            <li>Au moins un chiffre</li>
-          </ul>
-        </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="confirmPassword" className={styles.label}>
+              Confirmer le mot de passe
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={styles.input}
+              placeholder="••••••••"
+              required
+            />
+          </div>
 
-        <button type="submit">Réinitialiser le mot de passe</button>
-      </form>
+          <button
+            type="submit"
+            className={styles.button}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
+          </button>
+        </form>
+      </div>
     </div>
-  )
-} 
+  );
+}

@@ -1,6 +1,6 @@
 .createPost {
   background: white;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 16px;
   margin-bottom: 20px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -82,57 +82,62 @@
 
 .actions {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid #e4e6eb;
 }
 
-.mediaButton {
+.actionButton {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
+  border: none;
   border-radius: 6px;
-  cursor: pointer;
+  background-color: #f0f2f5;
   color: #65676b;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.mediaButton:hover {
-  background: #f0f2f5;
+.actionButton:hover:not(.disabled) {
+  background-color: #e4e6eb;
 }
 
-.mediaButton.disabled {
+.actionButton.disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+.icon {
+  font-size: 1.2rem;
+}
+
+.actionButtonText {
+  display: inline;
+}
+
 .submitButton {
+  margin-left: auto;
   padding: 8px 24px;
-  border-radius: 6px;
   border: none;
-  background: #1877f2;
+  border-radius: 6px;
+  background-color: var(--primary-color);
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  min-width: 120px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.submitButton:hover {
-  background: #166fe5;
+.submitButton:hover:not(:disabled) {
+  background-color: #0056b3;
 }
 
 .submitButton:disabled {
-  background: #e4e6eb;
-  color: #bcc0c4;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -166,5 +171,31 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Media queries pour mobile */
+@media (max-width: 768px) {
+  .actionButton {
+    padding: 8px;
+  }
+
+  .actionButtonText {
+    display: none;
+  }
+
+  .icon {
+    font-size: 1.4rem; /* Légèrement plus grand en mobile pour une meilleure visibilité */
+    margin: 0;
+  }
+
+  .submitButton {
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .createPost {
+    border-radius: 0;
   }
 }

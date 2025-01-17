@@ -1,11 +1,10 @@
 .suggestions {
-  background: var(--background-primary);
-  border-radius: 8px;
-  padding: 16px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   height: 100%;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
 }
 
 .suggestions h2 {
@@ -15,18 +14,17 @@
 }
 
 .searchContainer {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .searchInput {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
   background: var(--background-secondary);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
 }
 
 .searchInput:focus {
@@ -38,76 +36,73 @@
   color: var(--text-secondary);
 }
 
-.suggestionCard {
+.userList {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: column;
+  gap: 10px;
 }
 
-.suggestionCard:last-child {
-  border-bottom: none;
+.userCard {
+  padding: 8px;
+  border-radius: 8px;
+  /* box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1); */
+  border: 1px solid #dddddd75;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.userCard:hover {
+  background-color: #f8f9fa;
 }
 
 .userInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
-  color: var(--text-primary);
+  color: inherit;
 }
 
 .avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  object-fit: cover;
 }
 
-.userDetails h3 {
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.userDetails span {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  display: block;
+.username {
+  font-weight: 500;
+  color: #333;
 }
 
 .addButton {
-  background: var(--background-hover);
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
   border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  border-radius: 5px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.2s;
 }
 
 .addButton:hover {
-  background: var(--primary-color);
-  color: var(--button-text);
+  background-color: #0056b3;
 }
 
 .showMoreButton {
   width: 100%;
   padding: 8px;
-  margin-top: 16px;
-  background: var(--background-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 0.9rem;
+  margin-top: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .showMoreButton:hover {
-  background: var(--background-hover);
+  background-color: #e9ecef;
 }
 
 .noUsers {
@@ -115,4 +110,10 @@
   color: var(--text-secondary);
   padding: 16px 0;
   font-size: 0.9rem;
+}
+
+.error {
+  color: #dc3545;
+  text-align: center;
+  margin: 10px 0;
 }

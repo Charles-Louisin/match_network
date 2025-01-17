@@ -1,0 +1,133 @@
+.container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.container h2 {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.searchContainer {
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.usersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.userCard {
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #eee;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.userCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.username {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+.viewProfileButton {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.viewProfileButton:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: #dc3545;
+  text-align: center;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.noUsers {
+  text-align: center;
+  color: #666;
+  margin: 20px 0;
+  font-size: 0.9rem;
+}
+
+/* Styles pour mobile */
+@media (max-width: 768px) {
+  .container {
+    border-radius: 0;
+  }
+  .usersGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .userCard {
+    flex-direction: row;
+    text-align: left;
+    padding: 10px;
+    justify-content: space-between;
+  }
+
+  .avatar {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 0;
+    margin-right: 10px;
+  }
+
+  .username {
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .viewProfileButton {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}

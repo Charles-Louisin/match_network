@@ -1,63 +1,53 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { FiHome, FiUsers, FiMessageSquare, FiBell, FiLogOut, FiSun, FiMoon } from 'react-icons/fi';
+import styles from './Navbar.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaHome, FaBell, FaUsers, FaEnvelope, FaMoon, FaSun, FaSignOutAlt } from 'react-icons/fa';
-import { useTheme } from '@/context/ThemeContext';
-import { useNotifications } from '@/hooks/useNotifications';
-import Avatar from '@/components/common/Avatar';
-import styles from './Navbar.module.css';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
   const [user, setUser] = useState(null);
-  const { theme, toggleTheme } = useTheme();
-  const { unreadCount, friendRequests } = useNotifications();
+  const [mounted, setMounted] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState(0);
 
   useEffect(() => {
-    // Écouter les changements dans le localStorage
-    const handleStorageChange = () => {
-      const userStr = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
-      
-      if (userStr && token) {
-        try {
-          const userData = JSON.parse(userStr);
-          // Normaliser l'ID utilisateur
-          if (userData && (userData._id || userData.id)) {
-            const normalizedUser = {
-              ...userData,
-              _id: userData._id || userData.id // Utiliser _id ou id
-            };
-            setUser(normalizedUser);
-          } else {
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    // Initialiser l'état
-    handleStorageChange();
-
-    // Ajouter l'écouteur d'événements
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    setMounted(true);
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      console.log('User data:', parsedUser);
+      setUser(parsedUser);
+    }
   }, []);
 
   useEffect(() => {
-    console.log('Current user state:', user);
+    const fetchPendingRequestsCount = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/pending`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        console.log('Pending requests:', data);
+        setPendingRequests(data.length);
+      } catch (error) {
+        console.error('Error fetching pending requests count:', error);
+      }
+    };
+
+    if (user) {
+      // Vérifier les demandes toutes les 30 secondes
+      fetchPendingRequestsCount();
+      const interval = setInterval(fetchPendingRequestsCount, 30000);
+      return () => clearInterval(interval);
+    }
   }, [user]);
 
   const handleLogout = () => {
@@ -66,84 +56,162 @@ export default function Navbar() {
     router.push('/login');
   };
 
-  const isActive = (path) => pathname === path;
+  if (!mounted) return null;
 
   return (
-    <nav className={`${styles.navbar} ${theme === 'dark' ? styles.dark : ''}`}>
-      <div className={styles.leftSection}>
-        <Link href="/" className={styles.logo}>
-          <Image 
-            src="/images/logo.png" 
-            alt="Logo" 
-            width={70} 
-            height={70}
-            priority
-          />
-          <span className={styles.appName}>MATCH</span>
-        </Link>
-      </div>
+    <nav className={styles.navbar}>
+      {/* Version PC */}
+      <div className={styles.navContainer}>
+        <div className={styles.leftSection}>
+          <Link href="/" className={styles.logo}>
+            <Image
+              src="/images/logo.png"
+              alt="Match Logo"
+              width={52}
+              height={52}
+              className={styles.logoImage}
+              priority
+            />
+            <span className={styles.logoText}>Match</span>
+          </Link>
+        </div>
 
-      <div className={styles.centerSection}>
-        <Link href="/" className={`${styles.navLink} ${isActive('/') ? styles.active : ''}`}>
-          <FaHome className={styles.icon} />
-          <span className={styles.linkText}>Accueil</span>
-        </Link>
-        
-        <Link href="/notifications" className={`${styles.navLink} ${isActive('/notifications') ? styles.active : ''}`}>
-          <div className={styles.notificationContainer}>
-            <FaBell className={styles.icon} />
-            {unreadCount > 0 && (
-              <span className={styles.notificationBadge}>{unreadCount}</span>
-            )}
-          </div>
-          <span className={styles.linkText}>Notifications</span>
-        </Link>
+        <div className={styles.centerSection}>
+          <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}>
+            <FiHome size={20} />
+            <span>Accueil</span>
+          </Link>
+          <Link href="/friends" className={`${styles.navLink} ${pathname === '/friends' ? styles.active : ''}`}>
+            <div className={styles.iconContainer}>
+              <FiUsers size={20} />
+              {pendingRequests > 0 && (
+                <span className={styles.badge}>{pendingRequests}</span>
+              )}
+            </div>
+            <span>Amis</span>
+          </Link>
+          <Link href="/notifications" className={`${styles.navLink} ${pathname === '/notifications' ? styles.active : ''}`}>
+            <FiBell size={20} />
+            <span>Notifications</span>
+          </Link>
+          <Link href="/messagerie" className={`${styles.navLink} ${pathname === '/messagerie' ? styles.active : ''}`}>
+            <FiMessageSquare size={20} />
+            <span>Messages</span>
+          </Link>
+        </div>
 
-        <Link href="/friends" className={`${styles.navLink} ${isActive('/friends') ? styles.active : ''}`}>
-          <div className={styles.iconContainer}>
-            <FaUsers className={styles.icon} />
-            {friendRequests > 0 && (
-              <span className={styles.badge}>{friendRequests}</span>
-            )}
-          </div>
-          <span className={styles.linkText}>Amis</span>
-        </Link>
-
-        <Link href="/messages" className={`${styles.navLink} ${isActive('/messages') ? styles.active : ''}`}>
-          <FaEnvelope className={styles.icon} />
-          <span className={styles.linkText}>Messages</span>
-        </Link>
-      </div>
-
-      <div className={styles.rightSection}>
-        <button onClick={toggleTheme} className={styles.themeToggle}>
-          {theme === 'light' ? <FaMoon className={styles.icon} /> : <FaSun className={styles.icon} />}
-        </button>
-
-        {user && (user._id || user.id) && (
-          <>
-            <Link 
-              href={`/profile/${user._id || user.id}`} 
-              className={styles.profileLink}
-            >
+        <div className={styles.rightSection}>
+          <button
+            className={styles.iconButton}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+          {user && (
+            <Link href={`/profile/${user.id}`} className={styles.profileLink}>
               <Image
-                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
                 alt="Profile"
-                width={40}
-                height={40}
-                className={styles.userAvatar}
+                width={32}
+                height={32}
+                className={styles.profileImage}
+                priority
                 onError={(e) => {
-                  if (!e.target.src.includes("/images/default-avatar.jpg")) {
-                    e.target.src = "/images/default-avatar.jpg";
+                  if (!e.target.src.includes('/images/default-avatar.jpg')) {
+                    e.target.src = '/images/default-avatar.jpg';
                   }
                 }}
               />
             </Link>
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              <FaSignOutAlt className={styles.icon} />
-            </button>
-          </>
-        )}
+          )}
+          <button 
+            className={styles.iconButton} 
+            onClick={handleLogout}
+            aria-label="Logout"
+          >
+            <FiLogOut size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Version Mobile */}
+      <div className={styles.topBar}>
+        <Link href="/" className={styles.logo}>
+          <Image
+            src="/images/logo.png"
+            alt="Match Logo"
+            width={25}
+            height={25}
+            className={styles.logoImage}
+            priority
+          />
+          <span className={styles.logoText}>Match</span>
+        </Link>
+
+        <div className={styles.rightControls}>
+          <button 
+            className={styles.iconButton} 
+            onClick={handleLogout}
+            aria-label="Logout"
+          >
+            <FiLogOut size={20} />
+          </button>
+          <button
+            className={styles.iconButton}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.bottomBar}>
+        <div className={styles.navigation}>
+          <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}>
+            <FiHome size={20} />
+            <span>Accueil</span>
+          </Link>
+          <Link href="/friends" className={`${styles.navLink} ${pathname === '/friends' ? styles.active : ''}`}>
+            <div className={styles.iconContainer}>
+              <FiUsers size={20} />
+              {pendingRequests > 0 && (
+                <span className={styles.badge}>{pendingRequests}</span>
+              )}
+            </div>
+            <span>Amis</span>
+          </Link>
+          <Link href="/notifications" className={`${styles.navLink} ${pathname === '/notifications' ? styles.active : ''}`}>
+            <FiBell size={20} />
+            <span>Notifications</span>
+          </Link>
+          <Link href="/messagerie" className={`${styles.navLink} ${pathname === '/messagerie' ? styles.active : ''}`}>
+            <FiMessageSquare size={20} />
+            <span>Messages</span>
+          </Link>
+          {user && (
+            <Link 
+              href={`/profile/${user.id}`} 
+              className={`${styles.navLink} ${pathname === `/profile/${user.id}` ? styles.active : ''}`}
+            >
+              <Image
+                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
+                alt="Profile"
+                width={24}
+                height={24}
+                className={styles.profileImage}
+                priority
+                onError={(e) => {
+                  if (!e.target.src.includes('/images/default-avatar.jpg')) {
+                    e.target.src = '/images/default-avatar.jpg';
+                  }
+                }}
+              />
+              <span>Profil</span>
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -2,6 +2,8 @@
   width: 100%;
   min-height: 100vh;
   background-color: var(--background-secondary);
+  /* background-color: blue; */
+  padding-bottom: 70px;
 }
 
 .coverSection {
@@ -22,29 +24,6 @@
   width: 100%;
   height: 100%;
   background-color: #e0e0e0;
-}
-
-.editCoverPhoto {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.editCoverPhoto:hover {
-  background-color: rgba(0, 0, 0, 0.8);
-}
-
-.cameraIcon {
-  font-size: 1.2rem;
 }
 
 .cameraIcon {
@@ -73,12 +52,14 @@
   margin: 0 auto;
   padding: 0 20px;
   position: relative;
+  /* background-color: red; */
 }
 
 .profileHeader {
   background-color: white;
+  /* background-color: green; */
   border-radius: 12px;
-  padding: 20px 30px;
+  padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -87,13 +68,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  /* background-color: gray; */
 }
 
 .leftSection {
   display: flex;
   align-items: center;
   gap: 30px;
+  /* background-color: blue; */
 }
 
 .avatarContainer {
@@ -104,15 +86,14 @@
   overflow: hidden;
   margin-right: 20px;
   flex-shrink: 0;
+  /* border: 4px solid white; */
+  box-shadow: 0 0px 5px 0px rgba(0, 0, 0, 0.1);
 }
 
 .avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border: 4px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .userDetails {
@@ -129,39 +110,48 @@
 }
 
 .bio {
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--text-secondary);
-  margin: 0;
-  max-width: 500px;
-  line-height: 1.4;
+  margin-bottom: 1rem;
 }
 
 .rightSection {
   flex-shrink: 0;
 }
 
-.editButton {
+.coverPhotoContainer {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  background-color: var(--background-secondary);
+}
+
+.coverPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.editCoverPhotoButton {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
-  background-color: #1da1f2;
-  color: white;
-  border: none;
-  border-radius: 20px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.editButton:hover {
-  background-color: #1a91da;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .profileContent {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  /* background-color: green; */
 }
 
 .userInfo {
@@ -230,7 +220,9 @@
 .friendButtons {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 300px;
 }
 
 .friendButton {
@@ -352,7 +344,7 @@
   background-color: var(--background-primary);
   border-radius: 12px;
   padding: 24px;
-  border: 1px solid var(--border-color);
+  /* border: 1px solid var(--border-color); */
   box-shadow: var(--shadow-sm);
 }
 
@@ -365,7 +357,7 @@
   color: var(--text-primary);
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  /* border-bottom: 1px solid var(--border-color); */
 }
 
 .infoItem {
@@ -401,13 +393,13 @@
 }
 
 .statValue {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .statLabel {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   margin-top: 4px;
 }
@@ -937,5 +929,196 @@
 
   .avatarContainer {
     margin: 0 auto 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0;
+    width: 100%;
+  }
+
+  .profileContent {
+    padding: 0;
+  }
+
+  .leftColumn {
+    border-radius: 0;
+  }
+
+  .profileCard,
+  .statsCard,
+  .aboutCard,
+  .friendsCard,
+  .postsCard {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+  }
+
+  .profileInfo {
+    font-size: 0.9rem;
+  }
+
+  .username {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .bio {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .statLabel {
+    font-size: 0.75rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .infoLabel {
+    font-size: 0.875rem;
+  }
+
+  .infoValue {
+    font-size: 0.875rem;
+  }
+
+  .friendName {
+    font-size: 0.875rem;
+  }
+
+  .friendUsername {
+    font-size: 0.75rem;
+  }
+
+  .actionButton {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .coverPhotoContainer {
+    height: 200px;
+  }
+
+  .coverSection {
+    height: 300px;
+  }
+
+  .profileInfo {
+    flex-direction: column;
+    align-items: center;
+    margin-top: -50px;
+    padding: 0 16px;
+    text-align: center;
+  }
+
+  .avatarSection {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatarContainer {
+    width: 120px;
+    height: 120px;
+    border-width: 3px;
+  }
+
+  .editAvatarButton {
+    width: 32px;
+    height: 32px;
+  }
+
+  .userInfo {
+    margin-bottom: 16px;
+  }
+
+  .username {
+    font-size: 20px;
+  }
+
+  .location {
+    font-size: 14px;
+  }
+
+  .editButton {
+    padding: 6px 16px;
+    font-size: 13px;
+  }
+
+  .editCoverPhotoButton {
+    right: 12px;
+    top: 12px;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .profileContainer {
+    max-width: 1200px;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* background-color: red; */
+  }
+  
+  .profileHeader {
+    background-color: white;
+    /* background-color: green; */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: fit-content;
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profileInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: fit-content;
+    height: fit-content;
+    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    /* background-color: gray; */
+    padding-bottom: 10px;
+  }
+  
+  .leftSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+    /* background-color: blue;. */
+  }
+
+  .cameraIconMobile {
+    top: 80px;
+    right: 10px;
+  }
+
+  .friendButtons {
+    max-width: 100%;
+    padding: 0 10px;
   }
 }
