@@ -524,14 +524,11 @@ export default function Profile() {
             <div className={styles.defaultCover} />
           )}
           {isCurrentUser && (
-            <div className={`${styles.cameraIcon} ${styles.cameraIconMobile}`} onClick={() => coverPhotoInputRef.current?.click()}>
-              <FaCamera />
-              <input
-                type="file"
-                ref={coverPhotoInputRef}
-                hidden
-                accept="image/*"
-                onChange={(e) => handleUpdateCoverPhoto(e.target.files[0])}
+            <div className={styles.coverPhotoUpload}>
+              <PhotoUpload
+                type="cover"
+                currentImage={profile.coverPhoto}
+                onUpload={handleUpdateCoverPhoto}
               />
             </div>
           )}
@@ -554,14 +551,11 @@ export default function Profile() {
                     className={styles.avatar}
                   />
                   {isCurrentUser && (
-                    <div className={styles.cameraIcon} onClick={() => avatarInputRef.current?.click()}>
-                      <FaCamera />
-                      <input
-                        type="file"
-                        ref={avatarInputRef}
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => handleUpdateAvatar(e.target.files[0])}
+                    <div className={styles.avatarUpload}>
+                      <PhotoUpload
+                        type="avatar"
+                        currentImage={profile.avatar}
+                        onUpload={handleUpdateAvatar}
                       />
                     </div>
                   )}

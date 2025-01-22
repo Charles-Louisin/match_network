@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import { FiHome, FiUsers, FiMessageSquare, FiBell, FiLogOut, FiSun, FiMoon } from 'react-icons/fi';
-import styles from './Navbar.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { FiHome, FiUsers, FiBell, FiMessageCircle, FiLogOut, FiSun, FiMoon } from 'react-icons/fi';
+import { getImageUrl } from '@/utils/imageUtils';
+import { useNotifications } from '@/hooks/useNotifications';
+import styles from './Navbar.module.css';
 
 export default function Navbar() {
   const router = useRouter();
@@ -15,40 +17,51 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [pendingRequests, setPendingRequests] = useState(0);
+  const { unreadCount, fetchUnreadCount } = useNotifications();
 
   useEffect(() => {
     setMounted(true);
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      console.log('User data:', parsedUser);
-      setUser(parsedUser);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
   useEffect(() => {
-    const fetchPendingRequestsCount = async () => {
+    const fetchPendingRequests = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/pending`, {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/pending`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        const data = await response.json();
-        console.log('Pending requests:', data);
-        setPendingRequests(data.length);
+
+        if (response.ok) {
+          const data = await response.json();
+          setPendingRequests(data.length || 0);
+        }
       } catch (error) {
-        console.error('Error fetching pending requests count:', error);
+        console.error('Error fetching pending requests:', error);
       }
     };
 
     if (user) {
-      // Vérifier les demandes toutes les 30 secondes
-      fetchPendingRequestsCount();
-      const interval = setInterval(fetchPendingRequestsCount, 30000);
+      fetchPendingRequests();
+      const interval = setInterval(fetchPendingRequests, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchUnreadCount]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -66,11 +79,10 @@ export default function Navbar() {
           <Link href="/" className={styles.logo}>
             <Image
               src="/images/logo.png"
-              alt="Match Logo"
+              alt="Logo"
               width={52}
               height={52}
               className={styles.logoImage}
-              priority
             />
             <span className={styles.logoText}>Match</span>
           </Link>
@@ -91,12 +103,17 @@ export default function Navbar() {
             <span>Amis</span>
           </Link>
           <Link href="/notifications" className={`${styles.navLink} ${pathname === '/notifications' ? styles.active : ''}`}>
-            <FiBell size={20} />
+            <div className={styles.iconContainer}>
+              <FiBell size={20} />
+              {unreadCount > 0 && (
+                <span className={styles.badge}>{unreadCount}</span>
+              )}
+            </div>
             <span>Notifications</span>
           </Link>
           <Link href="/messagerie" className={`${styles.navLink} ${pathname === '/messagerie' ? styles.active : ''}`}>
-            <FiMessageSquare size={20} />
-            <span>Messages</span>
+            <FiMessageCircle size={20} />
+            <span>Messagerie</span>
           </Link>
         </div>
 
@@ -104,34 +121,25 @@ export default function Navbar() {
           <button
             className={styles.iconButton}
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle theme"
           >
             {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
           </button>
           {user && (
-            <Link href={`/profile/${user.id}`} className={styles.profileLink}>
-              <Image
-                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
-                alt="Profile"
-                width={32}
-                height={32}
-                className={styles.profileImage}
-                priority
-                onError={(e) => {
-                  if (!e.target.src.includes('/images/default-avatar.jpg')) {
-                    e.target.src = '/images/default-avatar.jpg';
-                  }
-                }}
-              />
-            </Link>
+            <>
+              <Link href={`/profile/${user.id}`} className={styles.iconButton}>
+                <Image
+                  src={user.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className={styles.profileImage}
+                />
+              </Link>
+              <button onClick={handleLogout} className={styles.iconButton}>
+                <FiLogOut size={20} />
+              </button>
+            </>
           )}
-          <button 
-            className={styles.iconButton} 
-            onClick={handleLogout}
-            aria-label="Logout"
-          >
-            <FiLogOut size={20} />
-          </button>
         </div>
       </div>
 
@@ -140,29 +148,22 @@ export default function Navbar() {
         <Link href="/" className={styles.logo}>
           <Image
             src="/images/logo.png"
-            alt="Match Logo"
+            alt="Logo"
             width={25}
             height={25}
             className={styles.logoImage}
-            priority
           />
           <span className={styles.logoText}>Match</span>
         </Link>
-
         <div className={styles.rightControls}>
-          <button 
-            className={styles.iconButton} 
-            onClick={handleLogout}
-            aria-label="Logout"
-          >
-            <FiLogOut size={20} />
-          </button>
           <button
             className={styles.iconButton}
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle theme"
           >
             {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+          <button onClick={handleLogout} className={styles.iconButton}>
+            <FiLogOut size={20} />
           </button>
         </div>
       </div>
@@ -183,30 +184,26 @@ export default function Navbar() {
             <span>Amis</span>
           </Link>
           <Link href="/notifications" className={`${styles.navLink} ${pathname === '/notifications' ? styles.active : ''}`}>
-            <FiBell size={20} />
+            <div className={styles.iconContainer}>
+              <FiBell size={20} />
+              {unreadCount > 0 && (
+                <span className={styles.badge}>{unreadCount}</span>
+              )}
+            </div>
             <span>Notifications</span>
           </Link>
           <Link href="/messagerie" className={`${styles.navLink} ${pathname === '/messagerie' ? styles.active : ''}`}>
-            <FiMessageSquare size={20} />
-            <span>Messages</span>
+            <FiMessageCircle size={20} />
+            <span>Messagerie</span>
           </Link>
           {user && (
-            <Link 
-              href={`/profile/${user.id}`} 
-              className={`${styles.navLink} ${pathname === `/profile/${user.id}` ? styles.active : ''}`}
-            >
+            <Link href={`/profile/${user.id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
               <Image
-                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
+                src={user.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
                 alt="Profile"
                 width={24}
                 height={24}
                 className={styles.profileImage}
-                priority
-                onError={(e) => {
-                  if (!e.target.src.includes('/images/default-avatar.jpg')) {
-                    e.target.src = '/images/default-avatar.jpg';
-                  }
-                }}
               />
               <span>Profil</span>
             </Link>
