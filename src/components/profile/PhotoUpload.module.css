@@ -2,6 +2,10 @@
   position: relative;
 }
 
+.fileInput {
+  display: none;
+}
+
 .uploadButton {
   display: flex;
   align-items: center;
@@ -10,49 +14,114 @@
   height: 36px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
-  border: none;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  border: none;
+  padding: 0;
 }
 
 .uploadButton:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-.uploadButton.loading {
-  pointer-events: none;
+.cameraIcon {
+  font-size: 16px;
+  color: white;
+}
+
+.loading {
+  cursor: default;
+}
+
+.loadingIndicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
 }
 
 .loadingDot {
-  position: absolute;
-  top: -2px;
-  right: -2px;
   width: 8px;
   height: 8px;
+  background-color: #60A5FA;
   border-radius: 50%;
-  background-color: #1da1f2;
-  opacity: 0;
-}
-
-.loading .loadingDot {
   animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
   0% {
     transform: scale(0.8);
-    opacity: 0;
+    opacity: 0.5;
   }
   50% {
-    transform: scale(1);
+    transform: scale(1.2);
     opacity: 1;
   }
   100% {
     transform: scale(0.8);
-    opacity: 0;
+    opacity: 0.5;
   }
+}
+
+.previewModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.previewContent {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.previewButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancelButton,
+.confirmButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+  color: white;
+}
+
+.cancelButton {
+  background-color: #EF4444;
+}
+
+.confirmButton {
+  background-color: #10B981;
+}
+
+.cancelButton:hover {
+  background-color: #DC2626;
+}
+
+.confirmButton:hover {
+  background-color: #059669;
 }
 
 .modal {

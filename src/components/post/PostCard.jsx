@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import TimeAgo from 'react-timeago'
@@ -9,11 +9,18 @@ import buildFormatter from 'react-timeago/lib/formatters/buildFormatter'
 import { FaHeart, FaRegHeart, FaComment } from 'react-icons/fa'
 import styles from './PostCard.module.css'
 
-export default function PostCard({ post }) {
-  const [isLiked, setIsLiked] = useState(post.likes?.includes(localStorage.getItem('userId')))
-  const [likesCount, setLikesCount] = useState(post.likes?.length || 0)
-  const [commentsCount, setCommentsCount] = useState(post.comments?.length || 0)
+export default function PostCard({ post: initialPost }) {
+  const [post, setPost] = useState(initialPost)
+  const [isLiked, setIsLiked] = useState(false)
+  const [likesCount, setLikesCount] = useState(0)
+  const [comment, setComment] = useState('')
   const formatter = buildFormatter(frenchStrings)
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId')
+    setIsLiked(post.likes?.includes(userId))
+    setLikesCount(post.likes?.length || 0)
+  }, [post])
 
   const handleLike = async () => {
     try {
@@ -37,6 +44,34 @@ export default function PostCard({ post }) {
     }
   }
 
+  const handleComment = async (e) => {
+    e.preventDefault()
+    if (!comment.trim()) return
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/comments`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: comment }),
+        }
+      )
+
+      if (response.ok) {
+        const updatedPost = await response.json()
+        setPost(updatedPost)
+        setComment('')
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error)
+    }
+  }
+
   const getPostHeader = () => {
     if (post.type === 'PROFILE_PHOTO_UPDATE') {
       return 'a changé sa photo de profil'
@@ -48,7 +83,10 @@ export default function PostCard({ post }) {
   }
 
   return (
-    <div className={styles.postCard}>
+    <div 
+      className={styles.postCard} 
+      id={`post-${post._id}`}
+    >
       <div className={styles.postHeader}>
         <Link href={`/profile/${post.user._id}`} className={styles.userInfo}>
           <div className={styles.avatar}>
@@ -81,9 +119,8 @@ export default function PostCard({ post }) {
             src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
             alt="Post image"
             width={500}
-            height={300}
-            layout="responsive"
-            objectFit="cover"
+            height={500}
+            objectFit="contain"
           />
         </div>
       )}
@@ -99,7 +136,7 @@ export default function PostCard({ post }) {
 
         <button className={styles.actionButton}>
           <FaComment />
-          <span>{commentsCount}</span>
+          <span>{post.comments?.length || 0}</span>
         </button>
       </div>
 
@@ -130,6 +167,23 @@ export default function PostCard({ post }) {
           ))}
         </div>
       )}
+
+      <form className={styles.commentForm} onSubmit={handleComment}>
+        <input
+          type="text"
+          className={styles.commentInput}
+          placeholder="Ajouter un commentaire..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <button
+          type="submit"
+          className={styles.sendButton}
+          disabled={!comment.trim()}
+        >
+          Envoyer
+        </button>
+      </form>
     </div>
   )
 }

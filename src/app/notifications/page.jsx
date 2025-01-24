@@ -1,25 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import styles from './notifications.module.css'
 import TimeAgo from 'react-timeago'
 import frenchStrings from 'react-timeago/lib/language-strings/fr'
 import buildFormatter from 'react-timeago/lib/formatters/buildFormatter'
 import Image from 'next/image'
-import Modal from '@/components/common/Modal'
-import PostCard from '@/components/post/PostCard'
 import Link from 'next/link'
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedPost, setSelectedPost] = useState(null)
+  const router = useRouter()
   const formatter = buildFormatter(frenchStrings)
 
   useEffect(() => {
     fetchNotifications()
-    // Rafraîchir les notifications toutes les 30 secondes
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
   }, [])
@@ -27,6 +25,8 @@ export default function Notifications() {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token')
+      const currentUser = JSON.parse(localStorage.getItem('user'))
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -38,7 +38,23 @@ export default function Notifications() {
       }
 
       const data = await response.json()
-      setNotifications(data)
+      
+      // Filtrer les notifications
+      const filteredNotifications = data.filter(notif => {
+        // Vérifier que la notification a une référence valide
+        if (!notif.reference) return false;
+        
+        // Pour les likes et commentaires sur un post
+        if (['POST_LIKE', 'POST_COMMENT'].includes(notif.type)) {
+          return notif.reference.user?._id === currentUser.id;
+        }
+        
+        // Pour les autres types de notifications
+        return true;
+      });
+
+      console.log('Notifications filtrées:', filteredNotifications); // Pour le debug
+      setNotifications(filteredNotifications)
     } catch (error) {
       console.error('Error fetching notifications:', error)
     } finally {
@@ -46,10 +62,13 @@ export default function Notifications() {
     }
   }
 
-  const handleNotificationClick = async (notification) => {
+  const handleNotificationClick = async (notification, e) => {
+    e.preventDefault()
     try {
-      // Marquer la notification comme lue
       const token = localStorage.getItem('token')
+      const currentUser = JSON.parse(localStorage.getItem('user'))
+
+      // Marquer la notification comme lue
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notification._id}/read`,
         {
@@ -60,34 +79,60 @@ export default function Notifications() {
         }
       )
 
-      // Si c'est une notification de post, like ou commentaire
-      if (['POST_CREATED', 'POST_LIKE', 'POST_COMMENT'].includes(notification.type)) {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${notification.reference}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+      setNotifications(prevNotifications =>
+        prevNotifications.map(n =>
+          n._id === notification._id ? { ...n, read: true } : n
         )
-        if (response.ok) {
-          const post = await response.json()
-          setSelectedPost(post)
-        }
+      )
+
+      let targetUrl = ''
+      let hash = ''
+
+      // Pour les likes et commentaires
+      if (['POST_LIKE', 'POST_COMMENT'].includes(notification.type)) {
+        // Toujours rediriger vers le profil du propriétaire du post
+        targetUrl = `/profile/${notification.reference.user._id}`
+        hash = notification.type === 'POST_COMMENT' 
+          ? `#post-${notification.reference._id}-comment-${notification.comment?._id}`
+          : `#post-${notification.reference._id}`
       }
+      // Pour les nouvelles publications et photos
+      else if (['POST_CREATED', 'PROFILE_PHOTO_UPDATED', 'COVER_PHOTO_UPDATED'].includes(notification.type)) {
+        targetUrl = `/profile/${notification.sender._id}`
+        hash = `#post-${notification.reference._id}`
+      }
+      // Pour les autres notifications
+      else {
+        targetUrl = `/profile/${notification.sender._id}`
+      }
+
+      if (hash) {
+        sessionStorage.setItem('notificationAction', JSON.stringify({
+          type: notification.type,
+          postId: notification.reference._id,
+          commentId: notification.comment?._id
+        }))
+      }
+
+      router.push(targetUrl + hash)
     } catch (error) {
       console.error('Error handling notification click:', error)
     }
   }
 
   const getNotificationText = (notification) => {
+    const truncateText = (text) => {
+      if (!text) return '';
+      return text.length > 50 ? text.substring(0, 50) + '...' : text;
+    };
+
     switch (notification.type) {
       case 'POST_LIKE':
         return 'a aimé votre publication'
       case 'POST_COMMENT':
-        return 'a commenté votre publication'
+        return `a commenté votre publication: "${truncateText(notification.comment?.content)}"`
       case 'POST_CREATED':
-        return 'a partagé une publication'
+        return `a partagé une publication: "${truncateText(notification.reference?.content)}"`
       case 'PROFILE_PHOTO_UPDATED':
         return 'a changé sa photo de profil'
       case 'COVER_PHOTO_UPDATED':
@@ -104,18 +149,28 @@ export default function Notifications() {
   const getPreviewImage = (notification) => {
     if (!notification.reference) return null
 
+    let imageUrl = null
     switch (notification.type) {
       case 'POST_CREATED':
       case 'POST_LIKE':
       case 'POST_COMMENT':
-        return notification.reference.image
+        imageUrl = notification.reference.image
+        break
       case 'PROFILE_PHOTO_UPDATED':
-        return notification.sender.avatar
       case 'COVER_PHOTO_UPDATED':
-        return notification.sender.coverPhoto
+        imageUrl = notification.reference
+        break
       default:
         return null
     }
+
+    if (!imageUrl) return null
+    
+    if (!imageUrl.startsWith('/')) {
+      imageUrl = `/${imageUrl}`
+    }
+
+    return `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`
   }
 
   return (
@@ -139,7 +194,9 @@ export default function Notifications() {
                       },
                     }
                   )
-                  fetchNotifications()
+                  setNotifications(prevNotifications =>
+                    prevNotifications.map(n => ({ ...n, read: true }))
+                  )
                 } catch (error) {
                   console.error('Error marking all as read:', error)
                 }
@@ -152,65 +209,56 @@ export default function Notifications() {
 
         <div className={styles.notificationsList}>
           {isLoading ? (
-            <div className={styles.loading}>Chargement...</div>
+            <div className={styles.loading}>Chargement des notifications...</div>
           ) : notifications.length === 0 ? (
             <div className={styles.empty}>Aucune notification</div>
           ) : (
-            notifications.map((notification) => (
-              <Link
-                href={notification.reference ? `/post/${notification.reference}` : `/profile/${notification.sender._id}`}
-                key={notification._id}
-                className={`${styles.notificationItem} ${
-                  !notification.read ? styles.unread : ''
-                }`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <div className={styles.notificationContent}>
-                  <div className={styles.avatar}>
-                    <Image
-                      src={
-                        notification.sender.avatar
-                          ? `${process.env.NEXT_PUBLIC_API_URL}${notification.sender.avatar}`
-                          : '/images/default-avatar.jpg'
-                      }
-                      alt={notification.sender.username}
-                      width={40}
-                      height={40}
-                    />
-                  </div>
-                  <div className={styles.notificationText}>
-                    <span className={styles.username}>{notification.sender.username}</span>
-                    <span className={styles.action}>{getNotificationText(notification)}</span>
-                    <span className={styles.time}>
-                      <TimeAgo
-                        date={notification.createdAt}
-                        formatter={formatter}
-                      />
-                    </span>
-                  </div>
-                  {getPreviewImage(notification) && (
-                    <div className={styles.previewImage}>
+            notifications.map((notification) => {
+              const previewImage = getPreviewImage(notification)
+              return (
+                <Link
+                  key={notification._id}
+                  href={`/profile/${notification.sender._id}`}
+                  className={`${styles.notificationItem} ${!notification.read ? styles.unread : ''}`}
+                  onClick={(e) => handleNotificationClick(notification, e)}
+                >
+                  <div className={styles.notificationContent}>
+                    <div className={styles.avatar}>
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_API_URL}${getPreviewImage(notification)}`}
-                        alt="Preview"
-                        width={60}
-                        height={60}
-                        objectFit="cover"
+                        src={notification.sender.avatar
+                          ? `${process.env.NEXT_PUBLIC_API_URL}${notification.sender.avatar}`
+                          : '/images/default-avatar.jpg'}
+                        alt={notification.sender.username}
+                        width={40}
+                        height={40}
                       />
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))
+                    <div className={styles.notificationText}>
+                      <div>
+                        <span className={styles.username}>{notification.sender.username}</span>
+                        <span className={styles.action}> {getNotificationText(notification)}</span>
+                      </div>
+                      <div className={styles.time}>
+                        <TimeAgo date={notification.createdAt} formatter={formatter} />
+                      </div>
+                    </div>
+                    {previewImage && (
+                      <div className={styles.previewImage}>
+                        <Image
+                          src={previewImage}
+                          alt="Aperçu"
+                          width={60}
+                          height={60}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              )
+            })
           )}
         </div>
       </div>
-
-      {selectedPost && (
-        <Modal onClose={() => setSelectedPost(null)}>
-          <PostCard post={selectedPost} />
-        </Modal>
-      )}
     </div>
   )
 }

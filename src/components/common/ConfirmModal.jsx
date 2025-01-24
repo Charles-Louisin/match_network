@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './ConfirmModal.module.css';
 
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+  const handleEscape = useCallback((e) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
 
+  useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
@@ -20,13 +21,26 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleEscape]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modalContent = (
+    <div 
+      className={styles.modalOverlay} 
+      onClick={handleOverlayClick}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
+      <div 
+        className={styles.modalContent} 
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className={styles.modalTitle}>{title}</h2>
         <p className={styles.modalMessage}>{message}</p>
         <div className={styles.modalActions}>
@@ -48,6 +62,12 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
         </div>
       </div>
     </div>
+  );
+
+  // Créer un portail pour le modal
+  return createPortal(
+    modalContent,
+    document.body
   );
 };
 

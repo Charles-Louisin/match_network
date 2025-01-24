@@ -3,6 +3,8 @@
   border-radius: 12px;
   overflow: hidden;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .postHeader {
@@ -55,17 +57,16 @@
 
 .imageContainer {
   width: 100%;
+  height: auto;
+  max-height: 500px;
   position: relative;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  overflow: hidden;
 }
 
 .imageContainer img {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .postActions {
@@ -73,6 +74,7 @@
   display: flex;
   gap: 16px;
   border-top: 1px solid #eee;
+  background: white;
 }
 
 .actionButton {
@@ -104,6 +106,7 @@
 .comments {
   padding: 16px;
   border-top: 1px solid #eee;
+  background: white;
 }
 
 .comment {
@@ -145,4 +148,48 @@
   margin-left: 40px;
   font-size: 12px;
   color: #999;
+}
+
+.commentForm {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid #eee;
+  background: white;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  resize: none;
+  min-height: 36px;
+  max-height: 80px;
+  outline: none;
+}
+
+.commentInput:focus {
+  border-color: #1a73e8;
+}
+
+.sendButton {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sendButton:hover {
+  background: #1557b0;
+}
+
+.sendButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }

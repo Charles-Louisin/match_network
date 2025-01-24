@@ -921,6 +921,50 @@
   background-color: #d0d0d0;
 }
 
+.highlightedPost,
+.highlightedComment {
+  animation: highlight 3s ease-out;
+  position: relative;
+  z-index: 1;
+}
+
+.highlightedComment {
+  animation: highlightComment 3s ease-out;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: rgba(29, 161, 242, 0.2);
+    transform: scale(1.01);
+    box-shadow: 0 0 20px rgba(29, 161, 242, 0.3);
+  }
+  70% {
+    background-color: rgba(29, 161, 242, 0.2);
+    transform: scale(1.01);
+    box-shadow: 0 0 20px rgba(29, 161, 242, 0.3);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+@keyframes highlightComment {
+  0% {
+    background-color: rgba(29, 161, 242, 0.15);
+    transform: translateX(4px);
+  }
+  70% {
+    background-color: rgba(29, 161, 242, 0.15);
+    transform: translateX(4px);
+  }
+  100% {
+    background-color: transparent;
+    transform: translateX(0);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .profileContent {

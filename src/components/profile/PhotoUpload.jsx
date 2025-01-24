@@ -15,8 +15,8 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
   const handleImageSelect = (e) => {
     const file = e.target.files[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`L'image ne doit pas dépasser 5MB`)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`L'image ne doit pas dépasser 10MB`)
         return
       }
       setSelectedImage(file)
@@ -62,7 +62,7 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
       />
       <label htmlFor={`${type}-upload`} className={`${styles.uploadButton} ${isLoading ? styles.loading : ''}`}>
         <FaCamera />
-        <div className={styles.loadingDot}></div>
+        {/* <div className={styles.loadingDot}></div> */}
       </label>
 
       {isModalOpen && (
