@@ -3,13 +3,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
-  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-primary);
   transition: background-color 0.2s;
 }
 
 .notificationItem:hover {
-  background-color: #f8f9fa;
+  background-color: var(--hover-color);
 }
 
 .content {
@@ -17,15 +17,16 @@
   align-items: center;
   gap: 1rem;
   flex: 1;
+  min-width: 0; /* Pour éviter le débordement du texte */
 }
 
 .avatarContainer {
   width: 40px;
   height: 40px;
-  margin-right: 1rem;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
 }
 
 .avatar {
@@ -35,21 +36,48 @@
   border-radius: 50%;
 }
 
+.messageContainer {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .message {
   font-size: 0.9rem;
-  color: #333;
-  margin-left: 1rem;
-  flex: 1;
+  color: var(--text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .message strong {
   font-weight: 600;
-  color: #000;
+  color: var(--text-primary);
+}
+
+.excerpt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .actions {
   display: flex;
   gap: 0.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .button {
@@ -82,4 +110,23 @@
 
 .reject:hover:not(:disabled) {
   background-color: #da190b;
+}
+
+@media (max-width: 640px) {
+  .content {
+    gap: 0.5rem;
+  }
+  
+  .avatarContainer {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .message {
+    font-size: 0.85rem;
+  }
+  
+  .excerpt {
+    font-size: 0.8rem;
+  }
 }

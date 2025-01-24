@@ -156,26 +156,26 @@
 }
 
 .friendCard {
-  background-color: var(--background-secondary);
-  border-radius: 12px;
-  padding: 1rem;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 1rem;
   transition: transform 0.2s ease;
   width: fit-content;
+  position: relative;
+  z-index: 1;
 }
 
 .friendCard:hover {
   transform: translateY(-2px);
 }
 
-.friendInfo {
+.friendLink {
   display: flex;
-  flex-direction: column;
   align-items: center;
   text-decoration: none;
   color: inherit;
+  position: relative;
+  z-index: 1;
 }
 
 /* Media queries pour le responsive */

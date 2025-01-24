@@ -38,8 +38,8 @@ export default function CreatePost({ onPostCreated }) {
     
     if (selectedImage) {
       // Vérifier la taille de l'image (5MB max)
-      if (selectedImage.size > 5 * 1024 * 1024) {
-        setError("L'image ne doit pas dépasser 5MB")
+      if (selectedImage.size > 10 * 1024 * 1024) {
+        setError("L'image ne doit pas dépasser 10MB")
         setIsLoading(false)
         return
       }
@@ -97,6 +97,12 @@ export default function CreatePost({ onPostCreated }) {
     }
   }
 
+  const autoResizeTextArea = (e) => {
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  };
+
   return (
     <div className={styles.createPost}>
       <div className={styles.header}>
@@ -111,14 +117,19 @@ export default function CreatePost({ onPostCreated }) {
             e.target.src = '/images/default-avatar.jpg'
           }}
         />
-        <input
-          type="text"
-          placeholder={`Dites quelques choses, ${user?.username} ?`}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className={styles.input}
-          disabled={isLoading}
-        />
+        <div className={styles.inputContainer}>
+          <textarea
+            className={styles.contentInput}
+            placeholder="Quoi de neuf ?"
+            value={content}
+            onChange={(e) => {
+              setContent(e.target.value);
+              autoResizeTextArea(e);
+            }}
+            onInput={autoResizeTextArea}
+            rows={4}
+          />
+        </div>
       </div>
 
       {selectedImage && (

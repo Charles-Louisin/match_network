@@ -27,6 +27,8 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [postsLoaded, setPostsLoaded] = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [editData, setEditData] = useState({
     username: "",
     bio: "",
@@ -42,37 +44,117 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const avatarInputRef = useRef(null);
   const coverPhotoInputRef = useRef(null);
+  const loadingRef = useRef(false);
+  const errorToastShown = useRef(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    // console.log("Stored user:", user);
     if (user) {
       try {
         const parsedUser = JSON.parse(user);
-        // console.log("Parsed user:", parsedUser);
         setCurrentUser(parsedUser);
+        setIsCurrentUser(
+          parsedUser.id === params.id || parsedUser._id === params.id
+        );
       } catch (error) {
-        // console.error("Error parsing user:", error);
         localStorage.removeItem("user");
       }
     }
-  }, []);
-
-  useEffect(() => {
-    // console.log("Current user:", currentUser);
-    // console.log("Profile ID:", params.id);
-    fetchProfileData();
-  }, [params.id, currentUser]);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const currentUser = JSON.parse(userStr);
-      const isOwner =
-        currentUser.id === params.id || currentUser._id === params.id;
-      setIsCurrentUser(isOwner);
-    }
   }, [params.id]);
+
+  const fetchFriendshipStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFriendshipStatus(data.status);
+        setIsFriend(data.status === 'friends');
+      }
+    } catch (error) {
+      console.error("Error fetching friendship status:", error);
+    }
+  };
+
+  const fetchProfileData = useCallback(async () => {
+    // Éviter les appels multiples pendant le chargement
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("Veuillez vous connecter pour voir ce profil");
+        return;
+      }
+
+      const profileResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${params.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!profileResponse.ok) {
+        const error = await profileResponse.text();
+        try {
+          const jsonError = JSON.parse(error);
+          throw new Error(jsonError.message || "Profil non trouvé");
+        } catch {
+          throw new Error("Profil non trouvé");
+        }
+      }
+
+      const profileData = await profileResponse.json();
+      if (!profileData) {
+        throw new Error("Profil non trouvé");
+      }
+
+      setProfile(profileData);
+
+      if (!isCurrentUser) {
+        await fetchFriendshipStatus();
+      } else {
+        setIsFriend(false);
+        setFriendshipStatus('self');
+      }
+
+      // Réinitialiser le flag d'erreur si le chargement réussit
+      errorToastShown.current = false;
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      if (!errorToastShown.current) {
+        toast.error(error.message || "Erreur lors du chargement du profil");
+        errorToastShown.current = true;
+      }
+    } finally {
+      setIsLoading(false);
+      loadingRef.current = false;
+    }
+  }, [params.id, isCurrentUser]);
+
+  useEffect(() => {
+    if (params.id) {
+      fetchProfileData();
+    }
+    // Nettoyer le flag d'erreur lors du démontage
+    return () => {
+      errorToastShown.current = false;
+    };
+  }, [params.id, fetchProfileData]);
 
   useEffect(() => {
     if (profile) {
@@ -88,64 +170,15 @@ export default function Profile() {
     }
   }, [profile]);
 
-  const fetchProfileData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        toast.error("Veuillez vous connecter pour voir ce profil");
-        return;
-      }
-
-      // Récupération du profil
-      const profileResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!profileResponse.ok) {
-        const error = await profileResponse.text();
-        try {
-          const jsonError = JSON.parse(error);
-          throw new Error(
-            jsonError.message || "Erreur lors du chargement du profil"
-          );
-        } catch {
-          throw new Error("Erreur lors du chargement du profil");
-        }
-      }
-
-      const profileData = await profileResponse.json();
-      console.log("Profile data received:", profileData); // Debug log
-      setProfile(profileData);
-
-      // Vérification du statut d'ami
-      if (!isCurrentUser) {  
-        fetchFriendshipStatus();
-      } else {
-        // Si c'est le profil de l'utilisateur courant
-        setIsFriend(false);
-        setFriendshipStatus('self');
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      toast.error(error.message || "Erreur lors du chargement du profil");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [params.id, isCurrentUser]);
-
   useEffect(() => {
-    if (params.id) {
-      fetchProfileData();
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const currentUser = JSON.parse(userStr);
+      const isOwner =
+        currentUser.id === params.id || currentUser._id === params.id;
+      setIsCurrentUser(isOwner);
     }
-  }, [params.id, fetchProfileData]);
+  }, [params.id]);
 
   const handleCreatePost = async () => {
     if (!postContent.trim()) return;
@@ -431,6 +464,7 @@ export default function Profile() {
       }));
 
       setPosts(postsWithUser);
+      setPostsLoaded(true);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
@@ -442,40 +476,60 @@ export default function Profile() {
     }
   }, [params.id, profile]);
 
-  // Fonction pour charger le statut d'ami
-  const fetchFriendshipStatus = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/friends/status/${params.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+  useEffect(() => {
+    const handleNotificationAction = async () => {
+      const notificationAction = sessionStorage.getItem('notificationAction');
+      if (notificationAction) {
+        const action = JSON.parse(notificationAction);
+        sessionStorage.removeItem('notificationAction');
 
-      if (response.ok) {
-        const data = await response.json();
-        setFriendshipStatus(data.status);
-        setIsFriend(data.isFriend);
+        // Attendre que les posts soient chargés
+        if (!postsLoaded) return;
 
-        // Mettre à jour le localStorage pour les demandes en attente
-        if (data.status === 'pending_sent') {
-          const pendingRequests = JSON.parse(localStorage.getItem('pendingFriendRequests') || '[]');
-          if (!pendingRequests.includes(params.id)) {
-            pendingRequests.push(params.id);
-            localStorage.setItem('pendingFriendRequests', JSON.stringify(pendingRequests));
+        // Attendre 2 secondes avant de scroller
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const postElement = document.getElementById(`post-${action.postId}`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Si c'est un commentaire
+          if (action.type === 'POST_COMMENT' && action.commentId) {
+            // Trouver le post dans la liste
+            const post = posts.find(p => p._id === action.postId);
+            if (post) {
+              // Ouvrir les commentaires
+              const commentSection = document.querySelector(`#post-${action.postId} .comments-section`);
+              if (commentSection) {
+                commentSection.click();
+
+                // Attendre que les commentaires soient chargés
+                const checkCommentsLoaded = setInterval(() => {
+                  const commentElement = document.getElementById(`comment-${action.commentId}`);
+                  if (commentElement) {
+                    clearInterval(checkCommentsLoaded);
+                    setTimeout(() => {
+                      commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      commentElement.classList.add('highlight');
+                      setTimeout(() => commentElement.classList.remove('highlight'), 2000);
+                    }, 500);
+                  }
+                }, 100);
+
+                // Arrêter la vérification après 5 secondes si les commentaires ne sont pas chargés
+                setTimeout(() => clearInterval(checkCommentsLoaded), 5000);
+              }
+            }
           }
         }
       }
-    } catch (error) {
-      console.error('Error fetching friendship status:', error);
-    }
-  }, [params.id]);
+    };
 
-  // Gestionnaire de changement de statut d'ami
+    if (postsLoaded) {
+      handleNotificationAction();
+    }
+  }, [postsLoaded, posts]);
+
   const handleFriendshipStatusChange = useCallback((newStatus) => {
     setFriendshipStatus(newStatus);
     if (newStatus === 'friends') {
@@ -524,14 +578,11 @@ export default function Profile() {
             <div className={styles.defaultCover} />
           )}
           {isCurrentUser && (
-            <div className={`${styles.cameraIcon} ${styles.cameraIconMobile}`} onClick={() => coverPhotoInputRef.current?.click()}>
-              <FaCamera />
-              <input
-                type="file"
-                ref={coverPhotoInputRef}
-                hidden
-                accept="image/*"
-                onChange={(e) => handleUpdateCoverPhoto(e.target.files[0])}
+            <div className={styles.coverPhotoUpload}>
+              <PhotoUpload
+                type="cover"
+                currentImage={profile.coverPhoto}
+                onUpload={handleUpdateCoverPhoto}
               />
             </div>
           )}
@@ -554,14 +605,11 @@ export default function Profile() {
                     className={styles.avatar}
                   />
                   {isCurrentUser && (
-                    <div className={styles.cameraIcon} onClick={() => avatarInputRef.current?.click()}>
-                      <FaCamera />
-                      <input
-                        type="file"
-                        ref={avatarInputRef}
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => handleUpdateAvatar(e.target.files[0])}
+                    <div className={styles.avatarUpload}>
+                      <PhotoUpload
+                        type="avatar"
+                        currentImage={profile.avatar}
+                        onUpload={handleUpdateAvatar}
                       />
                     </div>
                   )}

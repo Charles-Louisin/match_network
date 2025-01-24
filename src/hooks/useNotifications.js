@@ -1,43 +1,36 @@
-import { useState, useEffect } from 'react';
+import { create } from 'zustand';
+
+const useNotificationsStore = create((set) => ({
+  unreadCount: 0,
+  updateUnreadCount: (count) => set({ unreadCount: count }),
+}));
 
 export const useNotifications = () => {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [friendRequests, setFriendRequests] = useState(0);
+  const { unreadCount, updateUnreadCount } = useNotificationsStore();
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/unread`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUnreadCount(data.unreadCount || 0);
-          setFriendRequests(data.friendRequests || 0);
+  const fetchUnreadCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/unread/count`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
+      });
 
-    fetchNotifications();
-    
-    // Mettre à jour les notifications toutes les 30 secondes
-    const interval = setInterval(fetchNotifications, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+      if (!response.ok) throw new Error('Erreur lors de la récupération du nombre de notifications non lues');
+      
+      const { count } = await response.json();
+      updateUnreadCount(count);
+      return count;
+    } catch (error) {
+      console.error('Erreur:', error);
+      return 0;
+    }
+  };
 
   return {
     unreadCount,
-    friendRequests,
-    setUnreadCount,
-    setFriendRequests
+    updateUnreadCount,
+    fetchUnreadCount,
   };
 };

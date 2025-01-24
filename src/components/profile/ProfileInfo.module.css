@@ -98,4 +98,139 @@
 
 .saveButton:hover {
   background: #166fe5;
-} 
+}
+
+.profileContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--background-primary);
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.avatarContainer {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 1.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.editButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editButton:hover {
+  background-color: var(--primary-dark);
+}
+
+.username {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.5rem 0;
+}
+
+.bio {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .profileContainer {
+    padding: 1.5rem 1rem;
+  }
+
+  .avatarContainer {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+  }
+
+  .username {
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+    word-break: break-word;
+  }
+
+  .bio {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .stats {
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .statLabel {
+    font-size: 0.8rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+}

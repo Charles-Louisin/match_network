@@ -115,7 +115,12 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none !important;
+}
+
+/* Pour les éléments qui utilisent des classes Tailwind */
+.hover\:underline:hover {
+  text-decoration: none !important;
 }
 
 /* Styles pour le texte */

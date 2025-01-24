@@ -1,0 +1,144 @@
+.pageContainer {
+  padding-top: 60px; /* Espace pour la navbar */
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.contentContainer {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h1 {
+  font-size: 24px;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.markAllRead {
+  background-color: transparent;
+  color: #1877f2;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.markAllRead:hover {
+  background-color: #f0f2f5;
+}
+
+.notificationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notificationItem {
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.notificationItem:hover {
+  background-color: #f0f2f5;
+}
+
+.unread {
+  background-color: #e7f3ff;
+}
+
+.unread:hover {
+  background-color: #dbeeff;
+}
+
+.notificationContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar img {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notificationText {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.username {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.action {
+  color: #65676b;
+}
+
+.time {
+  font-size: 12px;
+  color: #65676b;
+  margin-top: 4px;
+}
+
+.previewImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.previewImage img {
+  width: 60px !important;
+  height: 60px !important;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #65676b;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #65676b;
+  font-size: 16px;
+}
+
+.modalLoading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  color: #666;
+}

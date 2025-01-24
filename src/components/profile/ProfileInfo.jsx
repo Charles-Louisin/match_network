@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
+import { getImageUrl } from '@/utils/imageUtils'
 import styles from './ProfileInfo.module.css'
 
 export default function ProfileInfo({ profile, onProfileUpdate }) {
@@ -148,11 +149,11 @@ export default function ProfileInfo({ profile, onProfileUpdate }) {
           </div>
           <div className={styles.infoItem}>
             <Image
-              src={profile.profilePicture || '/default-avatar.png'}
+              src={profile.profilePicture ? getImageUrl(profile.profilePicture) : '/images/default-avatar.jpg'}
               alt="Profile picture"
-              width={100}
-              height={100}
-              className={styles.profilePicture}
+              width={128}
+              height={128}
+              className={styles.profileImage}
             />
           </div>
         </div>

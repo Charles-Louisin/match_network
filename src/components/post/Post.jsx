@@ -250,7 +250,11 @@ const Post = ({ post, onPostUpdate }) => {
 
   const renderComment = (comment, index) => {
     return (
-      <div key={index} className={styles.comment}>
+      <div 
+        key={comment._id} 
+        id={`comment-${comment._id}`}
+        className={styles.comment}
+      >
         <Link href={`/profile/${typeof comment.user === 'string' ? comment.user : comment.user?.id || comment.user?._id}`} className={styles.commentUserInfo}>
           <Image
             src={comment.user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
@@ -269,10 +273,18 @@ const Post = ({ post, onPostUpdate }) => {
               <TimeAgo timestamp={comment.createdAt} />
             </span>
           </div>
-          <p className={styles.commentText}>{comment.content}</p>
+          <p className={styles.commentText} style={{ whiteSpace: 'pre-wrap' }}>
+            {comment.content}
+          </p>
         </div>
       </div>
     );
+  };
+
+  const autoResizeTextArea = (e) => {
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   };
 
   if (!isClient) {
@@ -280,7 +292,10 @@ const Post = ({ post, onPostUpdate }) => {
   }
 
   return (
-    <div className={styles.post}>
+    <div 
+      className={styles.post} 
+      id={`post-${post._id}`}
+    >
       {/* En-tête du post */}
       <div className={styles.postHeader}>
         <Link 
@@ -307,24 +322,22 @@ const Post = ({ post, onPostUpdate }) => {
       </div>
 
       {/* Contenu du post */}
-      {post.content && (
-        <div className={styles.content}>
-          <p>{post.content}</p>
-        </div>
-      )}
-
-      {post.image && (
-        <div className={styles.imageContainer}>
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-            alt="Post image"
-            width={500}
-            height={500}
-            className={styles.postImage}
-            priority
-          />
-        </div>
-      )}
+      <div className={styles.postContent}>
+        <p className={styles.text} style={{ whiteSpace: 'pre-wrap' }}>
+          {post.content}
+        </p>
+        {post.image && (
+          <div className={styles.imageContainer}>
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
+              alt="Post image"
+              width={500}
+              height={300}
+              className={styles.image}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Section des interactions */}
       <div className={styles.interactionStats}>
@@ -345,6 +358,7 @@ const Post = ({ post, onPostUpdate }) => {
           type="button"
           className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
           onClick={handleLike}
+          data-testid="like-button"
         >
           <FaThumbsUp className={`${styles.buttonIcon} ${isLiked ? styles.liked : ''}`} />
           J&apos;aime
@@ -354,6 +368,7 @@ const Post = ({ post, onPostUpdate }) => {
           type="button"
           className={styles.actionButton}
           onClick={() => setShowComments(!showComments)}
+          data-testid="comment-button"
         >
           <FaComment className={styles.buttonIcon} />
           Commenter
@@ -375,13 +390,15 @@ const Post = ({ post, onPostUpdate }) => {
               }}
             />
             <div className={styles.commentInputWrapper}>
-              <input
-                type="text"
+              <textarea
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                onChange={(e) => {
+                  setComment(e.target.value);
+                  autoResizeTextArea(e);
+                }}
+                onInput={autoResizeTextArea}
                 placeholder="Écrivez un commentaire..."
-                className={styles.commentInput}
-                disabled={isSubmitting}
+                className={styles.commentTextarea}
               />
               <button
                 type="submit"
