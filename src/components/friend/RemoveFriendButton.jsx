@@ -19,8 +19,8 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
         throw new Error('Non authentifié');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/remove/${friendId}`, {
-        method: 'POST',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/${friendId}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
