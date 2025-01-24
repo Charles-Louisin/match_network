@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { IoImageOutline } from 'react-icons/io5'
 import { FaUserTag } from 'react-icons/fa'
+import TagFriendsModal from './TagFriendsModal'
 import styles from './CreatePost.module.css'
 import { toast } from 'react-hot-toast'
 
@@ -13,6 +14,9 @@ export default function CreatePost({ onPostCreated }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showTagModal, setShowTagModal] = useState(false)
+  const [taggedFriends, setTaggedFriends] = useState([])
+  const [previewImage, setPreviewImage] = useState(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -20,6 +24,15 @@ export default function CreatePost({ onPostCreated }) {
       setUser(JSON.parse(userData))
     }
   }, [])
+
+  useEffect(() => {
+    // Créer l'URL de prévisualisation pour l'image sélectionnée
+    if (selectedImage) {
+      const objectUrl = URL.createObjectURL(selectedImage)
+      setPreviewImage(objectUrl)
+      return () => URL.revokeObjectURL(objectUrl)
+    }
+  }, [selectedImage])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -33,18 +46,15 @@ export default function CreatePost({ onPostCreated }) {
     setIsLoading(true)
     const formData = new FormData()
     
-    // Toujours ajouter le contenu, même s'il est vide
     formData.append('content', content)
     
     if (selectedImage) {
-      // Vérifier la taille de l'image (5MB max)
       if (selectedImage.size > 10 * 1024 * 1024) {
         setError("L'image ne doit pas dépasser 10MB")
         setIsLoading(false)
         return
       }
       
-      // Vérifier le type de l'image
       if (!selectedImage.type.match(/^image\/(jpeg|png|gif|jpg)$/)) {
         setError("Format d'image non supporté. Utilisez JPG, PNG ou GIF")
         setIsLoading(false)
@@ -52,6 +62,11 @@ export default function CreatePost({ onPostCreated }) {
       }
       
       formData.append('image', selectedImage)
+    }
+
+    // Ajouter les amis tagués
+    if (taggedFriends.length > 0) {
+      formData.append('taggedUsers', JSON.stringify(taggedFriends.map(friend => friend.id)))
     }
 
     try {
@@ -76,6 +91,8 @@ export default function CreatePost({ onPostCreated }) {
       const newPost = await response.json()
       setContent('')
       setSelectedImage(null)
+      setPreviewImage(null)
+      setTaggedFriends([])
       
       // Réinitialiser le champ de fichier
       const fileInput = document.querySelector('input[type="file"]')
@@ -97,108 +114,128 @@ export default function CreatePost({ onPostCreated }) {
     }
   }
 
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0])
+    }
+  }
+
+  const handleTagFriends = (selectedFriends) => {
+    setTaggedFriends(selectedFriends)
+  }
+
+  const removeTaggedFriend = (friendId) => {
+    setTaggedFriends(prev => prev.filter(friend => friend.id !== friendId))
+  }
+
   const autoResizeTextArea = (e) => {
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-  };
+    const textarea = e.target
+    textarea.style.height = 'auto'
+    textarea.style.height = textarea.scrollHeight + 'px'
+  }
 
   return (
     <div className={styles.createPost}>
       <div className={styles.header}>
         <Image
-          src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : '/images/default-avatar.jpg'}
+          src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
           alt="Profile"
           width={40}
           height={40}
-          className={styles.profileImage}
-          priority
-          onError={(e) => {
-            e.target.src = '/images/default-avatar.jpg'
-          }}
+          className={styles.avatar}
         />
-        <div className={styles.inputContainer}>
-          <textarea
-            className={styles.contentInput}
-            placeholder="Quoi de neuf ?"
-            value={content}
-            onChange={(e) => {
-              setContent(e.target.value);
-              autoResizeTextArea(e);
-            }}
-            onInput={autoResizeTextArea}
-            rows={4}
-          />
-        </div>
+        <textarea
+          value={content}
+          onChange={(e) => {
+            setContent(e.target.value)
+            autoResizeTextArea(e)
+          }}
+          placeholder={`Que voulez-vous partager ${user?.username} ?`}
+          className={styles.input}
+        />
       </div>
 
-      {selectedImage && (
+      {/* Section des amis tagués */}
+      {taggedFriends.length > 0 && (
+        <div className={styles.taggedFriends}>
+          <p className={styles.taggedHeader}>
+            est avec {taggedFriends.map((friend, index) => (
+              <span key={friend.id} className={styles.taggedName}>
+                <span className={styles.tagSymbol}>@</span>{friend.username}
+                <button
+                  onClick={() => removeTaggedFriend(friend.id)}
+                  className={styles.removeTag}
+                >
+                  ×
+                </button>
+                {index < taggedFriends.length - 1 && ', '}
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
+
+      {/* Prévisualisation de l'image */}
+      {previewImage && (
         <div className={styles.imagePreview}>
           <Image
-            className={styles.image}
-            src={URL.createObjectURL(selectedImage)}
+            src={previewImage}
             alt="Preview"
-            layout="fill"
-            objectFit="contain"
+            width={0}
+            height={0}
+            sizes="100vw"
+            className={styles.previewImg}
           />
           <button
+            onClick={() => {
+              setSelectedImage(null)
+              setPreviewImage(null)
+            }}
             className={styles.removeImage}
-            onClick={() => setSelectedImage(null)}
-            disabled={isLoading}
           >
             ×
           </button>
         </div>
       )}
 
-      {error && (
-        <div className={styles.error}>
-          {error}
-        </div>
-      )}
+      {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.actions}>
-        <label className={`${styles.actionButton} ${isLoading ? styles.disabled : ''}`}>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files[0]
-              if (file) {
-                setSelectedImage(file)
-              }
-            }}
-            disabled={isLoading}
-            hidden
-          />
-          <IoImageOutline className={styles.icon} />
-          <span className={styles.actionButtonText}>Photo</span>
-        </label>
+        <div className={styles.buttons}>
+          <label className={styles.imageButton}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+            <IoImageOutline size={24} />
+            <span>Image</span>
+          </label>
 
-        <button 
-          className={`${styles.actionButton} ${isLoading ? styles.disabled : ''}`}
-          onClick={() => toast.error('Fonctionnalité à venir')}
-          disabled={isLoading}
-        >
-          <FaUserTag className={styles.icon} />
-          <span className={styles.actionButtonText}>Taguer</span>
-        </button>
+          <button
+            className={styles.tagButton}
+            onClick={() => setShowTagModal(true)}
+          >
+            <FaUserTag size={20} />
+            <span>Taguer</span>
+          </button>
+        </div>
 
         <button
           onClick={handleSubmit}
-          className={`${styles.submitButton} ${isLoading ? styles.loading : ''}`}
           disabled={isLoading || (!content && !selectedImage)}
+          className={`${styles.submitButton} ${isLoading ? styles.loading : ''}`}
         >
-          {isLoading ? (
-            <div className={styles.loadingSpinner}>
-              <div className={styles.spinner}></div>
-              <span>Publication en cours...</span>
-            </div>
-          ) : (
-            'Publier'
-          )}
+          {isLoading ? 'Publication...' : 'Publier'}
         </button>
       </div>
+
+      <TagFriendsModal
+        isOpen={showTagModal}
+        onClose={() => setShowTagModal(false)}
+        onTagFriends={handleTagFriends}
+      />
     </div>
   )
 }

@@ -1,0 +1,226 @@
+.comment {
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  background-color: var(--background-secondary);
+}
+
+.commentMain {
+  display: flex;
+  gap: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  position: relative;
+  display: block;
+}
+
+.avatarImage {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.commentContent {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.commentText {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.commentActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  color: var(--primary);
+  background-color: var(--background-hover);
+}
+
+.actionButton.liked {
+  color: var(--primary);
+}
+
+.menuContainer {
+  position: relative;
+  margin-left: auto;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.menuButton:hover {
+  background-color: var(--background-hover);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 150px;
+  padding: 4px 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.menuItem:hover {
+  background-color: var(--background-hover);
+}
+
+.editContainer {
+  margin-top: 8px;
+}
+
+.editInput,
+.replyInput {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.editButtons,
+.replyButtons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.cancelButton,
+.saveButton,
+.replyButton {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+.saveButton,
+.replyButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: var(--background-hover);
+}
+
+.saveButton:hover,
+.replyButton:hover {
+  background-color: var(--primary-dark);
+}
+
+.cancelButton:disabled,
+.saveButton:disabled,
+.replyButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.replyContainer {
+  margin-top: 12px;
+  margin-left: 52px;
+}
+
+.replies {
+  margin-left: 52px;
+  margin-top: 8px;
+}
+
+.replies .comment {
+  background-color: var(--background-tertiary);
+  margin-top: 4px;
+}
+
+.replies .avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.replies .comment {
+  border: 1px solid var(--border-color);
+}

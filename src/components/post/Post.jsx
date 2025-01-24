@@ -3,12 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaThumbsUp, FaComment, FaPaperPlane } from "react-icons/fa";
+import { FaThumbsUp, FaComment, FaPaperPlane, FaEllipsisV, FaTrash, FaPencilAlt } from "react-icons/fa";
 import TimeAgo from "../utils/TimeAgo";
+import Comment from './Comment';
 import styles from "./Post.module.css";
 import { toast } from 'react-hot-toast';
 
-const Post = ({ post, onPostUpdate }) => {
+const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState(null);
   const [postUser, setPostUser] = useState(post.user || null);
@@ -19,6 +20,11 @@ const Post = ({ post, onPostUpdate }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(post.content);
+
+  const isAuthor = currentUser?.id === post.user?.id;
 
   useEffect(() => {
     setIsClient(true)
@@ -138,38 +144,60 @@ const Post = ({ post, onPostUpdate }) => {
     }
   };
 
-  const getLikeText = () => {
-    if (!user) return "Connectez-vous pour liker";
-    
-    if (likesCount === 0) {
-      return "Soyez le premier à liker";
+  
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) throw new Error('Erreur lors de la suppression')
+
+      onPostDelete(post._id)
+      toast.success('Post supprimé avec succès')
+    } catch (error) {
+      console.error('Erreur suppression:', error)
+      toast.error('Impossible de supprimer le post')
     }
-    
-    if (isLiked) {
-      if (likesCount === 1) {
-        return "Vous avez liké";
-      } else if (likesCount === 2) {
-        return "Vous et 1 personne avez liké";
-      } else {
-        return `Vous et ${likesCount - 1} autres personnes avez liké`;
-      }
-    } else {
-      if (likesCount === 1) {
-        return "1 personne a liké";
-      } else {
-        return `${likesCount} personnes ont liké`;
-      }
+  }
+
+  const handleEdit = async () => {
+    if (!editedContent.trim() || isSubmitting) return
+
+    try {
+      setIsSubmitting(true)
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: editedContent }),
+      })
+
+      if (!response.ok) throw new Error('Erreur lors de la modification')
+
+      const updatedPost = await response.json()
+      onPostUpdate(updatedPost)
+      setIsEditing(false)
+      toast.success('Post modifié avec succès')
+    } catch (error) {
+      console.error('Erreur modification:', error)
+      toast.error('Impossible de modifier le post')
+    } finally {
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleComment = async (e) => {
     e.preventDefault();
     if (!comment.trim() || isSubmitting) return;
-
-    if (!user) {
-      toast.error("Vous devez être connecté pour commenter");
-      return;
-    }
 
     try {
       setIsSubmitting(true);
@@ -248,38 +276,19 @@ const Post = ({ post, onPostUpdate }) => {
     fetchComments();
   }, [post._id, showComments]);
 
-  const renderComment = (comment, index) => {
-    return (
-      <div 
-        key={comment._id} 
-        id={`comment-${comment._id}`}
-        className={styles.comment}
-      >
-        <Link href={`/profile/${typeof comment.user === 'string' ? comment.user : comment.user?.id || comment.user?._id}`} className={styles.commentUserInfo}>
-          <Image
-            src={comment.user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
-            alt={comment.user?.username || "User"}
-            width={40}
-            height={40}
-            className={styles.commentAvatar}
-          />
-        </Link>
-        <div className={styles.commentContent}>
-          <div className={styles.commentHeader}>
-            <span className={styles.commentUsername}>
-              {comment.user?.username}
-            </span>
-            <span className={styles.commentTime}>
-              <TimeAgo timestamp={comment.createdAt} />
-            </span>
-          </div>
-          <p className={styles.commentText} style={{ whiteSpace: 'pre-wrap' }}>
-            {comment.content}
-          </p>
-        </div>
-      </div>
-    );
-  };
+  const handleCommentUpdate = (updatedComment) => {
+    setComments(prevComments =>
+      prevComments.map(c =>
+        c._id === updatedComment._id ? updatedComment : c
+      )
+    )
+  }
+
+  const handleCommentDelete = (commentId) => {
+    setComments(prevComments =>
+      prevComments.filter(c => c._id !== commentId)
+    )
+  }
 
   const autoResizeTextArea = (e) => {
     const textarea = e.target;
@@ -319,25 +328,84 @@ const Post = ({ post, onPostUpdate }) => {
             </span>
           </div>
         </Link>
-      </div>
-
-      {/* Contenu du post */}
-      <div className={styles.postContent}>
-        <p className={styles.text} style={{ whiteSpace: 'pre-wrap' }}>
-          {post.content}
-        </p>
-        {post.image && (
-          <div className={styles.imageContainer}>
-            <Image
-              src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-              alt="Post image"
-              width={500}
-              height={300}
-              className={styles.image}
-            />
+        {isAuthor && (
+          <div className={styles.menuContainer}>
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className={styles.menuButton}
+            >
+              <FaEllipsisV />
+            </button>
+            {showMenu && (
+              <div className={styles.menu}>
+                <button
+                  onClick={() => {
+                    setIsEditing(true)
+                    setShowMenu(false)
+                  }}
+                  className={styles.menuItem}
+                >
+                  <FaPencilAlt /> Modifier
+                </button>
+                <button
+                  onClick={() => {
+                    handleDelete()
+                    setShowMenu(false)
+                  }}
+                  className={styles.menuItem}
+                >
+                  <FaTrash /> Supprimer
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Contenu du post */}
+      {isEditing ? (
+        <div className={styles.editContainer}>
+          <textarea
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            className={styles.editInput}
+            placeholder="Modifier votre publication..."
+          />
+          <div className={styles.editButtons}>
+            <button
+              onClick={() => setIsEditing(false)}
+              className={styles.cancelButton}
+              disabled={isSubmitting}
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleEdit}
+              className={styles.saveButton}
+              disabled={isSubmitting || !editedContent.trim()}
+            >
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.postContent}>
+          <p className={styles.text} style={{ whiteSpace: 'pre-wrap' }}>
+            {post.content}
+          </p>
+          {post.image && (
+            <div className={styles.imageContainer}>
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
+                alt="Post image"
+                width={500}
+                height={300}
+                className={styles.image}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Section des interactions */}
       <div className={styles.interactionStats}>
@@ -345,7 +413,7 @@ const Post = ({ post, onPostUpdate }) => {
           <FaThumbsUp 
             className={`${styles.thumbIcon} ${isLiked ? styles.liked : ''}`}
           />
-          <span>{getLikeText()}</span>
+          <span>{likesCount}</span>
         </div>
         <div className={styles.commentSummary}>
           {comments.length} commentaire{comments.length !== 1 ? 's' : ''}
@@ -376,58 +444,72 @@ const Post = ({ post, onPostUpdate }) => {
       </div>
 
       {/* Section des commentaires */}
-      {showComments && (
-        <div className={styles.comments}>
-          <form onSubmit={handleComment} className={styles.commentForm}>
-            <Image
-              src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
-              alt="Your avatar"
-              width={32}
-              height={32}
-              className={styles.commentAvatar}
-              onError={(e) => {
-                e.target.src = "/images/default-avatar.jpg";
-              }}
-            />
-            <div className={styles.commentInputWrapper}>
-              <textarea
-                value={comment}
-                onChange={(e) => {
-                  setComment(e.target.value);
-                  autoResizeTextArea(e);
-                }}
-                onInput={autoResizeTextArea}
-                placeholder="Écrivez un commentaire..."
-                className={styles.commentTextarea}
-              />
-              <button
-                type="submit"
-                className={`${styles.commentSubmit} ${isSubmitting ? styles.loading : ''}`}
-                disabled={!comment.trim() || isSubmitting}
-              >
-                {isSubmitting ? (
-                  <div className={styles.spinnerSmall}></div>
-                ) : (
-                  <FaPaperPlane />
-                )}
-              </button>
-            </div>
-          </form>
+      <div className={styles.commentsSection}>
+        {/* <button
+          onClick={() => setShowComments(!showComments)}
+          className={styles.showCommentsButton}
+        >
+          <FaComment />
+          <span>{comments.length} commentaire{comments.length !== 1 ? 's' : ''}</span>
+        </button> */}
 
-          <div className={styles.commentsList}>
-            {isLoadingComments ? (
-              <div className={styles.loadingComments}>
-                <div className={styles.spinner}></div>
-                <span>Chargement des commentaires...</span>
+        {showComments && (
+          <>
+            {/* Formulaire de commentaire */}
+            <div className={styles.commentForm}>
+              <Image
+                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+                alt={user?.username || "User"}
+                width={40}
+                height={40}
+                className={styles.commentAvatar}
+              />
+              <div className={styles.commentInputContainer}>
+                <textarea
+                  value={comment}
+                  onChange={(e) => {
+                    setComment(e.target.value);
+                    autoResizeTextArea(e);
+                  }}
+                  onInput={autoResizeTextArea}
+                  placeholder="Écrire un commentaire..."
+                  className={styles.commentInput}
+                />
+                <button
+                  type="submit"
+                  className={`${styles.commentSubmit} ${isSubmitting ? styles.loading : ''}`}
+                  disabled={!comment.trim() || isSubmitting}
+                  onClick={handleComment}
+                >
+                  {isSubmitting ? (
+                    <div className={styles.spinnerSmall}></div>
+                  ) : (
+                    <FaPaperPlane />
+                  )}
+                </button>
               </div>
-            ) : comments.length > 0 ? (
-              comments.map((comment, index) => renderComment(comment, index))
-            ) : (
-              <p className={styles.noComments}>Aucun commentaire pour le moment</p>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+
+            {/* Liste des commentaires */}
+            <div className={styles.commentsList}>
+              {isLoadingComments ? (
+                <div className={styles.loading}>Chargement des commentaires...</div>
+              ) : (
+                comments.map(comment => (
+                  <Comment
+                    key={comment._id}
+                    comment={comment}
+                    postId={post._id}
+                    currentUser={user}
+                    onCommentUpdate={handleCommentUpdate}
+                    onCommentDelete={handleCommentDelete}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

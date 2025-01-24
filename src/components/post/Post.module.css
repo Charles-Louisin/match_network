@@ -151,19 +151,105 @@
   background-color: white;
 }
 
+.commentsSection {
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.showCommentsButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.showCommentsButton:hover {
+  background-color: var(--background-hover);
+}
+
 .commentForm {
   display: flex;
   gap: 12px;
-  padding: 12px;
-  background: #f0f2f5;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  margin-top: 16px;
+  padding: 0 12px;
 }
 
-.commentInputWrapper {
-  width: 100%;
-  margin-top: 8px;
+.commentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.commentInputContainer {
+  flex-grow: 1;
   position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.commentInput {
+  width: 100%;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 8px 40px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none;
+  overflow-y: auto;
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.commentButton {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.commentButton:hover {
+  background-color: var(--background-hover);
+}
+
+.commentButton:disabled {
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.commentsList {
+  margin-top: 16px;
+  padding: 0 12px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 16px;
 }
 
 .commentTextarea,
@@ -363,6 +449,118 @@
   font-size: 15px;
   line-height: 1.4;
   color: #1c1e21;
+}
+
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: var(--background-hover);
+  color: var(--text-primary);
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 150px;
+  padding: 4px 0;
+  border: 1px solid var(--border-color);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: var(--background-hover);
+}
+
+.editContainer {
+  margin: 12px 0;
+}
+
+.editInput {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.editButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: var(--background-hover);
+}
+
+.saveButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
