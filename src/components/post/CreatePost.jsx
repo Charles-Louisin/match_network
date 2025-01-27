@@ -120,7 +120,7 @@ export default function CreatePost({ onPostCreated }) {
         <div className={styles.inputContainer}>
           <textarea
             className={styles.contentInput}
-            placeholder="Quoi de neuf ?"
+            placeholder={`Quoi de neuf ${user?.username} ?`}
             value={content}
             onChange={(e) => {
               setContent(e.target.value);
