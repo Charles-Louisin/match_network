@@ -68,7 +68,7 @@ export default function PhotoUpload({ type, currentImage, onUpload }) {
       {isModalOpen && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
-            <h3>Aperçu de l'image</h3>
+            <h3>Aperçu de l&lsquo;image</h3>
             <div className={`${styles.previewContainer} ${type === 'avatar' ? styles.avatarPreview : styles.coverPreview}`}>
               {previewUrl && (
                 <Image
