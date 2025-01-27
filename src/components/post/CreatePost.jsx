@@ -127,7 +127,7 @@ export default function CreatePost({ onPostCreated }) {
               autoResizeTextArea(e);
             }}
             onInput={autoResizeTextArea}
-            rows={4}
+            rows={1}
           />
         </div>
       </div>
@@ -158,6 +158,7 @@ export default function CreatePost({ onPostCreated }) {
       )}
 
       <div className={styles.actions}>
+        <div className={styles.actionButtons}>
         <label className={`${styles.actionButton} ${isLoading ? styles.disabled : ''}`}>
           <input
             type="file"
@@ -183,6 +184,8 @@ export default function CreatePost({ onPostCreated }) {
           <FaUserTag className={styles.icon} />
           <span className={styles.actionButtonText}>Taguer</span>
         </button>
+
+        </div>
 
         <button
           onClick={handleSubmit}

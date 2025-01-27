@@ -130,9 +130,9 @@ export default function Notifications() {
       case 'POST_LIKE':
         return 'a aimé votre publication'
       case 'POST_COMMENT':
-        return `a commenté votre publication: "${truncateText(notification.comment?.content)}"`
+        return `a commenté votre publication ${truncateText(notification.comment?.content)}`
       case 'POST_CREATED':
-        return `a partagé une publication: "${truncateText(notification.reference?.content)}"`
+        return `a partagé une publication ${truncateText(notification.reference?.content)}`
       case 'PROFILE_PHOTO_UPDATED':
         return 'a changé sa photo de profil'
       case 'COVER_PHOTO_UPDATED':

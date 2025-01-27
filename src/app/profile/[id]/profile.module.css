@@ -35,8 +35,6 @@
 
 .cameraIcon {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   width: 32px;
@@ -88,12 +86,14 @@
 .avatarContainer {
   position: relative;
   margin-right: 20px;
+  width: 150px;
+  height: 150px;
   margin-top: -75px;
 }
 
 .avatar {
-  width: 150px !important;
-  height: 150px !important;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 50%;
   border: 4px solid white;
   object-fit: cover;
@@ -1073,6 +1073,11 @@
     height: 300px;
   }
 
+  .coverPhotoUpload {
+    top: 70px;
+    right: 10px;
+  }
+
   .profileInfo {
     flex-direction: column;
     align-items: center;
@@ -1090,7 +1095,16 @@
   .avatarContainer {
     width: 120px;
     height: 120px;
-    border-width: 3px;
+    border-radius: 50%;
+    /* border-width: 3px; */
+    /* background-color: blue; */
+  }
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* background-color: red; */
   }
 
   .editAvatarButton {

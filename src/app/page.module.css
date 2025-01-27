@@ -6,7 +6,7 @@
   --button-primary-hover: #383838;
   --button-secondary-hover: #f2f2f2;
 
-  display: grid;
+  /* display: grid; */
   grid-template-rows: 20px 1fr 20px;
   align-items: center;
   justify-items: center;
@@ -29,7 +29,7 @@
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   align-items: center;
   justify-content: center;
   padding-top: 0; /* Supprime l'espace en haut */

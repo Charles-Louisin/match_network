@@ -155,9 +155,16 @@
   gap: 1rem;
 }
 
+.friendsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
 .friendCard {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   transition: transform 0.2s ease;
   width: fit-content;
@@ -298,5 +305,24 @@
   .searchInput {
     font-size: 13px;
     padding: 8px 10px;
+  }
+
+  .friendsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .friendCard {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+    width: fit-content;
+    position: relative;
+    width: 100%;
+    padding: 0 10px 0 10px;
+    z-index: 1;
   }
 }

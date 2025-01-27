@@ -2,7 +2,7 @@
   background-color: var(--background-primary);
   border-radius: 10px;
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
 }
@@ -34,6 +34,8 @@
   color: var(--text-primary);
   resize: none;
   font-size: 0.95rem;
+  scrollbar-width: none;
+  transition: border-color 0.2s
 }
 
 .contentInput:focus {
@@ -85,7 +87,13 @@
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+  /* border-top: 1px solid var(--border-color); */
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .actionButton {
@@ -99,11 +107,12 @@
   font-size: 0.9rem;
   cursor: pointer;
   border-radius: 20px;
+  background-color: #e7e5e586;
   transition: background-color 0.2s;
 }
 
 .actionButton:hover {
-  background-color: var(--hover-color);
+  background-color: #d6d3d394;
 }
 
 .actionButton.disabled {
@@ -165,4 +174,30 @@
   padding: 8px;
   background-color: var(--error-bg);
   border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .createPost {
+    border-radius: 0;
+    margin-bottom: 20px;
+  }
+
+  .actionButtons {
+    gap: 10px;
+  }
+
+  .actionButton {
+    border-radius: 10px;
+  }
+
+  .actionButtonText {
+    display: none;
+  }
+
+  .submitButton { 
+    padding: 8x 12px;
+    font-weight: 500;
+    min-width: 50px;
+    transition: opacity 0.2s;
+}
 }

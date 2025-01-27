@@ -313,7 +313,9 @@ const Post = ({ post, onPostUpdate }) => {
             }}
           />
           <div className={styles.userDetails}>
-            <span className={styles.username}>{postUser?.username || "Utilisateur inconnu"}</span>
+            <span className={styles.username}>{postUser?.username || "Utilisateur inconnu"}
+              <small className={styles.usernameSmall}>a partagé une publication</small>
+            </span>
             <span className={styles.postDate}>
               <TimeAgo timestamp={post.createdAt} />
             </span>
@@ -348,7 +350,7 @@ const Post = ({ post, onPostUpdate }) => {
           <span>{getLikeText()}</span>
         </div>
         <div className={styles.commentSummary}>
-          {comments.length} commentaire{comments.length !== 1 ? 's' : ''}
+          {comments.length} commentaire{comments.length <= 1 ? '' : 's'}
         </div>
       </div>
 
@@ -399,6 +401,7 @@ const Post = ({ post, onPostUpdate }) => {
                 onInput={autoResizeTextArea}
                 placeholder="Écrivez un commentaire..."
                 className={styles.commentTextarea}
+                rows={1}
               />
               <button
                 type="submit"

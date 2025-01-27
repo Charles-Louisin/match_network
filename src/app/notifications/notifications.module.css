@@ -142,3 +142,50 @@
   font-size: 16px;
   color: #666;
 }
+
+
+@media (max-width: 640px) {
+
+  .header {
+    margin-bottom: 20px;
+    padding-bottom: 10;
+    border-bottom: none;
+    padding: 0 12px 0 12px;
+  }
+
+  .contentContainer {
+    max-width: 100%;
+    padding: 0;
+    border-radius: 0;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .markAllRead {
+    font-size: 11px;
+  }
+
+  .notificationsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .notificationItem {
+    border-radius: 0;
+  }
+
+  .previewImage {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .action {
+    font-size: 13px;
+    margin-left: 3px;
+  }
+}
