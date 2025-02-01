@@ -3,9 +3,15 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FaThumbsUp, FaTimes, FaReply } from 'react-icons/fa'
+import { FaThumbsUp, FaTimes, FaReply, FaComment } from 'react-icons/fa'
+import TimeAgo from 'timeago-react'
+import * as timeago from 'timeago.js'
+import fr from 'timeago.js/lib/lang/fr'
 import styles from './PostInteractionModal.module.css'
 import { toast } from 'react-hot-toast'
+
+// Enregistrer le français comme langue
+timeago.register('fr', fr)
 
 const PostInteractionModal = ({
   isOpen,
@@ -353,6 +359,157 @@ const PostInteractionModal = ({
     }
   }
 
+  // Créer une notification
+  const createNotification = async (recipientId, type, postId, commentId = null) => {
+    try {
+      const token = localStorage.getItem('token')
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recipientId,
+          type,
+          postId,
+          commentId,
+        }),
+      })
+    } catch (error) {
+      console.error('Erreur lors de la création de la notification:', error)
+    }
+  }
+
+  // Gérer le like d'un commentaire
+  const handleLikeComment = async (commentId) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token || !currentUserData) {
+        toast.error('Vous devez être connecté pour liker')
+        return
+      }
+
+      const comment = comments.find(c => c._id === commentId)
+      const isCurrentlyLiked = comment.likes?.includes(currentUserData.id)
+
+      // Mise à jour optimiste
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment._id === commentId 
+            ? { 
+                ...comment, 
+                likes: isCurrentlyLiked 
+                  ? comment.likes.filter(id => id !== currentUserData.id)
+                  : [...(comment.likes || []), currentUserData.id]
+              }
+            : comment
+        )
+      )
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments/${commentId}/like`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du like')
+      }
+
+      // Créer une notification si on ajoute un like
+      if (!isCurrentlyLiked && comment.user._id !== currentUserData.id) {
+        await createNotification(
+          comment.user._id,
+          'COMMENT_LIKE',
+          postId,
+          commentId
+        )
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      toast.error(error.message)
+    }
+  }
+
+  // Publier un commentaire
+  const handleAddComment = async (e) => {
+    e.preventDefault()
+    if (!newComment.trim() || isSubmitting) return
+
+    try {
+      setIsSubmitting(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token || !currentUserData) {
+        toast.error('Vous devez être connecté pour commenter')
+        return
+      }
+
+      const userData = {
+        _id: currentUserData.id,
+        username: currentUserData.username,
+        avatar: currentUserData.avatar
+      }
+
+      // Extraire les mentions des utilisateurs
+      const mentions = newComment.match(/@\{([^}]+)\}/g)?.map(mention => 
+        mention.slice(2, -1)
+      ) || []
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comment`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ 
+            content: newComment.trim(),
+            userId: userData._id
+          }),
+        }
+      )
+
+      const newCommentData = await response.json()
+      
+      const commentWithUser = {
+        ...newCommentData,
+        user: userData,
+        likes: [],
+        createdAt: new Date().toISOString()
+      }
+
+      setComments(prevComments => [commentWithUser, ...prevComments])
+      setNewComment('')
+
+      // Créer des notifications pour les utilisateurs mentionnés
+      const mentionedUsers = friends.filter(friend => 
+        mentions.includes(friend.username) && friend._id !== currentUserData.id
+      )
+
+      for (const user of mentionedUsers) {
+        await createNotification(
+          user._id,
+          'COMMENT_MENTION',
+          postId,
+          commentWithUser._id
+        )
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      toast.error('Erreur lors de l\'ajout du commentaire')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   // Formater le contenu avec les tags en bleu
   const formatContent = (content) => {
     if (!content) return ''
@@ -410,117 +567,18 @@ const PostInteractionModal = ({
     )
   }, [comments])
 
-  // Gérer le like d'un commentaire
-  const handleLikeComment = async (commentId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token || !currentUserData) {
-        toast.error('Vous devez être connecté pour liker')
-        return
-      }
-
-      const comment = comments.find(c => c._id === commentId)
-      const isCurrentlyLiked = comment.likes?.includes(currentUserData.id)
-
-      // Mise à jour optimiste
-      setComments(prevComments => 
-        prevComments.map(comment => 
-          comment._id === commentId 
-            ? { 
-                ...comment, 
-                likes: isCurrentlyLiked 
-                  ? comment.likes.filter(id => id !== currentUserData.id)
-                  : [...(comment.likes || []), currentUserData.id]
-              }
-            : comment
-        )
-      )
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments/${commentId}/like`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (!response.ok) {
-        // Rollback en cas d'erreur
-        setComments(prevComments => 
-          prevComments.map(comment => 
-            comment._id === commentId 
-              ? { 
-                  ...comment, 
-                  likes: isCurrentlyLiked 
-                    ? [...(comment.likes || []), currentUserData.id]
-                    : comment.likes.filter(id => id !== currentUserData.id)
-                }
-              : comment
-          )
-        )
-        throw new Error('Erreur lors du like')
-      }
-    } catch (error) {
-      console.error('Erreur:', error)
-      toast.error(error.message)
+  // Formater le compteur de likes
+  const formatLikeCount = (likes) => {
+    if (!likes || likes.length === 0) return "0"
+    
+    const hasMyLike = likes.includes(currentUserData?.id)
+    if (hasMyLike) {
+      return likes.length > 1 
+        ? `Vous et ${likes.length - 1} autre${likes.length > 2 ? 's' : ''}`
+        : "Vous"
     }
-  }
-
-  // Publier un commentaire
-  const handleAddComment = async (e) => {
-    e.preventDefault()
-    if (!newComment.trim() || isSubmitting) return
-
-    try {
-      setIsSubmitting(true)
-      const token = localStorage.getItem('token')
-      
-      if (!token || !currentUserData) {
-        toast.error('Vous devez être connecté pour commenter')
-        return
-      }
-
-      const userData = {
-        _id: currentUserData.id,
-        username: currentUserData.username,
-        avatar: currentUserData.avatar
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comment`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ 
-            content: newComment.trim(),
-            userId: userData._id
-          }),
-        }
-      )
-
-      const newCommentData = await response.json()
-      
-      const commentWithUser = {
-        ...newCommentData,
-        user: userData,
-        likes: [],
-        createdAt: new Date().toISOString()
-      }
-
-      setComments(prevComments => [commentWithUser, ...prevComments])
-      setNewComment('')
-    } catch (error) {
-      console.error('Erreur:', error)
-      toast.error('Erreur lors de l\'ajout du commentaire')
-    } finally {
-      setIsSubmitting(false)
-    }
+    
+    return likes.length.toString()
   }
 
   if (!isOpen) return null
@@ -532,19 +590,29 @@ const PostInteractionModal = ({
           <FaTimes />
         </button>
 
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === 'likes' ? styles.active : ''}`}
-            onClick={() => setActiveTab('likes')}
-          >
-            Likes
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'comments' ? styles.active : ''}`}
-            onClick={() => setActiveTab('comments')}
-          >
-            Commentaires
-          </button>
+        <div className={styles.modalHeader}>
+          <div className={styles.tabsContainer}>
+            <button
+              className={`${styles.tab} ${activeTab === 'likes' ? styles.active : ''}`}
+              onClick={() => setActiveTab('likes')}
+            >
+              <FaThumbsUp className={styles.tabIcon} />
+              <span className={styles.tabText}>
+              {post?.likes?.length || 0}
+                Likes
+              </span>
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === 'comments' ? styles.active : ''}`}
+              onClick={() => setActiveTab('comments')}
+            >
+              <FaComment className={styles.tabIcon} />
+              <span className={styles.tabText}>
+              {comments.length}
+                Commentaires
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className={styles.content}>
@@ -603,6 +671,11 @@ const PostInteractionModal = ({
                             {comment.user.username}
                           </span>
                         </Link>
+                        <TimeAgo
+                          datetime={comment.createdAt}
+                          locale='fr'
+                          className={styles.timeAgo}
+                        />
                       </div>
                       {formatContent(comment.content)}
                       <div className={styles.commentActions}>
@@ -619,7 +692,9 @@ const PostInteractionModal = ({
                             className={`${styles.likeCounter} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
                           >
                             <FaThumbsUp className={styles.icon} />
-                            <span className={styles.count}>{comment.likes.length}</span>
+                            <span className={styles.count}>
+                              {formatLikeCount(comment.likes)}
+                            </span>
                           </button>
                         )}
                       </div>

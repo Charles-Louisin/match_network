@@ -107,14 +107,51 @@
   color: #1877f2;
 }
 
-.actionButtons {
+.postStats {
   display: flex;
-  padding: 4px;
+  align-items: center;
+  padding: 8px 16px;
   border-bottom: 1px solid #eee;
 }
 
+.likeCounter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.likeCounter .icon {
+  font-size: 14px;
+  color: #666;
+}
+
+.likeCounter.liked .icon {
+  color: #1da1f2;
+}
+
+.likeCounter .count {
+  color: #666;
+  font-size: 14px;
+}
+
+.statsDivider {
+  margin: 0 8px;
+  color: #666;
+}
+
+.postActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-top: 1px solid #eee;
+}
+
 .actionButton {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,23 +159,24 @@
   padding: 8px;
   background: none;
   border: none;
-  color: #666;
-  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 8px;
+  color: #666;
+  font-size: 14px;
+  transition: color 0.2s ease;
+  width: 100%;
 }
 
 .actionButton:hover {
-  background-color: #f0f2f5;
+  color: #1da1f2;
+  background-color: rgba(29, 161, 242, 0.1);
 }
 
 .actionButton.liked {
-  color: #1a73e8;
+  color: #1da1f2;
 }
 
 .actionIcon {
-  font-size: 1.1rem;
+  font-size: 18px;
 }
 
 .postStats {

@@ -625,3 +625,86 @@
   justify-content: center;
   align-items: center;
 }
+
+.modalHeader {
+  border-bottom: 1px solid #eee;
+  padding: 12px 16px;
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 24px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  position: relative;
+}
+
+.tab.active {
+  color: #1da1f2;
+  font-weight: 500;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #1da1f2;
+}
+
+.tabIcon {
+  font-size: 16px;
+}
+
+.tabCount {
+  color: #666;
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.timeAgo {
+  color: #666;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+}
+
+.commentUsername {
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.likeButton.liked,
+.likeCounter.liked .icon {
+  color: #1da1f2;
+}
+
+.likeCounter .count {
+  color: #666;
+  font-size: 14px;
+}

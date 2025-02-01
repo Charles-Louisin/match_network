@@ -30,64 +30,22 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const isAuthor = currentUser?.id === post.user?.id;
 
   useEffect(() => {
-    setIsClient(true)
-    if (typeof window !== 'undefined') {
-      const userStr = window.localStorage.getItem("user");
-      if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          setUser(userData);
-          if (post.likes) {
-            setIsLiked(post.likes.includes(userData.id));
-          }
-        } catch (error) {
-          console.error("Error parsing user data:", error);
-        }
-      }
+    setIsClient(true);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      setUser(userData);
+      setIsLiked(post.likes?.includes(userData.id));
+      setLikesCount(post.likes?.length || 0);
     }
-  }, [post.likes]);
+  }, []);
 
   useEffect(() => {
-    const fetchPostUser = async () => {
-      if (!post.user || (typeof post.user === 'object' && postUser.username && postUser.avatar)) {
-        setPostUser(post.user);
-        return;
-      }
-
-      try {
-        const userId = typeof post.user === 'string' ? post.user : post.user?.id || post.user?._id;
-        if (!userId) {
-          console.error('User ID not found in post:', post);
-          return;
-        }
-
-        const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
-        if (!token) return;
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch user data");
-
-        const userData = await response.json();
-        setPostUser(userData);
-      } catch (error) {
-        console.error("Error fetching post user:", error);
-        setPostUser({
-          username: "Utilisateur inconnu",
-          avatar: "/images/default-avatar.jpg"
-        });
-      }
-    };
-
-    fetchPostUser();
-  }, [post.user]);
+    if (user && post._id) {
+      setIsLiked(post.likes?.includes(user.id));
+      setLikesCount(post.likes?.length || 0);
+    }
+  }, [post._id]);
 
   const checkIfLiked = useCallback((currentUser, postLikes) => {
     if (!currentUser || !postLikes) return false;
@@ -95,55 +53,53 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     return Array.isArray(postLikes) && postLikes.includes(userId);
   }, []);
 
+  const formatLikeCount = useCallback(() => {
+    if (likesCount === 0) return "Aucun like";
+    if (isLiked) {
+      return likesCount > 1 
+        ? `Vous et ${likesCount - 1} autre${likesCount > 2 ? 's' : ''}`
+        : "Vous";
+    }
+    return likesCount.toString();
+  }, [likesCount, isLiked]);
+
   const handleLike = async (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
+    if (!user) {
+      toast.error("Vous devez être connecté pour aimer un post");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const newIsLiked = !isLiked;
+    setIsLiked(newIsLiked);
+    setLikesCount(prev => prev + (newIsLiked ? 1 : -1));
+
     try {
-      if (!user) {
-        toast.error("Vous devez être connecté pour liker");
-        return;
-      }
-
-      const userId = user.id; 
-      if (!userId) {
-        console.error("User ID not found:", user);
-        toast.error("Erreur: ID utilisateur non trouvé");
-        return;
-      }
-
-      const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
-      if (!token) {
-        toast.error("Vous devez être connecté pour liker");
-        return;
-      }
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/like`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userId }),
         }
       );
 
-      if (response.ok) {
-        const updatedPost = await response.json();
-        const newIsLiked = checkIfLiked(user, updatedPost.likes);
-        setIsLiked(newIsLiked);
-        setLikesCount(updatedPost.likes.length);
-      } else {
-        const error = await response.json();
-        throw new Error(error.message || "Erreur lors du like");
+      if (!response.ok) {
+        setIsLiked(!newIsLiked);
+        setLikesCount(prev => prev + (newIsLiked ? -1 : 1));
+        throw new Error("Erreur lors du like");
       }
     } catch (error) {
-      console.error("Erreur like:", error);
-      toast.error(error.message);
+      console.error("Erreur:", error);
+      toast.error("Une erreur est survenue");
     }
   };
 
@@ -415,11 +371,15 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
       )}
 
       <div className={styles.postStats}>
-        <button 
-          onClick={() => openModal('likes')} 
-          className={styles.statsButton}
+        <button
+          onClick={() => {
+            setModalInitialTab('likes');
+            setIsModalOpen(true);
+          }}
+          className={`${styles.likeCounter} ${isLiked ? styles.liked : ''}`}
         >
-          {likesCount} {likesCount === 1 ? 'like' : 'likes'}
+          <FaThumbsUp className={styles.icon} />
+          <span className={styles.count}>{formatLikeCount()}</span>
         </button>
         <span className={styles.statsDivider}>•</span>
         <button 
@@ -434,15 +394,16 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
         <button
           onClick={handleLike}
           className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
-          disabled={isSubmitting}
         >
           <FaThumbsUp className={styles.actionIcon} />
           <span>J'aime</span>
         </button>
         <button
-          onClick={() => openModal('comments')}
+          onClick={() => {
+            setModalInitialTab('comments');
+            setIsModalOpen(true);
+          }}
           className={styles.actionButton}
-          disabled={isSubmitting}
         >
           <FaComment className={styles.actionIcon} />
           <span>Commenter</span>
