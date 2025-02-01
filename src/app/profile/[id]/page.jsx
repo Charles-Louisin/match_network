@@ -15,7 +15,7 @@ import styles from "./profile.module.css";
 import Navbar from "@/components/layout/Navbar";
 import CreatePost from "@/components/post/CreatePost";
 import EditProfileModal from "@/components/profile/EditProfileModal";
-import { FaCamera, FaEdit } from "react-icons/fa";
+import { FaCamera, FaEdit, FaMars, FaVenus, FaGenderless } from "react-icons/fa";
 import ProfilePosts from "@/components/profile/ProfilePosts";
 import { useRef } from "react";
 import { useRouter } from 'next/navigation';
@@ -774,9 +774,15 @@ export default function Profile() {
               )}
               {profile.gender && (
                 <div className={styles.infoItem}>
+                  {profile.gender === 'male' ? (
+                    <FaMars className={`${styles.infoIcon} ${styles.maleIcon}`} />
+                  ) : profile.gender === 'female' ? (
+                    <FaVenus className={`${styles.infoIcon} ${styles.femaleIcon}`} />
+                  ) : (
+                    <FaGenderless className={styles.infoIcon} />
+                  )}
                   <span className={styles.infoValue}>
-                    {profile.gender.charAt(0).toUpperCase() +
-                      profile.gender.slice(1)}
+                    {profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1)}
                   </span>
                 </div>
               )}
@@ -804,20 +810,14 @@ export default function Profile() {
 
             <div className={styles.statsSection}>
               <div className={styles.statItem}>
+                <div className={styles.statValue}>{profile.friends?.length || 0}</div>
+                <div className={styles.statLabel}>
+                  {(profile.friends?.length || 0) <= 1 ? 'Ami' : 'Amis'}
+                </div>
+              </div>
+              <div className={styles.statItem}>
                 <div className={styles.statValue}>{posts.length}</div>
                 <div className={styles.statLabel}>Posts</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>
-                  {profile.followers?.length || 0}
-                </div>
-                <div className={styles.statLabel}>Followers</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>
-                  {profile.following?.length || 0}
-                </div>
-                <div className={styles.statLabel}>Following</div>
               </div>
             </div>
           </div>
