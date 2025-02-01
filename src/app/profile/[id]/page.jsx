@@ -360,10 +360,10 @@ export default function Profile() {
       }
 
       // Vérifier les champs obligatoires
-      if (!editData.username.trim()) {
-        toast.error("Le nom d'utilisateur est requis");
-        return;
-      }
+      // if (!editData.username.trim()) {
+      //   toast.error("Le nom d'utilisateur est requis");
+      //   return;
+      // }
 
       // Préparer les données
       const profileData = {

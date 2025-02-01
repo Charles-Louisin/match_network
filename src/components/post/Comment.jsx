@@ -8,7 +8,7 @@ import TimeAgo from '../utils/TimeAgo'
 import styles from './Comment.module.css'
 import { toast } from 'react-hot-toast'
 
-const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelete }) => {
+export default function Comment({ comment, postId, currentUser, onCommentUpdate, onCommentDelete }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(comment.content)
   const [isReplying, setIsReplying] = useState(false)
@@ -21,6 +21,27 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
   const isLiked = comment.likes && Array.isArray(comment.likes) && currentUser?.id 
     ? comment.likes.includes(currentUser.id)
     : false
+
+  const formatContent = (content) => {
+    if (!content) return '';
+    
+    const tagMatch = content.match(/@(\w+)/);
+    if (tagMatch) {
+      const username = tagMatch[1];
+      const parts = content.split(`@${username}`);
+      const taggedUser = comment.user;
+      
+      return (
+        <>
+          <Link href={`/profile/${taggedUser._id}`} className={styles.taggedUser}>
+            @{username}
+          </Link>
+          {parts[1]}
+        </>
+      );
+    }
+    return content;
+  };
 
   const handleLike = async () => {
     try {
@@ -144,9 +165,9 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ 
-            content: replyContent.trim(),
-            postUserId: comment.postUserId 
+          body: JSON.stringify({
+            content: `@${comment.user.username} ${replyContent.trim()}`,
+            postUserId: comment.postUserId,
           }),
         }
       )
@@ -154,7 +175,7 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
       if (!response.ok) throw new Error('Erreur lors de la réponse')
 
       const newReply = await response.json()
-      
+
       // Créer une notification pour la réponse
       try {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
@@ -175,13 +196,13 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
         console.error('Erreur création notification:', error)
       }
 
-      onCommentUpdate({ ...comment, replies: [newReply, ...comment.replies] })
+      onCommentUpdate({ ...comment, replies: [...(comment.replies || []), newReply] })
       setReplyContent('')
       setIsReplying(false)
       toast.success('Réponse ajoutée')
     } catch (error) {
       console.error('Erreur réponse:', error)
-      toast.error('Impossible d\'ajouter la réponse')
+      toast.error("Impossible d'ajouter la réponse")
     } finally {
       setIsSubmitting(false)
     }
@@ -202,60 +223,14 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
 
         <div className={styles.commentContent}>
           <div className={styles.commentHeader}>
-            <Link href={`/profile/${comment.user?._id}`} className={styles.username}>
-              {comment.user?.username}
-            </Link>
-            <span className={styles.time}>
-              <TimeAgo timestamp={comment.createdAt} />
-            </span>
-          </div>
-
-          {isEditing ? (
-            <div className={styles.editContainer}>
-              <textarea
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                className={styles.editInput}
-                placeholder="Modifier votre commentaire..."
-              />
-              <div className={styles.editButtons}>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className={styles.cancelButton}
-                  disabled={isSubmitting}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleEdit}
-                  className={styles.saveButton}
-                  disabled={isSubmitting}
-                >
-                  Enregistrer
-                </button>
-              </div>
+            <div className={styles.userInfo}>
+              <Link href={`/profile/${comment.user?._id}`} className={styles.username}>
+                {comment.user?.username}
+              </Link>
+              <span className={styles.time}>
+                <TimeAgo timestamp={comment.createdAt} />
+              </span>
             </div>
-          ) : (
-            <p className={styles.commentText}>{comment.content}</p>
-          )}
-
-          <div className={styles.commentActions}>
-            <button
-              onClick={handleLike}
-              className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
-            >
-              <FaThumbsUp />
-              <span>{comment.likes?.length || 0}</span>
-            </button>
-
-            <button
-              onClick={() => setIsReplying(!isReplying)}
-              className={styles.actionButton}
-            >
-              <FaReply />
-              <span>Répondre</span>
-            </button>
-
             {(isAuthor || isPostAuthor) && (
               <div className={styles.menuContainer}>
                 <button
@@ -291,32 +266,90 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
               </div>
             )}
           </div>
+
+          {isEditing ? (
+            <div className={styles.editContainer}>
+              <textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                className={styles.editInput}
+                placeholder="Modifier votre commentaire..."
+              />
+              <div className={styles.editButtons}>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className={styles.cancelButton}
+                  disabled={isSubmitting}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleEdit}
+                  className={styles.saveButton}
+                  disabled={isSubmitting}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className={styles.commentText}>{formatContent(comment.content)}</p>
+          )}
+
+          <div className={styles.commentActions}>
+            <button
+              onClick={handleLike}
+              className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
+            >
+              <FaThumbsUp className={styles.actionIcon} />
+              <span>{comment.likes?.length || 0}</span>
+            </button>
+
+            <button
+              onClick={() => setIsReplying(!isReplying)}
+              className={styles.actionButton}
+            >
+              <FaReply className={styles.actionIcon} />
+              <span>Répondre</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {isReplying && (
         <div className={styles.replyContainer}>
-          <textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            className={styles.replyInput}
-            placeholder="Écrire une réponse..."
-          />
-          <div className={styles.replyButtons}>
-            <button
-              onClick={() => setIsReplying(false)}
-              className={styles.cancelButton}
-              disabled={isSubmitting}
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleReply}
-              className={styles.replyButton}
-              disabled={isSubmitting || !replyContent.trim()}
-            >
-              Répondre
-            </button>
+          <div className={styles.replyForm}>
+            <Image
+              src={currentUser?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${currentUser.avatar}` : "/images/default-avatar.jpg"}
+              alt="Votre avatar"
+              width={32}
+              height={32}
+              className={styles.replyAvatar}
+            />
+            <div className={styles.replyInputContainer}>
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                className={styles.replyInput}
+                placeholder={`Répondre à @${comment.user?.username}...`}
+              />
+              <div className={styles.replyButtons}>
+                <button
+                  onClick={() => setIsReplying(false)}
+                  className={styles.cancelButton}
+                  disabled={isSubmitting}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleReply}
+                  className={styles.submitButton}
+                  disabled={isSubmitting || !replyContent.trim()}
+                >
+                  Répondre
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -332,12 +365,12 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
               onCommentUpdate={(updatedReply) => {
                 const updatedReplies = comment.replies.map((r) =>
                   r._id === updatedReply._id ? updatedReply : r
-                )
-                onCommentUpdate({ ...comment, replies: updatedReplies })
+                );
+                onCommentUpdate({ ...comment, replies: updatedReplies });
               }}
               onCommentDelete={(replyId) => {
-                const updatedReplies = comment.replies.filter((r) => r._id !== replyId)
-                onCommentUpdate({ ...comment, replies: updatedReplies })
+                const updatedReplies = comment.replies.filter((r) => r._id !== replyId);
+                onCommentUpdate({ ...comment, replies: updatedReplies });
               }}
             />
           ))}
@@ -346,5 +379,3 @@ const Comment = ({ comment, postId, currentUser, onCommentUpdate, onCommentDelet
     </div>
   )
 }
-
-export default Comment

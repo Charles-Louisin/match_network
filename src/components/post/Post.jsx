@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaThumbsUp, FaComment, FaPaperPlane, FaEllipsisV, FaTrash, FaPencilAlt } from "react-icons/fa";
 import TimeAgo from "../utils/TimeAgo";
 import Comment from './Comment';
+import PostInteractionModal from '../modals/PostInteractionModal';
 import styles from "./Post.module.css";
 import { toast } from 'react-hot-toast';
 
@@ -23,6 +24,8 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInitialTab, setModalInitialTab] = useState('likes')
 
   const isAuthor = currentUser?.id === post.user?.id;
 
@@ -46,7 +49,7 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
   useEffect(() => {
     const fetchPostUser = async () => {
-      if (!post.user || (typeof post.user === 'object' && post.user.username && post.user.avatar)) {
+      if (!post.user || (typeof post.user === 'object' && postUser.username && postUser.avatar)) {
         setPostUser(post.user);
         return;
       }
@@ -143,8 +146,6 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
       toast.error(error.message);
     }
   };
-
-  
 
   const handleDelete = async () => {
     try {
@@ -296,6 +297,11 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     textarea.style.height = textarea.scrollHeight + 'px';
   };
 
+  const openModal = (tab) => {
+    setModalInitialTab(tab)
+    setIsModalOpen(true)
+  }
+
   if (!isClient) {
     return null; // ou un composant de chargement
   }
@@ -397,119 +403,71 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
             <div className={styles.imageContainer}>
               <Image
                 src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-                alt="Post image"
+                alt="Image du post"
                 width={500}
                 height={300}
-                className={styles.image}
+                className={styles.postImage}
+                priority
               />
             </div>
           )}
         </div>
       )}
 
-      {/* Section des interactions */}
-      <div className={styles.interactionStats}>
-        <div className={styles.likeSummary}>
-          <FaThumbsUp 
-            className={`${styles.thumbIcon} ${isLiked ? styles.liked : ''}`}
-          />
-          <span>{likesCount}</span>
-        </div>
-        <div className={styles.commentSummary}>
-          {comments.length} commentaire{comments.length !== 1 ? 's' : ''}
-        </div>
+      <div className={styles.postStats}>
+        <button 
+          onClick={() => openModal('likes')} 
+          className={styles.statsButton}
+        >
+          {likesCount} {likesCount === 1 ? 'like' : 'likes'}
+        </button>
+        <span className={styles.statsDivider}>•</span>
+        <button 
+          onClick={() => openModal('comments')} 
+          className={styles.statsButton}
+        >
+          {comments.length} {comments.length === 1 ? 'commentaire' : 'commentaires'}
+        </button>
       </div>
 
-      {/* Boutons d'action */}
-      <div className={styles.actionButtons}>
+      <div className={styles.postActions}>
         <button
-          type="button"
-          className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
           onClick={handleLike}
-          data-testid="like-button"
+          className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
+          disabled={isSubmitting}
         >
-          <FaThumbsUp className={`${styles.buttonIcon} ${isLiked ? styles.liked : ''}`} />
-          J&apos;aime
+          <FaThumbsUp className={styles.actionIcon} />
+          <span>J'aime</span>
         </button>
-        
         <button
-          type="button"
+          onClick={() => openModal('comments')}
           className={styles.actionButton}
-          onClick={() => setShowComments(!showComments)}
-          data-testid="comment-button"
+          disabled={isSubmitting}
         >
-          <FaComment className={styles.buttonIcon} />
-          Commenter
+          <FaComment className={styles.actionIcon} />
+          <span>Commenter</span>
         </button>
       </div>
 
-      {/* Section des commentaires */}
-      <div className={styles.commentsSection}>
-        {/* <button
-          onClick={() => setShowComments(!showComments)}
-          className={styles.showCommentsButton}
-        >
-          <FaComment />
-          <span>{comments.length} commentaire{comments.length !== 1 ? 's' : ''}</span>
-        </button> */}
-
-        {showComments && (
-          <>
-            {/* Formulaire de commentaire */}
-            <div className={styles.commentForm}>
-              <Image
-                src={user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
-                alt={user?.username || "User"}
-                width={40}
-                height={40}
-                className={styles.commentAvatar}
-              />
-              <div className={styles.commentInputContainer}>
-                <textarea
-                  value={comment}
-                  onChange={(e) => {
-                    setComment(e.target.value);
-                    autoResizeTextArea(e);
-                  }}
-                  onInput={autoResizeTextArea}
-                  placeholder="Écrire un commentaire..."
-                  className={styles.commentInput}
-                />
-                <button
-                  type="submit"
-                  className={`${styles.commentSubmit} ${isSubmitting ? styles.loading : ''}`}
-                  disabled={!comment.trim() || isSubmitting}
-                  onClick={handleComment}
-                >
-                  {isSubmitting ? (
-                    <div className={styles.spinnerSmall}></div>
-                  ) : (
-                    <FaPaperPlane />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Liste des commentaires */}
-            <div className={styles.commentsList}>
-              {isLoadingComments ? (
-                <div className={styles.loading}>Chargement des commentaires...</div>
-              ) : (
-                comments.map(comment => (
-                  <Comment
-                    key={comment._id}
-                    comment={comment}
-                    postId={post._id}
-                    currentUser={user}
-                    onCommentUpdate={handleCommentUpdate}
-                    onCommentDelete={handleCommentDelete}
-                  />
-                ))
-              )}
-            </div>
-          </>
-        )}
-      </div>
+      
+      <PostInteractionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        postId={post._id}
+        currentUser={currentUser}
+        initialTab={modalInitialTab}
+        onPostUpdate={(updatedPost) => {
+          if (updatedPost.likes) {
+            setLikesCount(updatedPost.likes.length);
+          }
+          if (updatedPost.comments) {
+            setComments(updatedPost.comments);
+          }
+          onPostUpdate(updatedPost);
+        }}
+        initialComments={comments}
+        initialLikes={post.likes}
+      />
     </div>
   );
 };
