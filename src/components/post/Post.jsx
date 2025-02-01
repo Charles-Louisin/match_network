@@ -3,14 +3,31 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaThumbsUp, FaComment, FaPaperPlane, FaEllipsisV, FaTrash, FaPencilAlt } from "react-icons/fa";
+import {
+  FaThumbsUp,
+  FaComment,
+  FaPaperPlane,
+  FaEllipsisV,
+  FaTrash,
+  FaPencilAlt,
+} from "react-icons/fa";
 import TimeAgo from "../utils/TimeAgo";
-import Comment from './Comment';
-import PostInteractionModal from '../modals/PostInteractionModal';
+import Comment from "./Comment";
+import PostInteractionModal from "../modals/PostInteractionModal";
 import styles from "./Post.module.css";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import frenchStrings from "react-timeago/lib/language-strings/fr";
+import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 
-const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
+const formatter = buildFormatter(frenchStrings);
+
+const Post = ({
+  post,
+  currentUser,
+  onPostUpdate,
+  onPostDelete,
+  onPostClick,
+}) => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState(null);
   const [postUser, setPostUser] = useState(post.user || null);
@@ -25,7 +42,7 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalInitialTab, setModalInitialTab] = useState('likes')
+  const [modalInitialTab, setModalInitialTab] = useState("likes");
 
   const isAuthor = currentUser?.id === post.user?.id;
 
@@ -49,15 +66,15 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
   const checkIfLiked = useCallback((currentUser, postLikes) => {
     if (!currentUser || !postLikes) return false;
-    const userId = currentUser.id; 
+    const userId = currentUser.id;
     return Array.isArray(postLikes) && postLikes.includes(userId);
   }, []);
 
   const formatLikeCount = useCallback(() => {
     if (likesCount === 0) return "Aucun like";
     if (isLiked) {
-      return likesCount > 1 
-        ? `Vous et ${likesCount - 1} autre${likesCount > 2 ? 's' : ''}`
+      return likesCount > 1
+        ? `Vous et ${likesCount - 1} autre${likesCount > 2 ? "s" : ""}`
         : "Vous";
     }
     return likesCount.toString();
@@ -79,7 +96,7 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
     const newIsLiked = !isLiked;
     setIsLiked(newIsLiked);
-    setLikesCount(prev => prev + (newIsLiked ? 1 : -1));
+    setLikesCount((prev) => prev + (newIsLiked ? 1 : -1));
 
     try {
       const response = await fetch(
@@ -94,7 +111,7 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
       if (!response.ok) {
         setIsLiked(!newIsLiked);
-        setLikesCount(prev => prev + (newIsLiked ? -1 : 1));
+        setLikesCount((prev) => prev + (newIsLiked ? -1 : 1));
         throw new Error("Erreur lors du like");
       }
     } catch (error) {
@@ -105,52 +122,58 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
   const handleDelete = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error('Erreur lors de la suppression')
+      if (!response.ok) throw new Error("Erreur lors de la suppression");
 
-      onPostDelete(post._id)
-      toast.success('Post supprimé avec succès')
+      onPostDelete(post._id);
+      toast.success("Post supprimé avec succès");
     } catch (error) {
-      console.error('Erreur suppression:', error)
-      toast.error('Impossible de supprimer le post')
+      console.error("Erreur suppression:", error);
+      toast.error("Impossible de supprimer le post");
     }
-  }
+  };
 
   const handleEdit = async () => {
-    if (!editedContent.trim() || isSubmitting) return
+    if (!editedContent.trim() || isSubmitting) return;
 
     try {
-      setIsSubmitting(true)
-      const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: editedContent }),
-      })
+      setIsSubmitting(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: editedContent }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Erreur lors de la modification')
+      if (!response.ok) throw new Error("Erreur lors de la modification");
 
-      const updatedPost = await response.json()
-      onPostUpdate(updatedPost)
-      setIsEditing(false)
-      toast.success('Post modifié avec succès')
+      const updatedPost = await response.json();
+      onPostUpdate(updatedPost);
+      setIsEditing(false);
+      toast.success("Post modifié avec succès");
     } catch (error) {
-      console.error('Erreur modification:', error)
-      toast.error('Impossible de modifier le post')
+      console.error("Erreur modification:", error);
+      toast.error("Impossible de modifier le post");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleComment = async (e) => {
     e.preventDefault();
@@ -158,7 +181,10 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
     try {
       setIsSubmitting(true);
-      const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
+      const token =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("token")
+          : null;
       if (!token) {
         throw new Error("Vous devez être connecté pour commenter");
       }
@@ -179,14 +205,15 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Erreur lors de l'ajout du commentaire");
+        throw new Error(
+          error.message || "Erreur lors de l'ajout du commentaire"
+        );
       }
 
       const newComment = await response.json();
-      setComments(prevComments => [newComment, ...prevComments]);
+      setComments((prevComments) => [newComment, ...prevComments]);
       setComment("");
       toast.success("Commentaire ajouté avec succès");
-
     } catch (error) {
       console.error("Erreur commentaire:", error);
       toast.error(error.message);
@@ -198,10 +225,13 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   useEffect(() => {
     const fetchComments = async () => {
       if (!showComments) return;
-      
+
       try {
         setIsLoadingComments(true);
-        const token = typeof window !== 'undefined' ? window.localStorage.getItem("token") : null;
+        const token =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem("token")
+            : null;
         if (!token) return;
 
         const response = await fetch(
@@ -234,66 +264,103 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   }, [post._id, showComments]);
 
   const handleCommentUpdate = (updatedComment) => {
-    setComments(prevComments =>
-      prevComments.map(c =>
+    setComments((prevComments) =>
+      prevComments.map((c) =>
         c._id === updatedComment._id ? updatedComment : c
       )
-    )
-  }
+    );
+  };
 
   const handleCommentDelete = (commentId) => {
-    setComments(prevComments =>
-      prevComments.filter(c => c._id !== commentId)
-    )
-  }
+    setComments((prevComments) =>
+      prevComments.filter((c) => c._id !== commentId)
+    );
+  };
 
   const autoResizeTextArea = (e) => {
     const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
   };
 
   const openModal = (tab) => {
-    setModalInitialTab(tab)
-    setIsModalOpen(true)
-  }
+    setModalInitialTab(tab);
+    setIsModalOpen(true);
+  };
+
+  const handleCommentClick = (e) => {
+    e.stopPropagation();
+    onPostClick(post._id);
+  };
+
+  const handlePostClick = () => {
+    onPostClick(post._id);
+  };
 
   if (!isClient) {
     return null; // ou un composant de chargement
   }
 
   return (
-    <div 
-      className={styles.post} 
+    <div
+      className={styles.post}
       id={`post-${post._id}`}
+      onClick={handlePostClick}
     >
       {/* En-tête du post */}
       <div className={styles.postHeader}>
-        <Link 
-          href={`/profile/${typeof postUser === 'string' ? postUser : postUser?.id || postUser?._id}`} 
-          className={styles.userInfo}
-        >
-          <Image
-            src={postUser?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${postUser.avatar}` : "/images/default-avatar.jpg"}
-            alt={postUser?.username || "Utilisateur"}
-            width={40}
-            height={40}
-            className={styles.avatar}
-            onError={(e) => {
-              e.target.src = "/images/default-avatar.jpg";
-            }}
-          />
-          <div className={styles.userDetails}>
-            <span className={styles.username}>{postUser?.username || "Utilisateur inconnu"}</span>
-            <span className={styles.postDate}>
-              <TimeAgo timestamp={post.createdAt} />
-            </span>
+        <div className={styles.userInfo}>
+          <Link href={`/profile/${postUser?._id}`}>
+            <Image
+              src={
+                postUser?.avatar
+                  ? `${process.env.NEXT_PUBLIC_API_URL}${postUser.avatar}`
+                  : "/images/default-cover.jpg"
+              }
+              alt={postUser?.username}
+              width={40}
+              height={40}
+              className={styles.avatar}
+            />
+          </Link>
+          <div className={styles.userMeta}>
+            <div className={styles.nameAndTags}>
+              <Link
+                href={`/profile/${postUser?._id}`}
+                className={styles.username}
+              >
+                {postUser?.username}
+              </Link>
+              {post.taggedUsers && post.taggedUsers.length > 0 && (
+                <span className={styles.taggedUsers}>
+                  {" "}
+                  est avec{" "}
+                  {post.taggedUsers.map((taggedUser, index) => (
+                    <span key={taggedUser._id}>
+                      <Link
+                        href={`/profile/${taggedUser._id}`}
+                        className={styles.taggedUser}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        @{taggedUser.username}
+                      </Link>
+                      {index < post.taggedUsers.length - 1 && ", "}
+                    </span>
+                  ))}
+                </span>
+              )}
+            </div>
+            <TimeAgo date={post.createdAt} formatter={formatter} />
           </div>
-        </Link>
+        </div>
+        {/* Menu du post */}
         {isAuthor && (
-          <div className={styles.menuContainer}>
+          <div className={styles.postMenu}>
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
               className={styles.menuButton}
             >
               <FaEllipsisV />
@@ -302,8 +369,8 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
               <div className={styles.menu}>
                 <button
                   onClick={() => {
-                    setIsEditing(true)
-                    setShowMenu(false)
+                    setIsEditing(true);
+                    setShowMenu(false);
                   }}
                   className={styles.menuItem}
                 >
@@ -311,8 +378,8 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                 </button>
                 <button
                   onClick={() => {
-                    handleDelete()
-                    setShowMenu(false)
+                    handleDelete();
+                    setShowMenu(false);
                   }}
                   className={styles.menuItem}
                 >
@@ -352,7 +419,7 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
         </div>
       ) : (
         <div className={styles.postContent}>
-          <p className={styles.text} style={{ whiteSpace: 'pre-wrap' }}>
+          <p className={styles.text} style={{ whiteSpace: "pre-wrap" }}>
             {post.content}
           </p>
           {post.image && (
@@ -373,44 +440,38 @@ const Post = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
       <div className={styles.postStats}>
         <button
           onClick={() => {
-            setModalInitialTab('likes');
+            setModalInitialTab("likes");
             setIsModalOpen(true);
           }}
-          className={`${styles.likeCounter} ${isLiked ? styles.liked : ''}`}
+          className={`${styles.likeCounter} ${isLiked ? styles.liked : ""}`}
         >
           <FaThumbsUp className={styles.icon} />
           <span className={styles.count}>{formatLikeCount()}</span>
         </button>
         <span className={styles.statsDivider}>•</span>
-        <button 
-          onClick={() => openModal('comments')} 
+        <button
+          onClick={() => openModal("comments")}
           className={styles.statsButton}
         >
-          {comments.length} {comments.length === 1 ? 'commentaire' : 'commentaires'}
+          {comments.length}{" "}
+          {comments.length === 1 ? "commentaire" : "commentaires"}
         </button>
       </div>
 
       <div className={styles.postActions}>
         <button
           onClick={handleLike}
-          className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
+          className={`${styles.actionButton} ${isLiked ? styles.liked : ""}`}
         >
           <FaThumbsUp className={styles.actionIcon} />
           <span>J'aime</span>
         </button>
-        <button
-          onClick={() => {
-            setModalInitialTab('comments');
-            setIsModalOpen(true);
-          }}
-          className={styles.actionButton}
-        >
+        <button onClick={handleCommentClick} className={styles.actionButton}>
           <FaComment className={styles.actionIcon} />
           <span>Commenter</span>
         </button>
       </div>
 
-      
       <PostInteractionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

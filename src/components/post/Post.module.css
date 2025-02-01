@@ -629,6 +629,28 @@
   cursor: not-allowed;
 }
 
+.nameAndTags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.taggedUsers {
+  color: #000;
+  font-weight: 500;
+}
+
+.taggedUser {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.taggedUser:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .post {
     border-radius: 0;

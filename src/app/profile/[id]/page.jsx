@@ -18,6 +18,8 @@ import EditProfileModal from "@/components/profile/EditProfileModal";
 import { FaCamera, FaEdit } from "react-icons/fa";
 import ProfilePosts from "@/components/profile/ProfilePosts";
 import { useRef } from "react";
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function Profile() {
   const params = useParams();
@@ -46,6 +48,9 @@ export default function Profile() {
   const coverPhotoInputRef = useRef(null);
   const loadingRef = useRef(false);
   const errorToastShown = useRef(false);
+  const postsRef = useRef({});
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -530,6 +535,28 @@ export default function Profile() {
     }
   }, [postsLoaded, posts]);
 
+  useEffect(() => {
+    const postId = searchParams.get('postId');
+    
+    if (postId && postId !== 'undefined') {
+      const checkPostAndScroll = setInterval(() => {
+        const postElement = document.getElementById(`post-${postId}`);
+        if (postElement) {
+          clearInterval(checkPostAndScroll);
+          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // Nettoyer l'intervalle après 5 secondes si le post n'est pas trouvé
+      const timeout = setTimeout(() => clearInterval(checkPostAndScroll), 5000);
+      
+      return () => {
+        clearInterval(checkPostAndScroll);
+        clearTimeout(timeout);
+      };
+    }
+  }, [searchParams]);
+
   const handleFriendshipStatusChange = useCallback((newStatus) => {
     setFriendshipStatus(newStatus);
     if (newStatus === 'friends') {
@@ -549,6 +576,83 @@ export default function Profile() {
       fetchFriendshipStatus();
     }
   }, [isCurrentUser, fetchFriendshipStatus]);
+
+  const handlePostClick = (postId, commentId = null) => {
+    const postElement = document.getElementById(`post-${postId}`);
+    if (postElement) {
+      postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      if (commentId) {
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          commentElement.classList.add('highlight');
+          setTimeout(() => commentElement.classList.remove('highlight'), 2000);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        // Récupérer l'utilisateur connecté
+        const currentUserData = JSON.parse(localStorage.getItem('user'));
+        setCurrentUser(currentUserData);
+
+        // Récupérer l'utilisateur du profil
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/users/${params.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+
+        const userData = await response.json();
+        setUser(userData);
+        setIsLoading(false);
+
+        // Vérifier s'il y a des informations de scroll dans le sessionStorage
+        const scrollInfo = sessionStorage.getItem('scrollToPost');
+        if (scrollInfo) {
+          const { postId, commentId, openModal } = JSON.parse(scrollInfo);
+          console.log('ScrollInfo:', { postId, commentId, openModal });
+          
+          if (postId && openModal) {
+            setSelectedPost(postId);
+            setSelectedCommentId(commentId);
+            setShowModal(true);
+          }
+          
+          // Nettoyer après utilisation
+          sessionStorage.removeItem('scrollToPost');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id, router]);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedPost(null);
+    setSelectedCommentId(null);
+  };
 
   if (isLoading) {
     return <div className={styles.loadingContainer}>Loading...</div>;
@@ -720,7 +824,7 @@ export default function Profile() {
 
           <div className={styles.mainColumn}>
             {isCurrentUser && <CreatePost onPostCreated={fetchProfilePosts} />}
-            <ProfilePosts posts={posts} userId={profile._id} />
+            <ProfilePosts posts={posts} userId={profile._id} onPostClick={handlePostClick} postsRef={postsRef} />
           </div>
         </div>
       </div>

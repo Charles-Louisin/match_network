@@ -21,7 +21,8 @@ const PostInteractionModal = ({
   initialTab = 'likes',
   onPostUpdate,
   initialComments = [],
-  initialLikes = []
+  initialLikes = [],
+  highlightCommentId
 }) => {
   const [activeTab, setActiveTab] = useState(initialTab)
   const [likes, setLikes] = useState([])
@@ -40,6 +41,7 @@ const PostInteractionModal = ({
   const textareaRef = useRef(null)
   const [post, setPost] = useState(null)
   const [currentUserData, setCurrentUserData] = useState(null)
+  const highlightedCommentRef = useRef(null)
 
   // Charger l'utilisateur depuis le localStorage
   useEffect(() => {
@@ -94,6 +96,24 @@ const PostInteractionModal = ({
       fetchData()
     }
   }, [isOpen, postId, initialTab, initialComments])
+
+  useEffect(() => {
+    if (highlightCommentId) {
+      setActiveTab('comments');
+      
+      // Attendre que les commentaires soient chargés et le DOM mis à jour
+      setTimeout(() => {
+        const commentElement = document.getElementById(`comment-${highlightCommentId}`);
+        if (commentElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          commentElement.classList.add(styles.highlighted);
+          setTimeout(() => {
+            commentElement.classList.remove(styles.highlighted);
+          }, 2000);
+        }
+      }, 500);
+    }
+  }, [highlightCommentId]);
 
   const autoResizeTextarea = (ref) => {
     if (ref.current) {
@@ -281,6 +301,42 @@ const PostInteractionModal = ({
     friend.username.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // Extraire les mentions du texte
+  const extractMentions = (text) => {
+    const matches = text.match(/@\{([^}]+)\}/g) || [];
+    return matches.map(match => match.slice(2, -1));
+  };
+
+  // Créer une notification
+  const createNotification = async (notifData, token) => {
+    try {
+      console.log('Envoi des données de notification:', notifData);
+      const notifResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/notifications`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(notifData),
+        }
+      );
+
+      if (!notifResponse.ok) {
+        const error = await notifResponse.json();
+        console.error('Erreur lors de la création de la notification:', error);
+        return false;
+      }
+      
+      console.log('Notification créée avec succès');
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la création de la notification:', error);
+      return false;
+    }
+  };
+
   // Gérer la saisie de commentaire
   const handleCommentChange = (e) => {
     const value = e.target.value
@@ -359,108 +415,25 @@ const PostInteractionModal = ({
     }
   }
 
-  // Créer une notification
-  const createNotification = async (recipientId, type, postId, commentId = null) => {
-    try {
-      const token = localStorage.getItem('token')
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          recipientId,
-          type,
-          postId,
-          commentId,
-        }),
-      })
-    } catch (error) {
-      console.error('Erreur lors de la création de la notification:', error)
-    }
-  }
-
-  // Gérer le like d'un commentaire
-  const handleLikeComment = async (commentId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token || !currentUserData) {
-        toast.error('Vous devez être connecté pour liker')
-        return
-      }
-
-      const comment = comments.find(c => c._id === commentId)
-      const isCurrentlyLiked = comment.likes?.includes(currentUserData.id)
-
-      // Mise à jour optimiste
-      setComments(prevComments => 
-        prevComments.map(comment => 
-          comment._id === commentId 
-            ? { 
-                ...comment, 
-                likes: isCurrentlyLiked 
-                  ? comment.likes.filter(id => id !== currentUserData.id)
-                  : [...(comment.likes || []), currentUserData.id]
-              }
-            : comment
-        )
-      )
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments/${commentId}/like`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Erreur lors du like')
-      }
-
-      // Créer une notification si on ajoute un like
-      if (!isCurrentlyLiked && comment.user._id !== currentUserData.id) {
-        await createNotification(
-          comment.user._id,
-          'COMMENT_LIKE',
-          postId,
-          commentId
-        )
-      }
-    } catch (error) {
-      console.error('Erreur:', error)
-      toast.error(error.message)
-    }
-  }
-
   // Publier un commentaire
   const handleAddComment = async (e) => {
-    e.preventDefault()
-    if (!newComment.trim() || isSubmitting) return
+    e.preventDefault();
+    if (!newComment.trim() || isSubmitting) return;
 
     try {
-      setIsSubmitting(true)
-      const token = localStorage.getItem('token')
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
       
       if (!token || !currentUserData) {
-        toast.error('Vous devez être connecté pour commenter')
-        return
+        toast.error('Vous devez être connecté pour commenter');
+        return;
       }
 
       const userData = {
         _id: currentUserData.id,
         username: currentUserData.username,
         avatar: currentUserData.avatar
-      }
-
-      // Extraire les mentions des utilisateurs
-      const mentions = newComment.match(/@\{([^}]+)\}/g)?.map(mention => 
-        mention.slice(2, -1)
-      ) || []
+      };
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comment`,
@@ -475,78 +448,194 @@ const PostInteractionModal = ({
             userId: userData._id
           }),
         }
-      )
+      );
 
-      const newCommentData = await response.json()
+      const newCommentData = await response.json();
       
       const commentWithUser = {
         ...newCommentData,
         user: userData,
         likes: [],
         createdAt: new Date().toISOString()
+      };
+
+      setComments(prevComments => [commentWithUser, ...prevComments]);
+      setNewComment('');
+
+      // Extraire les mentions du commentaire
+      const mentions = extractMentions(newComment);
+      console.log('Mentions trouvées:', mentions);
+      
+      // Créer des notifications pour chaque mention
+      if (mentions.length > 0) {
+        const mentionPromises = mentions.map(async (username) => {
+          try {
+            // Rechercher l'utilisateur mentionné
+            const userResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/users/search?username=${username}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (!userResponse.ok) {
+              console.error('Erreur lors de la recherche de l\'utilisateur:', username);
+              return;
+            }
+            
+            const users = await userResponse.json();
+            console.log('Utilisateurs trouvés:', users);
+            const mentionedUser = users.find(u => u.username === username);
+            
+            if (mentionedUser && mentionedUser._id !== currentUserData.id) {
+              await createNotification({
+                type: 'COMMENT_MENTION',
+                recipientId: mentionedUser._id,
+                content: 'vous a mentionné dans un commentaire',
+                reference: newCommentData._id,
+                postId: postId,
+                commentId: newCommentData._id,
+                additionalData: {
+                  commentContent: newComment.trim(),
+                  postId: postId
+                }
+              }, token);
+            } else {
+              console.log('Utilisateur non trouvé ou auto-mention:', username);
+            }
+          } catch (error) {
+            console.error('Erreur lors de la création de la notification pour', username, ':', error);
+          }
+        });
+
+        await Promise.all(mentionPromises);
       }
 
-      setComments(prevComments => [commentWithUser, ...prevComments])
-      setNewComment('')
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'ajout du commentaire');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-      // Créer des notifications pour les utilisateurs mentionnés
-      const mentionedUsers = friends.filter(friend => 
-        mentions.includes(friend.username) && friend._id !== currentUserData.id
-      )
+  // Gérer le like d'un commentaire
+  const handleLikeComment = async (commentId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !currentUserData) {
+        toast.error('Vous devez être connecté pour liker');
+        return;
+      }
 
-      for (const user of mentionedUsers) {
-        await createNotification(
-          user._id,
-          'COMMENT_MENTION',
-          postId,
-          commentWithUser._id
+      const commentToUpdate = comments.find(c => c._id === commentId);
+      if (!commentToUpdate) {
+        console.error('Commentaire non trouvé:', commentId);
+        return;
+      }
+
+      const isCurrentlyLiked = commentToUpdate.likes?.includes(currentUserData?.id);
+      const currentLikes = [...(commentToUpdate.likes || [])];
+
+      // Mise à jour optimiste
+      setComments(prevComments => 
+        prevComments.map(c => 
+          c._id === commentId 
+            ? {
+                ...c,
+                likes: isCurrentlyLiked
+                  ? currentLikes.filter(id => id !== currentUserData.id)
+                  : [...currentLikes, currentUserData.id]
+              }
+            : c
         )
+      );
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/comments/${commentId}/like`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du like');
+      }
+
+      // Créer une notification si on ajoute un like
+      if (!isCurrentlyLiked && commentToUpdate.user._id !== currentUserData.id) {
+        await createNotification({
+          type: 'COMMENT_LIKE',
+          recipientId: commentToUpdate.user._id,
+          content: 'a aimé votre commentaire',
+          reference: commentToUpdate._id,
+          postId: postId,
+          commentId: commentId,
+          additionalData: {
+            commentContent: commentToUpdate.content,
+            postId: postId
+          }
+        }, token);
       }
     } catch (error) {
-      console.error('Erreur:', error)
-      toast.error('Erreur lors de l\'ajout du commentaire')
-    } finally {
-      setIsSubmitting(false)
+      console.error('Erreur:', error);
+      toast.error('Une erreur est survenue');
+      
+      // Rollback en cas d'erreur
+      setComments(prevComments => 
+        prevComments.map(c => 
+          c._id === commentId 
+            ? {
+                ...c,
+                likes: currentLikes
+              }
+            : c
+        )
+      );
     }
-  }
+  };
 
   // Formater le contenu avec les tags en bleu
   const formatContent = (content) => {
-    if (!content) return ''
+    if (!content) return '';
     
-    const parts = content.split(/(@\{[^}]+\})/g)
+    const parts = content.split(/(@\{[^}]+\})/g);
     return (
-      <span>
+      <span className={styles.commentContent}>
         {parts.map((part, index) => {
           if (part.startsWith('@{') && part.endsWith('}')) {
-            const username = part.slice(2, -1)
-            const user = friends.find(f => f.username === username)
-            if (user) {
-              return (
-                <Link 
-                  key={index}
-                  href={`/profile/${user._id}`}
-                  className={styles.taggedText}
-                >
-                  @{username}
-                </Link>
-              )
-            }
+            const username = part.slice(2, -1);
+            const taggedUser = friends.find(f => f.username === username);
+            return (
+              <Link 
+                key={index}
+                href={`/profile/${taggedUser?._id || username}`}
+                className={styles.taggedText}
+                onClick={(e) => e.stopPropagation()}
+              >
+                @{username}
+              </Link>
+            );
           }
-          return part
+          return <span key={index}>{part}</span>;
         })}
       </span>
-    )
-  }
+    );
+  };
 
   // Formater le texte dans le champ de saisie
   const formatInputContent = (content) => {
-    if (!content) return ''
+    if (!content) return '';
     
-    const parts = content.split(/(@\{[^}]+\})/g)
+    const parts = content.split(/(@\{[^}]+\})/g);
     return parts.map((part, index) => {
       if (part.startsWith('@{') && part.endsWith('}')) {
-        const username = part.slice(2, -1)
+        const username = part.slice(2, -1);
         return (
           <span 
             key={index}
@@ -554,11 +643,11 @@ const PostInteractionModal = ({
           >
             @{username}
           </span>
-        )
+        );
       }
-      return part
-    })
-  }
+      return part;
+    });
+  };
 
   // Trier les commentaires par date
   const sortedComments = useMemo(() => {
@@ -647,60 +736,61 @@ const PostInteractionModal = ({
             </div>
           ) : (
             <div className={styles.commentsSection}>
-              <div className={styles.commentsList}>
-                {sortedComments.length === 0 ? (
-                  <div className={styles.emptyMessage}>
-                    Aucun commentaire pour le moment
-                  </div>
-                ) : (
-                  sortedComments.map(comment => (
-                    <div key={comment._id} className={styles.commentItem}>
-                      <div className={styles.commentHeader}>
-                        <Link
-                          href={`/profile/${comment.user._id}`}
-                          className={styles.userInfo}
-                        >
-                          <Image
-                            src={comment.user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
-                            alt={comment.user.username}
-                            width={32}
-                            height={32}
-                            className={styles.commentAvatar}
-                          />
-                          <span className={styles.commentUsername}>
-                            {comment.user.username}
-                          </span>
-                        </Link>
-                        <TimeAgo
-                          datetime={comment.createdAt}
-                          locale='fr'
-                          className={styles.timeAgo}
+              <div className={styles.commentsContainer}>
+                {sortedComments.map(comment => (
+                  <div 
+                    key={comment._id}
+                    className={`${styles.comment} ${
+                      comment._id === highlightCommentId ? styles.highlightedComment : ''
+                    }`}
+                    id={`comment-${comment._id}`}
+                    ref={comment._id === highlightCommentId ? highlightedCommentRef : null}
+                  >
+                    <div className={styles.commentHeader}>
+                      <Link
+                        href={`/profile/${comment.user._id}`}
+                        className={styles.userInfo}
+                      >
+                        <Image
+                          src={comment.user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
+                          alt={comment.user.username}
+                          width={32}
+                          height={32}
+                          className={styles.commentAvatar}
                         />
-                      </div>
-                      {formatContent(comment.content)}
-                      <div className={styles.commentActions}>
-                        <button
-                          onClick={() => handleLikeComment(comment._id)}
-                          className={`${styles.likeButton} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
-                        >
-                          <FaThumbsUp />
-                          <span>J'aime</span>
-                        </button>
-                        {comment.likes?.length > 0 && (
-                          <button
-                            onClick={() => handleShowLikes(comment._id)}
-                            className={`${styles.likeCounter} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
-                          >
-                            <FaThumbsUp className={styles.icon} />
-                            <span className={styles.count}>
-                              {formatLikeCount(comment.likes)}
-                            </span>
-                          </button>
-                        )}
-                      </div>
+                        <span className={styles.commentUsername}>
+                          {comment.user.username}
+                        </span>
+                      </Link>
+                      <TimeAgo
+                        datetime={comment.createdAt}
+                        locale='fr'
+                        className={styles.timeAgo}
+                      />
                     </div>
-                  ))
-                )}
+                    {formatContent(comment.content)}
+                    <div className={styles.commentActions}>
+                      <button
+                        onClick={() => handleLikeComment(comment._id)}
+                        className={`${styles.likeButton} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
+                      >
+                        <FaThumbsUp />
+                        <span>J'aime</span>
+                      </button>
+                      {comment.likes?.length > 0 && (
+                        <button
+                          onClick={() => handleShowLikes(comment._id)}
+                          className={`${styles.likeCounter} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
+                        >
+                          <FaThumbsUp className={styles.icon} />
+                          <span className={styles.count}>
+                            {formatLikeCount(comment.likes)}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <form onSubmit={handleAddComment} className={styles.commentForm}>

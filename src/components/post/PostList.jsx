@@ -1,13 +1,57 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Post from './Post'
 import styles from './PostList.module.css'
+import PostInteractionModal from '../modals/PostInteractionModal'
 
-export default function PostList({ userId }) {
+export default function PostList({ userId, onPostClick, scrollToPostId, shouldScrollToPost }) {
   const [posts, setPosts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [selectedPost, setSelectedPost] = useState(null)
+  const [selectedCommentId, setSelectedCommentId] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const postsRef = useRef({})
+
+  useEffect(() => {
+    fetchPosts();
+  }, [userId]);
+
+  useEffect(() => {
+    if (scrollToPostId && posts.length > 0) {
+      // Attendre que le DOM soit mis à jour
+      setTimeout(() => {
+        const postElement = document.getElementById(`post-${scrollToPostId}`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, [posts, scrollToPostId]);
+
+  useEffect(() => {
+    if (shouldScrollToPost && posts.length > 0) {
+      const scrollInfo = sessionStorage.getItem('scrollToPost');
+      if (scrollInfo) {
+        const { postId, commentId, openModal } = JSON.parse(scrollInfo);
+        sessionStorage.removeItem('scrollToPost'); // Nettoyer après utilisation
+
+        if (postId) {
+          // Attendre que le DOM soit mis à jour
+          setTimeout(() => {
+            const postElement = document.getElementById(`post-${postId}`);
+            if (postElement) {
+              postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+
+          if (openModal) {
+            handlePostClick(postId, commentId);
+          }
+        }
+      }
+    }
+  }, [posts, shouldScrollToPost]);
 
   const fetchPosts = async () => {
     try {
@@ -39,42 +83,62 @@ export default function PostList({ userId }) {
       setPosts(data);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      setError(error.message);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [userId]);
+  const handlePostClick = useCallback((postId, commentId = null) => {
+    setSelectedPost(postId);
+    setSelectedCommentId(commentId);
+    setShowModal(true);
+  }, []);
 
-  const handlePostUpdate = () => {
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false);
+    setSelectedPost(null);
+    setSelectedCommentId(null);
+  }, []);
+
+  const handlePostUpdate = useCallback(() => {
     console.log('Post updated, refreshing posts...')
     fetchPosts();
-  }
+  }, []);
 
   if (isLoading) {
     return <div className={styles.loading}>Chargement des posts...</div>
   }
 
-  if (error) {
-    return <div className={styles.error}>Erreur: {error}</div>
-  }
-
-  if (!posts || posts.length === 0) {
+  if (posts.length === 0) {
     return <div className={styles.noPosts}>Aucun post à afficher</div>
   }
 
   return (
     <div className={styles.postList}>
-      {posts.map(post => (
-        <Post 
-          key={post._id} 
-          post={post}
-          onPostUpdate={handlePostUpdate}
-        />
+      {posts.map((post) => (
+        <div
+          key={post._id}
+          id={`post-${post._id}`}
+          ref={(el) => (postsRef.current[post._id] = el)}
+          className={styles.postContainer}
+        >
+          <Post 
+            key={post._id} 
+            post={post}
+            onPostClick={() => handlePostClick(post._id)}
+            onPostUpdate={handlePostUpdate}
+          />
+        </div>
       ))}
+
+      {showModal && selectedPost && (
+        <PostInteractionModal
+          postId={selectedPost}
+          onClose={handleCloseModal}
+          highlightCommentId={selectedCommentId}
+        />
+      )}
     </div>
   )
 }
