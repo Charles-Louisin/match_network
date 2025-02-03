@@ -455,7 +455,7 @@ const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.modalHeader}>
-          <h3>J'aime</h3>
+          <h3>J&apos;aime</h3>
           <button onClick={onClose} className={styles.closeButton}>
             <AiOutlineClose size={20} />
           </button>
@@ -463,7 +463,7 @@ const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => {
         <div className={styles.modalList}>
           {!likes || likes.length === 0 ? (
             <div className={styles.emptyState}>
-              Aucun j'aime pour le moment
+              Aucun j&apos;aime pour le moment
             </div>
           ) : (
             likes.map(like => {
