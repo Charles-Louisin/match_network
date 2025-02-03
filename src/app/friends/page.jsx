@@ -283,7 +283,7 @@ const FriendsPage = () => {
           {searchQuery ? (
             <p className={styles.noResults}>Aucun ami ne correspond à votre recherche</p>
           ) : (
-            <p className={styles.noResults}>Vous n'avez pas encore d'amis. Découvrez des personnes qui pourraient vous intéresser dans la section "Vous connaissez peut-être".</p>
+            <p className={styles.noResults}>Vous n&apos;avez pas encore d&apos;amis. Découvrez des personnes qui pourraient vous interessez dans la section "Vous connaissez peut-être".</p>
           )}
         </div>
       );

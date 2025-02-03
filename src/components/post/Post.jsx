@@ -479,7 +479,7 @@ const Post = ({
           className={`${styles.actionButton} ${isLiked ? styles.liked : ""}`}
         >
           <FaThumbsUp className={styles.actionIcon} />
-          <span>J'aime</span>
+          <span>J&apos;aime</span>
         </button>
         <button onClick={() => openModal("comments")} className={styles.actionButton}>
           <FaComment className={styles.actionIcon} />

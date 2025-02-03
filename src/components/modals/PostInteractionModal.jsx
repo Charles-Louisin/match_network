@@ -775,7 +775,7 @@ const PostInteractionModal = ({
                         className={`${styles.likeButton} ${comment.likes?.includes(currentUserData?.id) ? styles.liked : ''}`}
                       >
                         <FaThumbsUp />
-                        <span>J'aime</span>
+                        <span>J&apos;aime</span>
                       </button>
                       {comment.likes?.length > 0 && (
                         <button
@@ -897,7 +897,7 @@ const PostInteractionModal = ({
               >
                 <FaTimes />
               </button>
-              <span className={styles.likesModalTitle}>J'aime</span>
+              <span className={styles.likesModalTitle}>J&apos;aime</span>
             </div>
             <div className={styles.likesList}>
               {selectedCommentLikes.map(user => (
