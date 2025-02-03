@@ -167,7 +167,7 @@
   align-items: center;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+  /* border-top: 1px solid var(--border-color); */
 }
 
 .buttons {
@@ -197,7 +197,7 @@
 }
 
 .submitButton {
-  padding: 8px 16px;
+  padding: 6px 14px;
   border: none;
   border-radius: 6px;
   background-color: var(--primary);
@@ -239,4 +239,15 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+@media (max-width: 640px) {
+  .input {
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .imageButton span,
+.tagButton span {
+  display: none;
+}
 }

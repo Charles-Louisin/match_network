@@ -10,6 +10,7 @@ import { FaHeart, FaRegHeart, FaComment, FaReply } from 'react-icons/fa'
 import styles from './PostCard.module.css'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import ImageViewerModal from '../shared/ImageViewerModal';
 
 export default function PostCard({ post: initialPost }) {
   const [post, setPost] = useState(initialPost)
@@ -18,6 +19,8 @@ export default function PostCard({ post: initialPost }) {
   const [comment, setComment] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
   const [replyContent, setReplyContent] = useState('')
+  const [showImageViewer, setShowImageViewer] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
   const formatter = buildFormatter(frenchStrings)
   const router = useRouter()
 
@@ -178,19 +181,26 @@ export default function PostCard({ post: initialPost }) {
         </Link>
       </div>
 
-      {post.content && <p className={styles.content}>{post.content}</p>}
-
-      {post.image && (
-        <div className={styles.imageContainer}>
-          <Image
-            src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-            alt="Post image"
-            width={500}
-            height={500}
-            objectFit="contain"
-          />
-        </div>
-      )}
+      <div className={styles.postContent}>
+        {post.content && <p className={styles.content}>{post.content}</p>}
+        {post.image && (
+          <div 
+            className={styles.imageContainer}
+            onClick={() => {
+              setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${post.image}`);
+              setShowImageViewer(true);
+            }}
+          >
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
+              alt="Post image"
+              width={500}
+              height={300}
+              style={{ objectFit: 'cover', cursor: 'pointer' }}
+            />
+          </div>
+        )}
+      </div>
 
       <div className={styles.postActions}>
         <button
@@ -341,6 +351,14 @@ export default function PostCard({ post: initialPost }) {
           Envoyer
         </button>
       </form>
+
+      {showImageViewer && (
+        <ImageViewerModal
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          imageUrl={selectedImage}
+        />
+      )}
     </div>
   )
 }

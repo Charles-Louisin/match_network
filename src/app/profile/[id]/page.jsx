@@ -20,6 +20,7 @@ import ProfilePosts from "@/components/profile/ProfilePosts";
 import { useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
+import ImageViewerModal from '@/components/shared/ImageViewerModal';
 
 export default function Profile() {
   const params = useParams();
@@ -44,6 +45,8 @@ export default function Profile() {
   const [friendshipStatus, setFriendshipStatus] = useState('none');
   const [isFriend, setIsFriend] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const avatarInputRef = useRef(null);
   const coverPhotoInputRef = useRef(null);
   const loadingRef = useRef(false);
@@ -570,6 +573,11 @@ export default function Profile() {
     }
   }, [params.id]);
 
+  const handleFriendshipChange = (newStatus) => {
+    setFriendshipStatus(newStatus);
+    setIsFriend(newStatus === 'friends');
+  };
+
   // Charger le statut d'ami au chargement de la page
   useEffect(() => {
     if (!isCurrentUser) {
@@ -667,20 +675,31 @@ export default function Profile() {
       <Navbar />
       <div className={styles.profilePage}>
         <div className={styles.coverSection}>
-          {profile.coverPhoto ? (
-            <Image
-              src={
-                profile.coverPhoto
-                  ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
-                  : "/images/default-cover.jpg"}
-              alt="Cover photo"
-              width={1200}
-              height={300}
-              className={styles.coverPhoto}
-            />
-          ) : (
-            <div className={styles.defaultCover} />
-          )}
+          <div 
+            className={styles.coverPhotoContainer}
+            onClick={() => {
+              if (profile.coverPhoto) {
+                setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`);
+                setShowImageViewer(true);
+              }
+            }}
+            style={{ cursor: profile.coverPhoto ? 'pointer' : 'default' }}
+          >
+            {profile.coverPhoto ? (
+              <Image
+                src={
+                  profile.coverPhoto
+                    ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
+                    : "/images/default-cover.jpg"}
+                alt="Cover photo"
+                width={1200}
+                height={300}
+                className={styles.coverPhoto}
+              />
+            ) : (
+              <div className={styles.defaultCover} />
+            )}
+          </div>
           {isCurrentUser && (
             <div className={styles.coverPhotoUpload}>
               <PhotoUpload
@@ -696,7 +715,16 @@ export default function Profile() {
           <div className={styles.profileHeader}>
             <div className={styles.profileInfo}>
               <div className={styles.leftSection}>
-                <div className={styles.avatarContainer}>
+                <div 
+                  className={styles.avatarContainer}
+                  onClick={() => {
+                    if (profile.avatar) {
+                      setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`);
+                      setShowImageViewer(true);
+                    }
+                  }}
+                  style={{ cursor: profile.avatar ? 'pointer' : 'default' }}
+                >
                   <Image
                     src={
                       profile.avatar
@@ -736,8 +764,8 @@ export default function Profile() {
                   <div className={styles.friendActionContainer}>
                     <FriendActionButtons
                       userId={params.id}
-                      friendshipStatus={friendshipStatus}
-                      onStatusChange={handleFriendshipStatusChange}
+                      initialStatus={friendshipStatus}
+                      onStatusChange={handleFriendshipChange}
                     />
                   </div>
                 )}
@@ -932,6 +960,13 @@ export default function Profile() {
             </div>
           </div>
         </div>
+      )}
+      {showImageViewer && (
+        <ImageViewerModal
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          imageUrl={selectedImage}
+        />
       )}
     </>
   );

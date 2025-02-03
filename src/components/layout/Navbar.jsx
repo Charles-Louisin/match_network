@@ -33,7 +33,7 @@ export default function Navbar() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/pending`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/friends/requests/pending`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -41,7 +41,8 @@ export default function Navbar() {
 
         if (response.ok) {
           const data = await response.json();
-          setPendingRequests(data.length || 0);
+          const receivedRequests = data.filter(request => !request.isCurrentUserSender);
+          setPendingRequests(receivedRequests.length || 0);
         }
       } catch (error) {
         console.error('Error fetching pending requests:', error);

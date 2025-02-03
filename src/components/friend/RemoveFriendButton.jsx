@@ -53,7 +53,7 @@ const RemoveFriendButton = ({ friendId, onFriendRemoved }) => {
         className={styles.removeFriendButton}
         disabled={isLoading}
       >
-        {'Supprimer cet ami'}
+        {'Supprimer'}
       </button>
 
       <ConfirmModal

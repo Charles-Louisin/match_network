@@ -164,6 +164,7 @@ export default function CreatePost({ onPostCreated }) {
             autoResizeTextArea(e);
           }}
           className={styles.input}
+          rows={1}
         />
       </div>
 

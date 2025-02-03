@@ -4,23 +4,61 @@
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
-  height: 100%;
+  position: relative;
+  height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.suggestions::-webkit-scrollbar {
+  width: 2px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+.suggestions::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-dark);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  padding: 10px 0;
+  z-index: 2;
 }
 
 .suggestions h2 {
   font-size: 1.2rem;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin: 0;
 }
 
 .searchContainer {
   margin-bottom: 20px;
+  position: sticky;
+  top: 50px;
+  background-color: white;
+  padding: 10px 0;
+  z-index: 2;
 }
 
 .searchInput {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 5px;
   font-size: 14px;
   background: var(--background-secondary);
@@ -36,73 +74,78 @@
   color: var(--text-secondary);
 }
 
-.userList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.userGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-right: 8px;
 }
 
 .userCard {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  /* box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1); */
-  border: 1px solid #dddddd75;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  background: var(--background-secondary);
+  transition: transform 0.2s;
 }
 
 .userCard:hover {
-  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .userInfo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
   text-decoration: none;
   color: inherit;
+  width: 100%;
+}
+
+.avatarContainer {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 12px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .username {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .addButton {
+  width: 100%;
   padding: 6px 12px;
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 14px;
-  text-decoration: none;
-  transition: background-color 0.2s;
-}
-
-.addButton:hover {
-  background-color: #0056b3;
-}
-
-.showMoreButton {
-  width: 100%;
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
-.showMoreButton:hover {
-  background-color: #e9ecef;
+.addButton:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.addButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .noUsers {
@@ -113,7 +156,45 @@
 }
 
 .error {
-  color: #dc3545;
+  color: var(--danger);
   text-align: center;
   margin: 10px 0;
+}
+
+/* Media queries pour le responsive */
+@media (max-width: 768px) {
+  .userGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .userCard {
+    padding: 8px;
+  }
+
+  .avatarContainer {
+    width: 50px;
+    height: 50px;
+  }
+
+  .username {
+    font-size: 0.85rem;
+  }
+
+  .addButton {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .userGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .searchInput {
+    font-size: 0.9rem;
+    padding: 6px;
+  }
 }

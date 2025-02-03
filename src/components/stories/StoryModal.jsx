@@ -24,6 +24,9 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   const [showViews, setShowViews] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+  const [showFullCaption, setShowFullCaption] = useState(false);
 
   const currentStory = storyData[activeIndex];
   const isCurrentUser = currentStory?.user?._id === currentUser?.id;
@@ -67,24 +70,36 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
       recordView();
     }
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          if (activeIndex < storyData.length - 1) {
-            setActiveIndex(activeIndex + 1);
-            return 0;
-          } else {
-            clearInterval(timer);
-            onClose();
-            return 100;
+    let timer;
+    if (!isPaused) {
+      timer = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            if (activeIndex < storyData.length - 1) {
+              setActiveIndex(activeIndex + 1);
+              return 0;
+            } else {
+              clearInterval(timer);
+              onClose();
+              return 100;
+            }
           }
-        }
-        return prev + (100 / (STORY_DURATION / 100));
-      });
-    }, 100);
+          return prev + (100 / (STORY_DURATION / 100));
+        });
+      }, 100);
+    }
 
     return () => clearInterval(timer);
-  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser]);
+  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser, isPaused]);
+
+  useEffect(() => {
+    // Mettre en pause quand un modal est ouvert
+    if (showLikes || showViews) {
+      setIsPaused(true);
+    } else {
+      setIsPaused(false);
+    }
+  }, [showLikes, showViews]);
 
   const handleLike = async () => {
     try {
@@ -168,6 +183,18 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     setShowViews(!showViews);
   };
 
+  const toggleFullText = (e) => {
+    e.stopPropagation();
+    setShowFullText(!showFullText);
+    setIsPaused(!showFullText); // Met en pause pendant la lecture
+  };
+
+  const toggleFullCaption = (e) => {
+    e.stopPropagation();
+    setShowFullCaption(!showFullCaption);
+    setIsPaused(!showFullCaption); // Met en pause pendant la lecture
+  };
+
   if (!currentStory) return null;
 
   return (
@@ -180,10 +207,12 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     >
       <motion.div
         className={styles.storyModalContent}
-        onClick={(e) => e.stopPropagation()} // Empêche la fermeture au clic sur le contenu
+        onClick={(e) => e.stopPropagation()}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => !showFullText && !showFullCaption && setIsPaused(false)}
       >
         <div className={styles.progressContainer}>
           {storyData.map((_, index) => (
@@ -224,14 +253,32 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
 
         <div className={styles.mediaContainer} onClick={handleImageClick}>
           {currentStory.type === 'text' ? (
-            <div 
-              className={styles.textContent}
-              style={{ 
-                background: currentStory.textContent?.background || '#000000',
-                color: currentStory.textContent?.color || '#ffffff'
-              }}
-            >
-              {currentStory.textContent?.text}
+            <div className={styles.storyContainer}>
+              <div 
+                className={`${styles.textContent} ${showFullText ? styles.expanded : ''}`}
+                style={{ 
+                  background: currentStory.textContent?.background || '#000000',
+                  color: currentStory.textContent?.color || '#ffffff'
+                }}
+              >
+                {currentStory.textContent?.text}
+                {currentStory.textContent?.text.length > 100 && !showFullText && (
+                  <button 
+                    className={styles.showMoreButton}
+                    onClick={toggleFullText}
+                  >
+                    Voir plus
+                  </button>
+                )}
+                {showFullText && (
+                  <button 
+                    className={styles.showLessButton}
+                    onClick={toggleFullText}
+                  >
+                    Voir moins
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className={styles.mediaContainer}>
@@ -244,8 +291,24 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
                 unoptimized
               />
               {currentStory.caption && (
-                <div className={styles.caption}>
+                <div className={`${styles.caption} ${showFullCaption ? styles.expanded : ''}`}>
                   {currentStory.caption}
+                  {currentStory.caption.length > 100 && !showFullCaption && (
+                    <button 
+                      className={styles.showMoreButton}
+                      onClick={toggleFullCaption}
+                    >
+                      Voir plus
+                    </button>
+                  )}
+                  {showFullCaption && (
+                    <button 
+                      className={styles.showLessButton}
+                      onClick={toggleFullCaption}
+                    >
+                      Voir moins
+                    </button>
+                  )}
                 </div>
               )}
             </div>

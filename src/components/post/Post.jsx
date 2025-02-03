@@ -14,6 +14,7 @@ import {
 import TimeAgo from "../utils/TimeAgo";
 import Comment from "./Comment";
 import PostInteractionModal from "../modals/PostInteractionModal";
+import ImageViewerModal from '../shared/ImageViewerModal';
 import styles from "./Post.module.css";
 import { toast } from "react-hot-toast";
 import frenchStrings from "react-timeago/lib/language-strings/fr";
@@ -43,6 +44,8 @@ const Post = ({
   const [editedContent, setEditedContent] = useState(post.content);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInitialTab, setModalInitialTab] = useState("likes");
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const isAuthor = currentUser?.id === post.user?.id;
 
@@ -290,11 +293,15 @@ const Post = ({
 
   const handleCommentClick = (e) => {
     e.stopPropagation();
-    onPostClick(post._id);
+    if (onPostClick) {
+      onPostClick(post._id);
+    }
   };
 
   const handlePostClick = () => {
-    onPostClick(post._id);
+    if (onPostClick) {
+      onPostClick(post._id);
+    }
   };
 
   if (!isClient) {
@@ -306,6 +313,7 @@ const Post = ({
       className={styles.post}
       id={`post-${post._id}`}
       onClick={handlePostClick}
+      style={{ cursor: "pointer" }}
     >
       {/* En-tête du post */}
       <div className={styles.postHeader}>
@@ -423,14 +431,21 @@ const Post = ({
             {post.content}
           </p>
           {post.image && (
-            <div className={styles.imageContainer}>
+            <div 
+              className={styles.imageContainer}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${post.image}`);
+                setShowImageViewer(true);
+              }}
+              style={{ cursor: "pointer" }}
+            >
               <Image
                 src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
                 alt="Image du post"
                 width={500}
                 height={300}
                 className={styles.postImage}
-                priority
               />
             </div>
           )}
@@ -466,7 +481,7 @@ const Post = ({
           <FaThumbsUp className={styles.actionIcon} />
           <span>J'aime</span>
         </button>
-        <button onClick={handleCommentClick} className={styles.actionButton}>
+        <button onClick={() => openModal("comments")} className={styles.actionButton}>
           <FaComment className={styles.actionIcon} />
           <span>Commenter</span>
         </button>
@@ -490,6 +505,13 @@ const Post = ({
         initialComments={comments}
         initialLikes={post.likes}
       />
+      {showImageViewer && (
+        <ImageViewerModal
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          imageUrl={selectedImage}
+        />
+      )}
     </div>
   );
 };
