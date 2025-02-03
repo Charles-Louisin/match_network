@@ -6,58 +6,55 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
 .createStoryModal {
   background: white;
   border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow: hidden;
+  width: 400px;
+  min-height: 250px;
+  max-height: 600px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 .modalHeader {
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #dbdbdb;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  background: white;
 }
 
 .modalHeader h3 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
 }
 
 .modalCloseButton {
   background: none;
   border: none;
-  padding: 4px;
+  padding: 0;
   cursor: pointer;
-  color: #666;
-  border-radius: 50%;
+  color: #262626;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.modalCloseButton:hover {
-  background: #f0f2f5;
-  color: #1a1a1a;
 }
 
 .tabButtons {
   display: flex;
   padding: 12px;
   gap: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #dbdbdb;
 }
 
 .tabButton {
@@ -190,7 +187,7 @@
 .captionInput {
   width: 100%;
   padding: 12px;
-  border: 1px solid #eee;
+  border: 1px solid #dbdbdb;
   border-radius: 8px;
   font-size: 14px;
   resize: none;
@@ -208,7 +205,7 @@
 
 .modalFooter {
   padding: 16px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #dbdbdb;
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -250,7 +247,7 @@
 
 .storiesContainer {
   display: flex;
-  gap: 16px;
+  gap: 5px;
   padding: 16px;
   overflow-x: auto;
   scrollbar-width: none; /* Firefox */
@@ -264,23 +261,38 @@
 }
 
 .storyButton {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 4px;
+  gap: 5px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  min-width: 80px;
-  padding: 0;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.viewedStory .storyPreview::before {
+  border-color: #808080 !important;
 }
 
 .storyPreview {
+  width: 70px;
+  height: 70px;
   position: relative;
-  width: 80px;
-  height: 80px;
   border-radius: 50%;
-  overflow: hidden;
+  padding: 2px;
+}
+
+.storyPreview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* border: 2px solid; */
+  /* border-color: #FF385C; */
   padding: 3px;
 }
 
@@ -435,6 +447,7 @@
 }
 
 .username {
+  /* background-color: blue; */
   color: white;
   font-weight: 500;
   font-size: 0.6rem;
@@ -640,7 +653,7 @@
   font-weight: 600;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #dbdbdb;
 }
 
 .viewerItem {
@@ -653,7 +666,7 @@
 }
 
 .viewerItem:hover {
-  background: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 .viewerUsername {
@@ -711,7 +724,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #dbdbdb;
   position: sticky;
   top: 0;
   background: white;
@@ -764,6 +777,39 @@
   padding: 2rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
+}
+
+/* Overlay pour les modals de likes et vues */
+.interactionModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -150px;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.interactionModalOverlay > * {
+  pointer-events: auto;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  min-height: 250px;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  /* margin-right: 20px; */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Conteneur média et légende */
@@ -900,4 +946,146 @@
   font-size: 14px;
   line-height: 1.4;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.viewersModal {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  min-height: 200px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modalHeader {
+  padding: 16px;
+  border-bottom: 1px solid #dbdbdb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.viewersList {
+  padding: 16px;
+  overflow-y: auto;
+  flex-grow: 1;
+  max-height: calc(500px - 60px); /* 60px pour le header */
+}
+
+.noViews {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  color: #666;
+  font-size: 1rem;
+}
+
+.viewerItem {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.viewerItem:hover {
+  background-color: #f5f5f5;
+}
+
+.viewerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.viewerAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.viewerDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viewerUsername {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.viewTime {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.modalList {
+  padding: 8px 0;
+  overflow-y: auto;
+  flex-grow: 1;
+  background-color: white;
+  max-height: calc(600px - 53px);
+}
+
+.modalItem {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modalItem:hover {
+  background-color: #fafafa;
+}
+
+.modalItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.modalItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modalItemUsername {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+}
+
+.modalItemTime {
+  font-size: 12px;
+  color: #8e8e8e;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #8e8e8e;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 16px;
 }

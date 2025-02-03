@@ -119,30 +119,50 @@ const StoriesList = ({ stories, currentUser }) => {
     window.location.href = `/profile/${userId}`;
   }, []);
 
-  // Trier les stories : non vues en premier, puis vues
+  // Trier les stories pour mettre celles de l'utilisateur en premier
   const sortedStories = useMemo(() => {
+    if (!stories || !currentUser) return stories;
+    
     return [...stories].sort((a, b) => {
-      // D'abord vérifier si toutes les stories sont vues
-      const aAllSeen = a.stories.every(story => 
-        story.viewers?.some(viewer => viewer._id === currentUser?.id)
-      );
-      const bAllSeen = b.stories.every(story => 
-        story.viewers?.some(viewer => viewer._id === currentUser?.id)
-      );
+      const isACurrentUser = a.user._id === currentUser.id;
+      const isBCurrentUser = b.user._id === currentUser.id;
       
-      if (!aAllSeen && bAllSeen) return -1; // a non vue -> début
-      if (aAllSeen && !bAllSeen) return 1;  // b non vue -> début
-      
-      // Si même statut, garder l'ordre original
+      if (isACurrentUser && !isBCurrentUser) return -1;
+      if (!isACurrentUser && isBCurrentUser) return 1;
       return 0;
     });
   }, [stories, currentUser]);
 
-  const isStoryGroupUnseen = useCallback((storyGroup) => {
-    return storyGroup.stories.some(story => 
-      !story.viewers?.some(viewer => viewer._id === currentUser?.id)
-    );
+  // Vérifier si toutes les stories d'un utilisateur ont été vues
+  const areAllStoriesViewed = useCallback((userStories) => {
+    if (!currentUser || !userStories) return false;
+    return userStories.every(story => {
+      // Vérifier si viewers existe et n'est pas null/undefined
+      if (!story || !story.viewers) return false;
+      return story.viewers.some(viewer => viewer._id === currentUser.id);
+    });
   }, [currentUser]);
+
+  // Grouper les stories par utilisateur
+  const storiesByUser = useMemo(() => {
+    if (!sortedStories) return new Map();
+    
+    const groupedStories = new Map();
+    sortedStories.forEach(story => {
+      if (!story || !story.user || !story.user._id) return; // Ignorer les stories invalides
+      
+      const userId = story.user._id;
+      if (!groupedStories.has(userId)) {
+        groupedStories.set(userId, {
+          user: story.user,
+          stories: []
+        });
+      }
+      groupedStories.get(userId).stories.push(story);
+    });
+    
+    return groupedStories;
+  }, [sortedStories]);
 
   return (
     <div className={styles.storiesContainer}>
@@ -171,19 +191,22 @@ const StoriesList = ({ stories, currentUser }) => {
         </button>
       )}
 
-      {sortedStories.map((storyGroup, index) => (
+      {Array.from(storiesByUser.values()).map(({ user, stories: userStories }) => (
         <button
-          key={storyGroup.user._id}
+          key={user._id}
           className={`${styles.storyButton} ${
-            isStoryGroupUnseen(storyGroup) ? styles.unseen : ''
+            areAllStoriesViewed(userStories) ? styles.viewedStory : ''
           }`}
-          onClick={() => setSelectedStoryIndex(index)}
+          onClick={() => {
+            const firstStoryIndex = sortedStories.findIndex(s => s.user._id === user._id);
+            setSelectedStoryIndex(firstStoryIndex);
+          }}
         >
           <div className={styles.storyPreview}>
             <div className={styles.storyPreviewInner}>
               <Image
-                src={getMediaUrl(storyGroup.user.avatar)}
-                alt={storyGroup.user.username}
+                src={getMediaUrl(user.avatar)}
+                alt={user.username}
                 width={80}
                 height={80}
                 className={styles.userAvatarList}
@@ -191,7 +214,7 @@ const StoriesList = ({ stories, currentUser }) => {
             </div>
           </div>
           <span className={styles.storyUsername}>
-            {storyGroup.user.username}
+            {user.username}
           </span>
         </button>
       ))}

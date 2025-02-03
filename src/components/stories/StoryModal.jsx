@@ -18,20 +18,23 @@ const getMediaUrl = (path) => {
 const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigateToProfile }) => {
   const [activeIndex, setActiveIndex] = useState(currentIndex);
   const [progress, setProgress] = useState(0);
+  const [storyData, setStoryData] = useState(stories);
   const [liked, setLiked] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [showViews, setShowViews] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
 
-  const currentStory = stories[activeIndex];
+  const currentStory = storyData[activeIndex];
   const isCurrentUser = currentStory?.user?._id === currentUser?.id;
 
   useEffect(() => {
     if (!currentStory) return;
 
     setProgress(0);
-    setLiked(currentStory.likes?.some(like => like._id === currentUser?.id));
+    // Vérifier si les likes existent avant d'utiliser some
+    setLiked(currentStory.likes?.some?.(like => like?._id === currentUser?.id) || false);
+    // Vérifier si viewers existe
     setViewCount(currentStory.viewers?.length || 0);
     setLikeCount(currentStory.likes?.length || 0);
 
@@ -41,15 +44,19 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
         if (!token) return;
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/${currentStory._id}/view`, {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
           credentials: 'include',
         });
+        
         if (response.ok) {
-          const data = await response.json();
-          setViewCount(data.viewers?.length || 0);
+          const updatedStory = await response.json();
+          if (updatedStory) {
+            setViewCount(updatedStory.viewers?.length || 0);
+          }
         }
       } catch (error) {
         console.error('Erreur lors de l\'enregistrement de la vue:', error);
@@ -63,7 +70,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
-          if (activeIndex < stories.length - 1) {
+          if (activeIndex < storyData.length - 1) {
             setActiveIndex(activeIndex + 1);
             return 0;
           } else {
@@ -77,7 +84,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     }, 100);
 
     return () => clearInterval(timer);
-  }, [activeIndex, currentStory, stories.length, onClose, currentUser, isCurrentUser]);
+  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser]);
 
   const handleLike = async () => {
     try {
@@ -85,16 +92,24 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
       if (!token) return;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/${currentStory._id}/like`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
         credentials: 'include',
       });
+      
       if (response.ok) {
-        const data = await response.json();
+        const updatedStory = await response.json();
+        // Mettre à jour le tableau des stories avec la story mise à jour
+        setStoryData(prevStories => {
+          const newStories = [...prevStories];
+          newStories[activeIndex] = updatedStory;
+          return newStories;
+        });
         setLiked(!liked);
-        setLikeCount(data.likes?.length || 0);
+        setLikeCount(updatedStory.likes?.length || 0);
       }
     } catch (error) {
       console.error('Erreur lors du like:', error);
@@ -102,13 +117,13 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   };
 
   const handleNext = useCallback(() => {
-    if (activeIndex < stories.length - 1) {
+    if (activeIndex < storyData.length - 1) {
       setActiveIndex(prev => prev + 1);
       setProgress(0);
     } else {
       onClose();
     }
-  }, [activeIndex, stories.length, onClose]);
+  }, [activeIndex, storyData.length, onClose]);
 
   const handlePrev = useCallback(() => {
     if (activeIndex > 0) {
@@ -171,7 +186,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
         exit={{ scale: 0.9, opacity: 0 }}
       >
         <div className={styles.progressContainer}>
-          {stories.map((_, index) => (
+          {storyData.map((_, index) => (
             <div key={index} className={styles.progressBar}>
               <div
                 className={styles.progressFill}
@@ -273,7 +288,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
             <BsChevronLeft size={24} />
           </button>
         )}
-        {activeIndex < stories.length - 1 && (
+        {activeIndex < storyData.length - 1 && (
           <button className={`${styles.navButton} ${styles.nextButton}`} onClick={handleNext}>
             <BsChevronRight size={24} />
           </button>
@@ -300,86 +315,118 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   );
 };
 
-const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile }) => (
-  <motion.div
-    className={styles.viewersModal}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 20 }}
-    onClick={(e) => e.stopPropagation()}
-  >
-    <div className={styles.modalHeader}>
-      <h3>Vues</h3>
-      <button onClick={onClose}>
-        <AiOutlineClose size={20} />
-      </button>
-    </div>
-    <div className={styles.viewersList}>
-      {viewers.length === 0 ? (
-        <div className={styles.emptyState}>
-          Aucune vue pour le moment
+const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile }) => {
+  return (
+    <motion.div
+      className={styles.interactionModalOverlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className={styles.modal}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.modalHeader}>
+          <h3>Vues</h3>
+          <button onClick={onClose} className={styles.closeButton}>
+            <AiOutlineClose size={20} />
+          </button>
         </div>
-      ) : (
-        viewers.map(viewer => (
-          <div 
-            key={viewer._id} 
-            className={styles.viewerItem}
-            onClick={() => onNavigateToProfile(viewer._id)}
-          >
-            <Image
-              src={getMediaUrl(viewer.avatar)}
-              alt={viewer.username}
-              width={40}
-              height={40}
-              className={styles.viewerAvatar}
-            />
-            <span>{viewer.username}</span>
-          </div>
-        ))
-      )}
-    </div>
-  </motion.div>
-);
+        <div className={styles.modalList}>
+          {!viewers || viewers.length === 0 ? (
+            <div className={styles.emptyState}>
+              Aucune vue pour le moment
+            </div>
+          ) : (
+            viewers.map(viewer => {
+              if (!viewer || !viewer._id) return null;
+              return (
+                <div key={viewer._id} className={styles.modalItem} onClick={() => onNavigateToProfile(viewer._id)}>
+                  <div className={styles.modalItemLeft}>
+                    <Image
+                      src={getMediaUrl(viewer.avatar)}
+                      alt={viewer.username || 'Utilisateur'}
+                      width={44}
+                      height={44}
+                      className={styles.modalAvatar}
+                    />
+                    <div className={styles.modalItemInfo}>
+                      <span className={styles.modalItemUsername}>{viewer.username || 'Utilisateur'}</span>
+                      <span className={styles.modalItemTime}>
+                        {formatDistanceToNow(new Date(viewer.viewedAt || viewer.createdAt || new Date()), {
+                          addSuffix: true,
+                          locale: fr
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
-const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => (
-  <motion.div
-    className={styles.likesModal}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 20 }}
-    onClick={(e) => e.stopPropagation()}
-  >
-    <div className={styles.modalHeader}>
-      <h3>J'aime</h3>
-      <button onClick={onClose}>
-        <AiOutlineClose size={20} />
-      </button>
-    </div>
-    <div className={styles.likesList}>
-      {likes.length === 0 ? (
-        <div className={styles.emptyState}>
-          Aucun j'aime pour le moment
+const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => {
+  return (
+    <motion.div
+      className={styles.interactionModalOverlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className={styles.modal}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.modalHeader}>
+          <h3>J'aime</h3>
+          <button onClick={onClose} className={styles.closeButton}>
+            <AiOutlineClose size={20} />
+          </button>
         </div>
-      ) : (
-        likes.map(like => (
-          <div 
-            key={like._id} 
-            className={styles.likeItem}
-            onClick={() => onNavigateToProfile(like._id)}
-          >
-            <Image
-              src={getMediaUrl(like.avatar)}
-              alt={like.username}
-              width={40}
-              height={40}
-              className={styles.likeAvatar}
-            />
-            <span>{like.username}</span>
-          </div>
-        ))
-      )}
-    </div>
-  </motion.div>
-);
+        <div className={styles.modalList}>
+          {!likes || likes.length === 0 ? (
+            <div className={styles.emptyState}>
+              Aucun j'aime pour le moment
+            </div>
+          ) : (
+            likes.map(like => {
+              if (!like || !like._id) return null;
+              return (
+                <div key={like._id} className={styles.modalItem} onClick={() => onNavigateToProfile(like._id)}>
+                  <div className={styles.modalItemLeft}>
+                    <Image
+                      src={getMediaUrl(like.avatar)}
+                      alt={like.username || 'Utilisateur'}
+                      width={44}
+                      height={44}
+                      className={styles.modalAvatar}
+                    />
+                    <div className={styles.modalItemInfo}>
+                      <span className={styles.modalItemUsername}>{like.username || 'Utilisateur'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export default StoryModal;
