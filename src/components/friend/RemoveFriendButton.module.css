@@ -39,3 +39,22 @@
     transform: rotate(360deg);
   }
 }
+
+
+@media (max-width: 640px) {
+  .removeFriendButton {
+    padding: 5px 8px;
+    color: white;
+    border: none;
+    font-size: 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+}

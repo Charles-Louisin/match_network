@@ -34,6 +34,14 @@
   font-weight: 600;
   color: #1a1a1a;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+.usernameSmall {
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .postDate {
@@ -82,7 +90,7 @@
   padding: 10px 12px;
   color: #65676b;
   font-size: 0.9rem;
-  border-bottom: 1px solid #ced0d4;
+  /* border-bottom: 1px solid #ced0d4; */
 }
 
 .likeSummary, .commentSummary {
@@ -100,7 +108,7 @@
 }
 
 .thumbIcon {
-  font-size: 1.1rem;
+  font-size: 1.0rem;
   color: #65676b;
 }
 
@@ -323,13 +331,14 @@
 .contentInput {
   width: 100%;
   min-height: 40px;
-  padding: 12px;
+  padding: 8px 12px;
   border: 1px solid #e4e6eb;
-  border-radius: 8px;
+  border-radius: 20px;
   background-color: #f0f2f5;
   font-size: 15px;
   line-height: 1.4;
   resize: none;
+  scrollbar-width: none;
   overflow: hidden;
   transition: all 0.2s ease;
 }
@@ -339,7 +348,7 @@
   outline: none;
   background-color: #fff;
   border-color: #1877f2;
-  box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+  /* box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2); */
 }
 
 .commentTextarea::placeholder,
@@ -367,7 +376,8 @@
 
 .commentSubmit {
   position: absolute;
-  right: 8px;
+  right: 12px;
+  top: 8px;
   background: transparent;
   border: none;
   color: #1877f2;
@@ -477,8 +487,9 @@
 }
 
 .commentContent {
-  margin-left: 12px;
-  flex: 1;
+  /* margin-left: 12px; */
+  /* flex: 1; */
+  width: fit-content;
   background-color: #f0f2f5;
   padding: 8px 12px;
   border-radius: 18px;
@@ -502,13 +513,6 @@
   color: var(--text-secondary);
 }
 
-.commentText {
-  font-size: 0.9rem;
-  color: #050505;
-  margin: 0;
-  line-height: 1.3;
-}
-
 .text, 
 .commentText {
   white-space: pre-wrap;
@@ -516,6 +520,13 @@
   font-size: 15px;
   line-height: 1.4;
   color: #1c1e21;
+}
+.text {
+  font-size: 0.9rem;
+  color: #1c1e21;
+  margin: 0;
+  line-height: 1.3;
+  padding: 0 10px 20px 10px;
 }
 
 .menuContainer {
@@ -690,5 +701,13 @@
   .actionButton {
     padding: 0.375rem;
     font-size: 0.75rem;
+  }
+
+  .commentInputWrapper {
+    width: 95%;
+  }
+
+  .usernameSmall {
+    font-size: 11px;
   }
 }

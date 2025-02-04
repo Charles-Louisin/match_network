@@ -362,6 +362,7 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem("token");
+
       if (!token) {
         toast.error("Veuillez vous reconnecter");
         return;
@@ -374,20 +375,18 @@ export default function Profile() {
       // }
 
       // Préparer les données
+
       const profileData = {
         username: editData.username.trim(),
         bio: editData.bio.trim(),
         location: editData.location.trim(),
         birthDate: editData.birthDate,
-        birthPlace: editData.birthPlace.trim()
+        birthPlace: editData.birthPlace.trim(),
       };
-
-      // Log des données envoyées
-      console.log("Données à envoyer:", profileData);
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`;
-      console.log("URL de l'API:", apiUrl);
-
-      const response = await fetch(apiUrl, {
+      
+      console.log("Données du profil à envoyer:", profileData);
+  
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -395,27 +394,19 @@ export default function Profile() {
         },
         body: JSON.stringify(profileData),
       });
-
-      console.log("Status de la réponse:", response.status);
-      console.log("Status text:", response.statusText);
-
+  
+      console.log("Réponse de l'API:", response);
+  
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Texte d'erreur complet:", errorText);
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          console.error("Données d'erreur parsées:", errorData);
-          toast.error(errorData.message || "Erreur lors de la mise à jour du profil");
-        } catch (e) {
-          console.error("Erreur lors du parsing de l'erreur:", e);
-          toast.error(`Erreur ${response.status}: ${response.statusText}`);
-        }
-        return;
+        console.error("Erreur de l'API:", errorText);
+        throw new Error(errorText);
       }
-
+  
       const updatedProfile = await response.json();
       console.log("Profil mis à jour:", updatedProfile);
+    
+
 
       setProfile(updatedProfile);
       
@@ -838,15 +829,19 @@ export default function Profile() {
 
             <div className={styles.statsSection}>
               <div className={styles.statItem}>
+
                 <div className={styles.statValue}>{profile.friends?.length || 0}</div>
                 <div className={styles.statLabel}>
                   {(profile.friends?.length || 0) <= 1 ? 'Ami' : 'Amis'}
+
                 </div>
               </div>
               <div className={styles.statItem}>
+
                 <div className={styles.statValue}>{posts.length}</div>
                 <div className={styles.statLabel}>Posts</div>
               </div>
+
             </div>
           </div>
 

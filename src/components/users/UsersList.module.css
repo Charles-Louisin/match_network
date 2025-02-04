@@ -131,3 +131,12 @@
     font-size: 12px;
   }
 }
+
+@media (max-width: 640px) {
+  .viewProfileButton {
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    width: fit-content;
+  }
+}

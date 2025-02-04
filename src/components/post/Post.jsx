@@ -473,6 +473,7 @@ const Post = ({
         </button>
       </div>
 
+
       <div className={styles.postActions}>
         <button
           onClick={handleLike}
@@ -485,7 +486,6 @@ const Post = ({
           <FaComment className={styles.actionIcon} />
           <span>Commenter</span>
         </button>
-      </div>
 
       <PostInteractionModal
         isOpen={isModalOpen}

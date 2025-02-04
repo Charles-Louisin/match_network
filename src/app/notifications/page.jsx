@@ -96,9 +96,11 @@ export default function Notifications() {
       case 'POST_LIKE':
         return 'a aimé votre publication';
       case 'POST_COMMENT':
+
         return `a commenté votre publication: "${truncateText(notification.commentContent)}"`;
       case 'POST_CREATED':
         return `a partagé une publication: "${truncateText(notification.postContent)}"`;
+
       case 'PROFILE_PHOTO_UPDATED':
         return 'a changé sa photo de profil';
       case 'COVER_PHOTO_UPDATED':

@@ -218,6 +218,7 @@ export default function CreatePost({ onPostCreated }) {
       {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.actions}>
+
         <div className={styles.buttons}>
           <label className={styles.imageButton}>
             <input
@@ -237,6 +238,8 @@ export default function CreatePost({ onPostCreated }) {
             <FaUserTag size={20} />
             <span>Taguer</span>
           </button>
+        </div>
+
         </div>
 
         <button
