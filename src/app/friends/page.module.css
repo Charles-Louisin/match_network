@@ -320,6 +320,25 @@
   .friendsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .friendsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .friendCard {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+    width: fit-content;
+    position: relative;
+    width: 100%;
+    padding: 0 10px 0 10px;
+    z-index: 1;
+  }
 }
 
 /* Masquer les amis au-delà de 12 par défaut */
