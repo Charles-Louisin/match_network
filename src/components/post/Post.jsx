@@ -14,7 +14,7 @@ import {
 import TimeAgo from "../utils/TimeAgo";
 import Comment from "./Comment";
 import PostInteractionModal from "../modals/PostInteractionModal";
-import ImageViewerModal from '../shared/ImageViewerModal';
+import ImageViewerModal from "../shared/ImageViewerModal";
 import styles from "./Post.module.css";
 import { toast } from "react-hot-toast";
 import frenchStrings from "react-timeago/lib/language-strings/fr";
@@ -431,11 +431,13 @@ const Post = ({
             {post.content}
           </p>
           {post.image && (
-            <div 
+            <div
               className={styles.imageContainer}
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${post.image}`);
+                setSelectedImage(
+                  `${process.env.NEXT_PUBLIC_API_URL}${post.image}`
+                );
                 setShowImageViewer(true);
               }}
               style={{ cursor: "pointer" }}
@@ -454,14 +456,14 @@ const Post = ({
 
       <div className={styles.postStats}>
         <button
-          onClick={() => {
-            setModalInitialTab("likes");
-            setIsModalOpen(true);
-          }}
-          className={`${styles.likeCounter} ${isLiked ? styles.liked : ""}`}
+          onClick={() => openModal("likes")}
+          className={styles.statsButton}
         >
-          <FaThumbsUp className={styles.icon} />
-          <span className={styles.count}>{formatLikeCount()}</span>
+          {post.likes.length === 0
+            ? "Aucun like"
+            : post.likes.length === 1
+            ? "1 like"
+            : `${post.likes.length} likes`}
         </button>
         <span className={styles.statsDivider}>•</span>
         <button
@@ -473,7 +475,6 @@ const Post = ({
         </button>
       </div>
 
-
       <div className={styles.postActions}>
         <button
           onClick={handleLike}
@@ -482,36 +483,40 @@ const Post = ({
           <FaThumbsUp className={styles.actionIcon} />
           <span>J&apos;aime</span>
         </button>
-        <button onClick={() => openModal("comments")} className={styles.actionButton}>
+        <button
+          onClick={() => openModal("comments")}
+          className={styles.actionButton}
+        >
           <FaComment className={styles.actionIcon} />
           <span>Commenter</span>
         </button>
 
-      <PostInteractionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        postId={post._id}
-        currentUser={currentUser}
-        initialTab={modalInitialTab}
-        onPostUpdate={(updatedPost) => {
-          if (updatedPost.likes) {
-            setLikesCount(updatedPost.likes.length);
-          }
-          if (updatedPost.comments) {
-            setComments(updatedPost.comments);
-          }
-          onPostUpdate(updatedPost);
-        }}
-        initialComments={comments}
-        initialLikes={post.likes}
-      />
-      {showImageViewer && (
-        <ImageViewerModal
-          isOpen={showImageViewer}
-          onClose={() => setShowImageViewer(false)}
-          imageUrl={selectedImage}
+        <PostInteractionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          postId={post._id}
+          currentUser={currentUser}
+          initialTab={modalInitialTab}
+          onPostUpdate={(updatedPost) => {
+            if (updatedPost.likes) {
+              setLikesCount(updatedPost.likes.length);
+            }
+            if (updatedPost.comments) {
+              setComments(updatedPost.comments);
+            }
+            onPostUpdate(updatedPost);
+          }}
+          initialComments={comments}
+          initialLikes={post.likes}
         />
-      )}
+        {showImageViewer && (
+          <ImageViewerModal
+            isOpen={showImageViewer}
+            onClose={() => setShowImageViewer(false)}
+            imageUrl={selectedImage}
+          />
+        )}
+      </div>
     </div>
   );
 };

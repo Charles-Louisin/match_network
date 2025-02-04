@@ -218,7 +218,6 @@ export default function CreatePost({ onPostCreated }) {
       {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.actions}>
-
         <div className={styles.buttons}>
           <label className={styles.imageButton}>
             <input
@@ -239,25 +238,26 @@ export default function CreatePost({ onPostCreated }) {
             <span>Taguer</span>
           </button>
         </div>
-
-        </div>
-
-        <button
-          onClick={createPost}
-          disabled={isLoading || (!content && !selectedImage)}
-          className={`${styles.submitButton} ${
-            isLoading ? styles.loading : ""
-          }`}
-        >
-          {isLoading ? "Publication..." : "Publier"}
-        </button>
       </div>
 
-      <TagFriendsModal
-        isOpen={showTagModal}
-        onClose={() => setShowTagModal(false)}
-        onTagFriends={handleTagFriends}
-      />
+      <button
+        onClick={createPost}
+        disabled={isLoading || (!content && !selectedImage)}
+        className={`${styles.submitButton} ${
+          isLoading ? styles.loading : ""
+        }`}
+      >
+        {isLoading ? "Publication..." : "Publier"}
+      </button>
+      <div>
+        <TagFriendsModal 
+          isOpen={showTagModal} 
+          onClose={() => setShowTagModal(false)} 
+          onTagFriends={handleTagFriends}
+        />
+      </div>
     </div>
   );
 }
+
+// export default CreatePost;
