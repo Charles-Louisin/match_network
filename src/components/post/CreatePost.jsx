@@ -250,11 +250,13 @@ export default function CreatePost({ onPostCreated }) {
         </button>
       </div>
 
-      <TagFriendsModal
-        isOpen={showTagModal}
-        onClose={() => setShowTagModal(false)}
-        onTagFriends={handleTagFriends}
-      />
+      <div>
+        <TagFriendsModal 
+          isOpen={showTagModal} 
+          onClose={() => setShowTagModal(false)} 
+          onTagFriends={handleTagFriends}
+        />
+      </div>
     </div>
   );
 }
