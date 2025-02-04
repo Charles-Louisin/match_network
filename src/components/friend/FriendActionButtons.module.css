@@ -1,76 +1,103 @@
 .container {
   display: flex;
-  justify-content: center;
-  width: 100%;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.actionButtons {
+.buttonContainer {
   display: flex;
   gap: 10px;
-  width: 100%;
+  margin-top: 10px;
 }
 
 .button {
   padding: 8px 16px;
-  border: none;
   border-radius: 6px;
-  font-size: 14px;
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  width: 100%;
+  border: none;
+  min-width: 100px;
 }
 
 .button:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.addButton {
-  background-color: #007bff;
+.addFriend {
+  background-color: #1a73e8;
   color: white;
 }
 
-.addButton:hover:not(:disabled) {
-  background-color: #0056b3;
+.addFriend:hover:not(:disabled) {
+  background-color: #1557b0;
 }
 
-.pendingButton {
-  background-color: #6c757d;
-  color: white;
-  cursor: not-allowed;
+.cancelRequest {
+  background-color: #f1f3f4;
+  color: #5f6368;
+  border: 1px solid #dadce0;
 }
 
-.acceptButton {
-  background-color: var(--primary-color);
-  color: white;
+.cancelRequest:hover:not(:disabled) {
+  background-color: #e8eaed;
 }
 
-.acceptButton:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.rejectButton {
-  background-color: var(--background-hover);
-  color: #000;
-}
-
-.rejectButton:hover:not(:disabled) {
-  background-color: #6c757d97;
+.acceptRequest {
+  background-color: #1a73e8;
   color: white;
 }
 
-.removeButton {
-  background-color: #dc3545;
+.acceptRequest:hover:not(:disabled) {
+  background-color: #1557b0;
+}
+
+.rejectRequest {
+  background-color: #f1f3f4;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.rejectRequest:hover:not(:disabled) {
+  background-color: #e8eaed;
+}
+
+.removeFriend {
+  background-color: #f1f3f4;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.removeFriend:hover:not(:disabled) {
+  background-color: #e8eaed;
+  color: #d93025;
+  border-color: #d93025;
+}
+
+.requestButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.accept {
+  background-color: #1a73e8;
   color: white;
 }
 
-.removeButton:hover:not(:disabled) {
-  background-color: #c82333;
+.accept:hover:not(:disabled) {
+  background-color: #1557b0;
+}
+
+.reject {
+  background-color: #f1f3f4;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.reject:hover:not(:disabled) {
+  background-color: #e8eaed;
 }
 
 /* Loader */
@@ -93,19 +120,19 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .buttonContainer {
+    width: 100%;
+    justify-content: center;
+  }
+
   .button {
     padding: 6px 12px;
-    font-size: 13px;
-    min-height: 32px;
+    font-size: 0.85rem;
   }
-  
-  .actionButtons {
-    gap: 8px;
-  }
-  
-  .loader {
-    width: 14px;
-    height: 14px;
+
+  .requestButtons {
+    width: 100%;
+    justify-content: center;
   }
 }

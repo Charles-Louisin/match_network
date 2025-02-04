@@ -1,80 +1,65 @@
 .postCard {
-  background: white;
+  background: var(--background-primary);
   border-radius: 12px;
-  overflow: hidden;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .postHeader {
-  padding: 16px;
-  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .userInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
   color: inherit;
+  gap: 12px;
 }
 
-.avatar img {
+.avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
+  overflow: hidden;
 }
 
 .userMeta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .username {
   font-weight: 600;
-  color: #1a73e8;
-}
-
-.postType {
-  font-size: 14px;
-  color: #666;
+  color: var(--text-primary);
 }
 
 .timestamp {
-  font-size: 12px;
-  color: #999;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .content {
-  padding: 16px;
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+  margin: 12px 0;
+  color: var(--text-primary);
+  line-height: 1.5;
 }
 
 .imageContainer {
-  width: 100%;
-  height: auto;
-  max-height: 500px;
-  position: relative;
+  margin: 12px 0;
+  border-radius: 12px;
   overflow: hidden;
 }
 
-.imageContainer img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
 .postActions {
-  padding: 12px 16px;
   display: flex;
   gap: 16px;
-  border-top: 1px solid #eee;
-  background: white;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 }
 
 .actionButton {
@@ -83,54 +68,56 @@
   gap: 6px;
   background: none;
   border: none;
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 20px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .actionButton:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--background-hover);
+  color: var(--primary);
 }
 
-.actionButton.liked {
-  color: #e41e3f;
+.liked {
+  color: #e0245e;
 }
 
-.actionButton svg {
-  font-size: 18px;
-}
-
+/* Styles des commentaires */
 .comments {
-  padding: 16px;
-  border-top: 1px solid #eee;
-  background: white;
+  margin-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
 }
 
 .comment {
-  margin-bottom: 16px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-.comment:last-child {
-  margin-bottom: 0;
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .commentUser {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   text-decoration: none;
   color: inherit;
-  margin-bottom: 4px;
 }
 
-.commentAvatar img {
+.commentAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  object-fit: cover;
+  overflow: hidden;
 }
 
 .commentUsername {
@@ -138,44 +125,209 @@
   color: #1a73e8;
 }
 
-.commentContent {
-  margin: 0 0 4px 40px;
-  font-size: 14px;
+.commentTime {
+  font-size: 0.8rem;
+  color: #666;
 }
 
-.commentTime {
-  display: block;
-  margin-left: 40px;
-  font-size: 12px;
-  color: #999;
+.commentContent {
+  margin: 0.5rem 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.commentActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.replyButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.replyButton:hover {
+  background-color: #f0f0f0;
+  color: #1a73e8;
+}
+
+.replyIcon {
+  font-size: 0.8rem;
+}
+
+.replyFormContainer {
+  margin-top: 1rem;
+  margin-left: 2.5rem;
+}
+
+.replyForm {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.replyInputWrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.replyFormAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.replyInputField {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: #f8f9fa;
+}
+
+.replyInputField:focus {
+  outline: none;
+  border-color: #1a73e8;
+  background-color: white;
+}
+
+.replyFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cancelReplyButton,
+.submitReplyButton {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelReplyButton {
+  background: none;
+  border: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.cancelReplyButton:hover {
+  background-color: #f0f0f0;
+}
+
+.submitReplyButton {
+  background-color: #1a73e8;
+  border: none;
+  color: white;
+}
+
+.submitReplyButton:hover:not(:disabled) {
+  background-color: #1557b0;
+}
+
+.submitReplyButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.repliesContainer {
+  margin-top: 1rem;
+  margin-left: 2.5rem;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 1rem;
+}
+
+.reply {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.replyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.replyUser {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.replyAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.replyUsername {
+  font-weight: 600;
+  color: #1a73e8;
+  font-size: 0.9rem;
+}
+
+.replyContent {
+  margin: 0.5rem 0;
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.replyTime {
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .commentForm {
   display: flex;
   gap: 12px;
   padding: 16px;
-  border-top: 1px solid #eee;
-  background: white;
+  border-top: 1px solid var(--border-color);
+  background: var(--background-primary);
 }
 
 .commentInput {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   font-size: 14px;
   resize: none;
   min-height: 36px;
   max-height: 80px;
   outline: none;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
 }
 
 .commentInput:focus {
-  border-color: #1a73e8;
+  border-color: var(--primary);
 }
 
 .sendButton {
-  background: #1a73e8;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 20px;
@@ -186,10 +338,37 @@
 }
 
 .sendButton:hover {
-  background: #1557b0;
+  background: var(--primary-dark);
 }
 
 .sendButton:disabled {
-  background: #ccc;
+  background: var(--background-secondary);
   cursor: not-allowed;
+}
+
+/* Variables CSS globales */
+:root {
+  --primary: #1da1f2;
+  --primary-dark: #1a91da;
+  --text-primary: #000;
+  --text-secondary: #536471;
+  --background-primary: #fff;
+  --background-secondary: #f7f9f9;
+  --background-hover: #f0f2f2;
+  --border-color: #ebeef0;
+}
+
+/* Style du tag utilisateur */
+.userTag {
+  color: #1da1f2;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.userTag:hover {
+  text-decoration: underline;
+  opacity: 0.9;
 }

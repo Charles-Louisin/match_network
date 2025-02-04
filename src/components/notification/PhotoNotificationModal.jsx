@@ -39,7 +39,7 @@ const PhotoNotificationModal = ({ notification, onClose }) => {
           <div className={styles.actions}>
             <button className={styles.likeButton}>
               <span className={styles.icon}>❤️</span>
-              J&lsquo;aime
+              J&apos;aime
             </button>
             <button className={styles.commentButton}>
               <span className={styles.icon}>💬</span>

@@ -15,9 +15,12 @@ import styles from "./profile.module.css";
 import Navbar from "@/components/layout/Navbar";
 import CreatePost from "@/components/post/CreatePost";
 import EditProfileModal from "@/components/profile/EditProfileModal";
-import { FaCamera, FaEdit } from "react-icons/fa";
+import { FaCamera, FaEdit, FaMars, FaVenus, FaGenderless } from "react-icons/fa";
 import ProfilePosts from "@/components/profile/ProfilePosts";
 import { useRef } from "react";
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import ImageViewerModal from '@/components/shared/ImageViewerModal';
 
 export default function Profile() {
   const params = useParams();
@@ -42,10 +45,15 @@ export default function Profile() {
   const [friendshipStatus, setFriendshipStatus] = useState('none');
   const [isFriend, setIsFriend] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const avatarInputRef = useRef(null);
   const coverPhotoInputRef = useRef(null);
   const loadingRef = useRef(false);
   const errorToastShown = useRef(false);
+  const postsRef = useRef({});
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -354,8 +362,20 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Token d'authentification:", token);
-      
+
+      if (!token) {
+        toast.error("Veuillez vous reconnecter");
+        return;
+      }
+
+      // Vérifier les champs obligatoires
+      // if (!editData.username.trim()) {
+      //   toast.error("Le nom d'utilisateur est requis");
+      //   return;
+      // }
+
+      // Préparer les données
+
       const profileData = {
         username: editData.username.trim(),
         bio: editData.bio.trim(),
@@ -509,6 +529,28 @@ export default function Profile() {
     }
   }, [postsLoaded, posts]);
 
+  useEffect(() => {
+    const postId = searchParams.get('postId');
+    
+    if (postId && postId !== 'undefined') {
+      const checkPostAndScroll = setInterval(() => {
+        const postElement = document.getElementById(`post-${postId}`);
+        if (postElement) {
+          clearInterval(checkPostAndScroll);
+          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // Nettoyer l'intervalle après 5 secondes si le post n'est pas trouvé
+      const timeout = setTimeout(() => clearInterval(checkPostAndScroll), 5000);
+      
+      return () => {
+        clearInterval(checkPostAndScroll);
+        clearTimeout(timeout);
+      };
+    }
+  }, [searchParams]);
+
   const handleFriendshipStatusChange = useCallback((newStatus) => {
     setFriendshipStatus(newStatus);
     if (newStatus === 'friends') {
@@ -522,12 +564,94 @@ export default function Profile() {
     }
   }, [params.id]);
 
+  const handleFriendshipChange = (newStatus) => {
+    setFriendshipStatus(newStatus);
+    setIsFriend(newStatus === 'friends');
+  };
+
   // Charger le statut d'ami au chargement de la page
   useEffect(() => {
     if (!isCurrentUser) {
       fetchFriendshipStatus();
     }
   }, [isCurrentUser, fetchFriendshipStatus]);
+
+  const handlePostClick = (postId, commentId = null) => {
+    const postElement = document.getElementById(`post-${postId}`);
+    if (postElement) {
+      postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      if (commentId) {
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          commentElement.classList.add('highlight');
+          setTimeout(() => commentElement.classList.remove('highlight'), 2000);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        // Récupérer l'utilisateur connecté
+        const currentUserData = JSON.parse(localStorage.getItem('user'));
+        setCurrentUser(currentUserData);
+
+        // Récupérer l'utilisateur du profil
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/users/${params.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+
+        const userData = await response.json();
+        setUser(userData);
+        setIsLoading(false);
+
+        // Vérifier s'il y a des informations de scroll dans le sessionStorage
+        const scrollInfo = sessionStorage.getItem('scrollToPost');
+        if (scrollInfo) {
+          const { postId, commentId, openModal } = JSON.parse(scrollInfo);
+          console.log('ScrollInfo:', { postId, commentId, openModal });
+          
+          if (postId && openModal) {
+            setSelectedPost(postId);
+            setSelectedCommentId(commentId);
+            setShowModal(true);
+          }
+          
+          // Nettoyer après utilisation
+          sessionStorage.removeItem('scrollToPost');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id, router]);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedPost(null);
+    setSelectedCommentId(null);
+  };
 
   if (isLoading) {
     return <div className={styles.loadingContainer}>Loading...</div>;
@@ -542,20 +666,31 @@ export default function Profile() {
       <Navbar />
       <div className={styles.profilePage}>
         <div className={styles.coverSection}>
-          {profile.coverPhoto ? (
-            <Image
-              src={
-                profile.coverPhoto
-                  ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
-                  : "/images/default-cover.jpg"}
-              alt="Cover photo"
-              width={1200}
-              height={300}
-              className={styles.coverPhoto}
-            />
-          ) : (
-            <div className={styles.defaultCover} />
-          )}
+          <div 
+            className={styles.coverPhotoContainer}
+            onClick={() => {
+              if (profile.coverPhoto) {
+                setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`);
+                setShowImageViewer(true);
+              }
+            }}
+            style={{ cursor: profile.coverPhoto ? 'pointer' : 'default' }}
+          >
+            {profile.coverPhoto ? (
+              <Image
+                src={
+                  profile.coverPhoto
+                    ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
+                    : "/images/default-cover.jpg"}
+                alt="Cover photo"
+                width={1200}
+                height={300}
+                className={styles.coverPhoto}
+              />
+            ) : (
+              <div className={styles.defaultCover} />
+            )}
+          </div>
           {isCurrentUser && (
             <div className={styles.coverPhotoUpload}>
               <PhotoUpload
@@ -571,7 +706,16 @@ export default function Profile() {
           <div className={styles.profileHeader}>
             <div className={styles.profileInfo}>
               <div className={styles.leftSection}>
-                <div className={styles.avatarContainer}>
+                <div 
+                  className={styles.avatarContainer}
+                  onClick={() => {
+                    if (profile.avatar) {
+                      setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`);
+                      setShowImageViewer(true);
+                    }
+                  }}
+                  style={{ cursor: profile.avatar ? 'pointer' : 'default' }}
+                >
                   <Image
                     src={
                       profile.avatar
@@ -611,8 +755,8 @@ export default function Profile() {
                   <div className={styles.friendActionContainer}>
                     <FriendActionButtons
                       userId={params.id}
-                      friendshipStatus={friendshipStatus}
-                      onStatusChange={handleFriendshipStatusChange}
+                      initialStatus={friendshipStatus}
+                      onStatusChange={handleFriendshipChange}
                     />
                   </div>
                 )}
@@ -649,9 +793,15 @@ export default function Profile() {
               )}
               {profile.gender && (
                 <div className={styles.infoItem}>
+                  {profile.gender === 'male' ? (
+                    <FaMars className={`${styles.infoIcon} ${styles.maleIcon}`} />
+                  ) : profile.gender === 'female' ? (
+                    <FaVenus className={`${styles.infoIcon} ${styles.femaleIcon}`} />
+                  ) : (
+                    <FaGenderless className={styles.infoIcon} />
+                  )}
                   <span className={styles.infoValue}>
-                    {profile.gender.charAt(0).toUpperCase() +
-                      profile.gender.slice(1)}
+                    {profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1)}
                   </span>
                 </div>
               )}
@@ -679,27 +829,25 @@ export default function Profile() {
 
             <div className={styles.statsSection}>
               <div className={styles.statItem}>
+
+                <div className={styles.statValue}>{profile.friends?.length || 0}</div>
+                <div className={styles.statLabel}>
+                  {(profile.friends?.length || 0) <= 1 ? 'Ami' : 'Amis'}
+
+                </div>
+              </div>
+              <div className={styles.statItem}>
+
                 <div className={styles.statValue}>{posts.length}</div>
                 <div className={styles.statLabel}>Posts</div>
               </div>
-              {/* <div className={styles.statItem}>
-                <div className={styles.statValue}>
-                  {profile.followers?.length || 0}
-                </div>
-                <div className={styles.statLabel}>Followers</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statValue}>
-                  {profile.following?.length || 0}
-                </div>
-                <div className={styles.statLabel}>Following</div>
-              </div> */}
+
             </div>
           </div>
 
           <div className={styles.mainColumn}>
             {isCurrentUser && <CreatePost onPostCreated={fetchProfilePosts} />}
-            <ProfilePosts posts={posts} userId={profile._id} />
+            <ProfilePosts posts={posts} userId={profile._id} onPostClick={handlePostClick} postsRef={postsRef} />
           </div>
         </div>
       </div>
@@ -807,6 +955,13 @@ export default function Profile() {
             </div>
           </div>
         </div>
+      )}
+      {showImageViewer && (
+        <ImageViewerModal
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          imageUrl={selectedImage}
+        />
       )}
     </>
   );

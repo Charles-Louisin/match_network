@@ -1,0 +1,280 @@
+.comment {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.comment:hover {
+  background-color: #f1f3f5;
+}
+
+.commentMain {
+  display: flex;
+  gap: 1rem;
+}
+
+.avatar {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.avatarImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.commentContent {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.username {
+  font-weight: 600;
+  color: #1a73e8;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.username:hover {
+  text-decoration: underline;
+}
+
+.time {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.commentText {
+  margin: 0.5rem 0;
+  color: #212529;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.taggedUser {
+  color: #1a73e8;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.taggedUser:hover {
+  text-decoration: underline;
+  color: #1557b0;
+}
+
+.commentActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  background: none;
+  color: #6c757d;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: #e9ecef;
+  color: #1a73e8;
+}
+
+.actionIcon {
+  font-size: 0.9rem;
+}
+
+.liked {
+  color: #1a73e8;
+}
+
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: #e9ecef;
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 150px;
+  padding: 0.5rem 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: #212529;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background-color: #f8f9fa;
+}
+
+.editContainer {
+  margin-top: 0.5rem;
+}
+
+.editInput {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  resize: vertical;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  background-color: white;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.editButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.replyContainer {
+  margin-left: 3.5rem;
+  margin-top: 1rem;
+}
+
+.replyForm {
+  display: flex;
+  gap: 1rem;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.replyAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.replyInputContainer {
+  flex-grow: 1;
+}
+
+.replyInput {
+  width: 100%;
+  min-height: 60px;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  resize: vertical;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+.replyInput:focus {
+  outline: none;
+  border-color: #1a73e8;
+  background-color: white;
+}
+
+.replyButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cancelButton,
+.submitButton {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #f8f9fa;
+}
+
+.submitButton {
+  background-color: #1a73e8;
+  border: none;
+  color: white;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #1557b0;
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.replies {
+  margin-left: 3.5rem;
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid #dee2e6;
+}

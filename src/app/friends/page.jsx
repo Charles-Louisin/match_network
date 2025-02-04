@@ -7,7 +7,7 @@ import styles from './page.module.css';
 import Avatar from '@/components/common/Avatar';
 import RemoveFriendButton from '@/components/friend/RemoveFriendButton';
 import Navbar from '@/components/layout/Navbar';
-import UsersList from '@/components/users/UsersList';
+import UserSuggestions from '@/components/users/UserSuggestions';
 import Image from 'next/image';
 
 const FriendsPage = () => {
@@ -18,14 +18,17 @@ const FriendsPage = () => {
   const [newRequests, setNewRequests] = useState(false);
   const [lastRequestCount, setLastRequestCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleFriends, setVisibleFriends] = useState(12);
+  const [visibleRequests, setVisibleRequests] = useState(12);
+  const [visibleSuggestions, setVisibleSuggestions] = useState(21);
 
   // Filtrer les amis en fonction de la recherche
   const filteredFriends = friends.filter(friend => 
     friend.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Utiliser directement les demandes en attente sans filtrage supplémentaire
-  const filteredPendingRequests = pendingRequests;
+  // Filtrer uniquement les demandes reçues
+  const filteredPendingRequests = pendingRequests.filter(request => !request.isCurrentUserSender);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -38,6 +41,20 @@ const FriendsPage = () => {
       }
     }
   }, []);
+
+  // Supprimer l'auto-refresh
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([fetchFriends(), fetchPendingRequests()]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchFriends = async () => {
     try {
@@ -189,14 +206,15 @@ const FriendsPage = () => {
       return null;
     }
 
+    const displayedRequests = filteredPendingRequests.slice(0, visibleRequests);
+    const hasMore = filteredPendingRequests.length > visibleRequests;
+
     return (
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Demandes d&apos;amitié</h2>
         <div className={styles.requestsGrid}>
-          {filteredPendingRequests.map((request) => {
-            const otherUser = request.isCurrentUserSender ? request.recipient : request.sender;
-            const actionText = request.isCurrentUserSender ? 'Demande envoyée' : '';
-
+          {displayedRequests.map((request) => {
+            const otherUser = request.sender;
             return (
               <div key={request._id} className={styles.requestCard}>
                 <Link href={`/profile/${otherUser._id}`} className={styles.userInfo}>
@@ -212,55 +230,121 @@ const FriendsPage = () => {
                     />
                   </div>
                   <span className={styles.username}>{otherUser.username}</span>
-                  {actionText && <span className={styles.requestStatus}>{actionText}</span>}
                 </Link>
-                {!request.isCurrentUserSender && (
-                  <div className={styles.requestActions}>
-                    <button
-                      onClick={() => handleAcceptRequest(request._id)}
-                      className={styles.acceptButton}
-                      disabled={isLoading}
-                    >
-                      Accepter
-                    </button>
-                    <button
-                      onClick={() => handleRejectRequest(request._id)}
-                      className={styles.rejectButton}
-                      disabled={isLoading}
-                    >
-                      Refuser
-                    </button>
-                  </div>
-                )}
+                <div className={styles.requestActions}>
+                  <button
+                    onClick={() => handleAcceptRequest(request._id)}
+                    className={styles.acceptButton}
+                    disabled={isLoading}
+                  >
+                    Accepter
+                  </button>
+                  <button
+                    onClick={() => handleRejectRequest(request._id)}
+                    className={styles.rejectButton}
+                    disabled={isLoading}
+                  >
+                    Refuser
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
+        {hasMore && (
+          <button
+            onClick={() => setVisibleRequests(prev => prev + 6)}
+            className={styles.showMoreButton}
+          >
+            Voir plus
+          </button>
+        )}
       </div>
     );
   };
 
-  useEffect(() => {
-    if (currentUser) {
-      const loadData = async () => {
-        setIsLoading(true);
-        try {
-          await Promise.all([fetchFriends(), fetchPendingRequests()]);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadData();
-
-      // Rafraîchir les données toutes les 30 secondes
-      const interval = setInterval(loadData, 30000);
-      return () => clearInterval(interval);
+  const renderFriends = () => {
+    if (!filteredFriends || filteredFriends.length === 0) {
+      return (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Mes amis</h2>
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="Rechercher un ami..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setVisibleFriends(12);
+              }}
+              className={styles.searchInput}
+            />
+          </div>
+          {searchQuery ? (
+            <p className={styles.noResults}>Aucun ami ne correspond à votre recherche</p>
+          ) : (
+            <p className={styles.noResults}>Vous n&apos;avez pas encore d&apos;amis. Découvrez des personnes qui pourraient vous interessez dans la section <strong>Vous connaissez peut-être</strong></p>
+          )}
+        </div>
+      );
     }
-  }, [currentUser, fetchPendingRequests]);
 
-  useEffect(() => {
-    fetchPendingRequests()
-  }, [fetchPendingRequests])
+    const displayedFriends = filteredFriends.slice(0, visibleFriends);
+    const hasMore = filteredFriends.length > visibleFriends;
+
+    return (
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          {filteredFriends.length === 0
+            ? "Mes amis"
+            : filteredFriends.length === 1
+            ? `Mes amis (1 ami)`
+            : `Mes amis (${filteredFriends.length} amis)`}
+        </h2>
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Rechercher un ami..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setVisibleFriends(12);
+            }}
+            className={styles.searchInput}
+          />
+        </div>
+        <div className={`${styles.friendsGrid} ${visibleFriends > 12 ? styles.showAll : ''} ${styles.responsiveGrid}`}>
+          {displayedFriends.map((friend) => (
+            <div key={friend._id} className={styles.friendCard}>
+              <Link href={`/profile/${friend._id}`} className={styles.userInfo}>
+                <div className={styles.avatarContainer}>
+                  <Image
+                    src={friend.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${friend.avatar}` : '/images/default-avatar.jpg'}
+                    alt={friend.username}
+                    width={60}
+                    height={60}
+                    className={styles.avatar}
+                  />
+                </div>
+                <span className={styles.username}>{friend.username}</span>
+              </Link>
+              <div className={styles.friendActions}>
+                <RemoveFriendButton friendId={friend._id} onFriendRemoved={loadData} />
+              </div>
+            </div>
+          ))}
+        </div>
+        {filteredFriends.length > 12 && visibleFriends <= 12 && (
+          <button
+            onClick={() => setVisibleFriends(filteredFriends.length)}
+            className={styles.showMoreButton}
+          >
+            Voir plus
+          </button>
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -281,47 +365,10 @@ const FriendsPage = () => {
         {renderPendingRequests()}
 
         {/* Liste des amis */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Mes amis</h2>
-          <div className={styles.searchContainer}>
-            <input
-              type="text"
-              placeholder="Rechercher un ami..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
-          {friends.length === 0 ? (
-            <p className={styles.noFriends}>Vous n&apos;avez pas encore d&apos;amis</p>
-          ) : (
-            <div className={styles.friendsContainer}>
-              {filteredFriends.map(friend => (
-                <div key={friend._id || friend.id} className={styles.friendCard}>
-                  <Link href={`/profile/${friend._id || friend.id}`} className={styles.userInfo}>
-                    <Avatar
-                      src={friend.avatar}
-                      alt={friend.username}
-                      size="medium"
-                      priority={true}
-                    />
-                    <span className={styles.username}>{friend.username}</span>
-                  </Link>
-                  <RemoveFriendButton
-                    friendId={friend._id || friend.id}
-                    onFriendRemoved={fetchFriends}
-                  />
-                </div>
-              ))}
-              {filteredFriends.length === 0 && searchQuery && (
-                <p className={styles.noResults}>Aucun ami ne correspond à votre recherche</p>
-              )}
-            </div>
-          )}
-        </div>
+        {renderFriends()}
 
-        {/* Liste de tous les utilisateurs */}
-        <UsersList />
+        {/* Liste des suggestions d'amis */}
+        <UserSuggestions />
       </main>
     </div>
   );

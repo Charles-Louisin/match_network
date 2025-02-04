@@ -65,22 +65,23 @@
 }
 
 .imageContainer {
-  width: 100%;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f2f5;
-  min-height: 300px;
-  max-height: 600px;
+  width: 100%;
+  margin: 10px 0;
+  border-radius: 8px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .postImage {
-  width: 100% !important;
-  height: auto !important;
-  max-height: 600px !important;
-  object-fit: contain !important;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.imageContainer:hover .postImage {
+  transform: scale(1.02);
 }
 
 .interactionStats {
@@ -115,48 +116,109 @@
   color: #1877f2;
 }
 
-.actionButtons {
+.postStats {
   display: flex;
-  padding: 4px 12px;
-  border-bottom: 1px solid #ced0d4;
-  justify-content: space-between;
-  gap: 25px;
-  /* background-color: red; */
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.likeCounter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.likeCounter .icon {
+  font-size: 14px;
+  color: #666;
+}
+
+.likeCounter.liked .icon {
+  color: #1da1f2;
+}
+
+.likeCounter .count {
+  color: #666;
+  font-size: 14px;
+}
+
+.statsDivider {
+  margin: 0 8px;
+  color: #666;
+}
+
+.postActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-top: 1px solid #eee;
 }
 
 .actionButton {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px;
   background: none;
   border: none;
-  color: #65676b;
-  font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
- 
-  background-color: #f2f2f2;
-  transition: all 0.2s ease;
+  color: #666;
+  font-size: 14px;
+  transition: color 0.2s ease;
+  width: 100%;
 }
 
 .actionButton:hover {
-  background-color: #ced0d4;
-  border-radius: 4px;
+  color: #1da1f2;
+  background-color: rgba(29, 161, 242, 0.1);
 }
 
 .actionButton.liked {
-  color: #1877f2;
+  color: #1da1f2;
 }
 
-.actionButton.liked .buttonIcon {
-  color: #1877f2;
+.actionIcon {
+  font-size: 18px;
 }
 
-.buttonIcon {
-  font-size: 1.1rem;
+.postStats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.statsButton {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.statsButton:hover {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.statsDivider {
+  color: #666;
+}
+
+.postActions {
+  display: flex;
+  padding: 4px;
+  border-bottom: 1px solid #eee;
 }
 
 .comments {
@@ -164,20 +226,105 @@
   background-color: white;
 }
 
-.commentForm {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px;
-  background: #f0f2f5;
-  border-radius: 8px;
-  margin-bottom: 16px;
+.commentsSection {
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
 }
 
-.commentInputWrapper {
-  width: 100%;
+.showCommentsButton {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.showCommentsButton:hover {
+  background-color: var(--background-hover);
+}
+
+.commentForm {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 0 12px;
+}
+
+.commentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.commentInputContainer {
+  flex-grow: 1;
   position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.commentInput {
+  width: 100%;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 8px 40px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none;
+  overflow-y: auto;
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.commentButton {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.commentButton:hover {
+  background-color: var(--background-hover);
+}
+
+.commentButton:disabled {
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.commentsList {
+  margin-top: 16px;
+  padding: 0 12px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 16px;
 }
 
 .commentTextarea,
@@ -380,6 +527,140 @@
   margin: 0;
   line-height: 1.3;
   padding: 0 10px 20px 10px;
+}
+
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: var(--background-hover);
+  color: var(--text-primary);
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 150px;
+  padding: 4px 0;
+  border: 1px solid var(--border-color);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: var(--background-hover);
+}
+
+.editContainer {
+  margin: 12px 0;
+}
+
+.editInput {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.editButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: var(--background-hover);
+}
+
+.saveButton {
+  background-color: var(--primary);
+  color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nameAndTags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.taggedUsers {
+  color: #000;
+  font-weight: 500;
+}
+
+.taggedUser {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.taggedUser:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {

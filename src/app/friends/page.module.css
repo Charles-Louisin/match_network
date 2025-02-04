@@ -30,14 +30,16 @@
   color: var(--text-primary);
 }
 
-.requestsGrid {
+.requestsGrid,
+.friendsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
-.requestCard {
+.requestCard,
+.friendCard {
   background-color: var(--background-secondary);
   border-radius: 12px;
   padding: 1rem;
@@ -45,9 +47,11 @@
   flex-direction: column;
   gap: 1rem;
   transition: transform 0.2s ease;
+  border: 1px solid var(--border-color);
 }
 
-.requestCard:hover {
+.requestCard:hover,
+.friendCard:hover {
   transform: translateY(-2px);
 }
 
@@ -84,23 +88,33 @@
   color: var(--text-secondary);
 }
 
-.requestActions {
+.requestActions,
+.friendActions {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
 }
 
 .acceptButton,
-.rejectButton {
+.rejectButton,
+.messageButton {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  flex: 1;
 }
 
 .acceptButton {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.messageButton {
   background-color: var(--primary-color);
   color: white;
 }
@@ -109,10 +123,13 @@
   background-color: var(--background-hover);
   color: var(--text-primary);
 }
+
 .acceptButton:hover,
-.rejectButton:hover {
+.rejectButton:hover,
+.messageButton:hover {
   opacity: 0.9;
 }
+
 .rejectButton:hover {
   background-color: #6c757d97;
   color: #fff;
@@ -124,9 +141,25 @@
   cursor: not-allowed;
 }
 
-/* Style pour la barre de recherche */
+.showMoreButton {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showMoreButton:hover {
+  background-color: var(--background-hover);
+}
+
 .searchContainer {
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -136,175 +169,156 @@
 }
 
 .searchInput {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  background: none;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: var(--background-secondary);
   color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
   outline: none;
+  border-color: var(--primary-color);
 }
 
 .searchInput::placeholder {
   color: var(--text-secondary);
 }
 
-/* Style pour la liste des amis */
-.friendsList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.friendsContainer {
+.loading {
   display: flex;
-  flex-direction: row;
-  gap: 1rem;
-}
-.friendCard {
-  display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  transition: transform 0.2s ease;
-  width: fit-content;
-  position: relative;
-  z-index: 1;
+  min-height: 200px;
+  color: var(--text-secondary);
 }
 
-.friendCard:hover {
-  transform: translateY(-2px);
+.noResults {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+  font-size: 0.95rem;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  margin-top: 10px;
 }
 
-.friendLink {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  z-index: 1;
+@media (max-width: 1024px) {
+  .requestsGrid,
+  .friendsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-/* Media queries pour le responsive */
 @media (max-width: 768px) {
   .requestsGrid,
-  .friendsList {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  .friendsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .content {
+    padding: 10px;
+    padding-top: 70px;
+  }
+
+  .section {
+    padding: 15px;
+    margin: 1rem 0;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.2rem;
+  }
+
+  .avatarContainer {
+    width: 60px;
+    height: 60px;
+  }
+
+  .username {
+    font-size: 0.9rem;
+  }
+
+  .acceptButton,
+  .rejectButton,
+  .messageButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
   .requestsGrid,
-  .friendsList {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1024px) {
-  .content {
-    padding: 1.5rem;
-  }
-
-  .requestsGrid,
   .friendsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
-}
 
-@media (max-width: 768px) {
   .content {
-    padding: 1rem;
-  }
-
-  .title {
-    font-size: 1.75rem;
-    margin-bottom: 1rem;
+    padding: 10px;
   }
 
   .section {
-    padding: 1rem;
-  }
-
-  .requestsGrid,
-  .friendsGrid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .userInfo {
-    padding: 0.875rem;
-  }
-
-  .requestActions {
-    padding: 0.875rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .container {
-    padding: 60px 0 70px 0; /* Navbar plus petite sur mobile */
-  }
-
-  .content {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .title {
-    margin-left: 10px;
-    font-size: 1.5rem;
-  }
-
-  .section {
-    border-radius: 0;
-    padding: 20px 10px;
-  }
-  
-  .sectionTitle {
-    font-size: 1.0rem;
-  }
-
-  .requestsGrid,
-  .friendsGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .requestCard {
-    border-radius: 10px;
-    padding: 0;
-    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
   }
 
   .requestCard,
   .friendCard {
-    margin: 0;
-    width: 100%;
-    display: flex;
-    align-items: center;
-  }
-  
-  .userInfo {
-    padding: 0.2rem;
+    padding: 0.75rem;
   }
 
-  .requestActions {
-    padding: 0.75rem;
-    gap: 0.5rem;
+  .avatarContainer {
+    width: 50px;
+    height: 50px;
+  }
+
+  .username {
+    font-size: 0.85rem;
   }
 
   .acceptButton,
-  .rejectButton {
-    padding: 0.5rem;
-    font-size: 0.875rem;
+  .rejectButton,
+  .messageButton {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.85rem;
   }
 
-  .searchContainer {
-    margin: 10px;
+  .showMoreButton {
+    padding: 0.5rem;
+    font-size: 0.9rem;
   }
-  
-  .searchInput {
-    font-size: 13px;
-    padding: 8px 10px;
+}
+
+.friendsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .friendsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .friendsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .friendsGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .friendsContainer {
@@ -325,4 +339,14 @@
     padding: 0 10px 0 10px;
     z-index: 1;
   }
+}
+
+/* Masquer les amis au-delà de 12 par défaut */
+.friendsGrid > *:nth-child(n+13) {
+  display: none;
+}
+
+/* Afficher tous les amis quand le bouton "Voir tous" est cliqué */
+.friendsGrid.showAll > *:nth-child(n+13) {
+  display: block;
 }
