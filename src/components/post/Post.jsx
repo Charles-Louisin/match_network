@@ -455,11 +455,16 @@ const Post = ({
       )}
 
       <div className={styles.postStats}>
-        <LikeButton
-          postId={post._id}
-          currentUser={currentUser}
-          initialLikes={post.likes}
-        />
+        <button
+          onClick={() => openModal("likes")}
+          className={styles.statsButton}
+        >
+          {post.likes.length === 0
+            ? "Aucun like"
+            : post.likes.length === 1
+            ? "1 like"
+            : `${post.likes.length} likes`}
+        </button>
         <span className={styles.statsDivider}>•</span>
         <button
           onClick={() => openModal("comments")}
