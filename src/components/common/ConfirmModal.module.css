@@ -58,8 +58,8 @@
 }
 
 .confirmButton {
-  background-color: var(--error-color);
-  color: white;
+  background-color: red;
+  color: #f1f1f1;
 }
 
 .confirmButton:hover {

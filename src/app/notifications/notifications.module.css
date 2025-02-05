@@ -1,6 +1,6 @@
 .pageContainer {
   min-height: 100vh;
-  background-color: #f0f2f5;
+  background-color: #fff;
   padding-bottom: 2rem;
 }
 
@@ -44,7 +44,8 @@
 .notificationsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  /* background-color: red; */
 }
 
 .notificationItem {
@@ -60,7 +61,7 @@
 }
 
 .unread {
-  background-color: #e7f3ff;
+  background-color: #9ecbf2;
 }
 
 .unread:hover {
@@ -88,7 +89,7 @@
 .notificationText {
   flex: 1;
   margin-left: 12px;
-  color: #000000;
+  color: #888;
 }
 
 .notificationText .username {
@@ -135,6 +136,20 @@
 
 @media (max-width: 640px) {
 
+  .pageContainer {
+    min-height: 100vh;
+    /* background-color: blue; */
+    padding-bottom: 80px;
+    padding-top: 65px;
+    /* gap: 12px; */
+  }
+  
+  .contentContainer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 0 50px 0;
+  }
+
   .header {
     margin-bottom: 20px;
     padding-bottom: 10;
@@ -159,11 +174,24 @@
   .notificationsList {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 5px;
   }
 
   .notificationItem {
     border-radius: 0;
+    background-color: #f1f1f1;
+  }
+
+  .notificationText {
+    flex: 1;
+    margin-left: 2px;
+    font-size: 13px;
+  }
+  
+  .notificationText .username {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-right: 2px;
   }
 
   .previewImage {

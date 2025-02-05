@@ -1,10 +1,12 @@
 .container {
   min-height: 100vh;
+  width: 100%;
+  padding: 50px 0 70px 0;
   background-color: var(--background-secondary);
 }
 
 .content {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
   padding-top: 80px;
@@ -19,9 +21,12 @@
 .section {
   margin: 2rem 0;
   background: white;
+  width: 100%;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .sectionTitle {
@@ -145,13 +150,13 @@
   width: 100%;
   padding: 0.75rem;
   margin-top: 1rem;
-  background-color: transparent;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: transparent;
 }
 
 .showMoreButton:hover {
@@ -258,7 +263,7 @@
 @media (max-width: 480px) {
   .requestsGrid,
   .friendsGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 0.5rem;
   }
 
@@ -276,6 +281,7 @@
     padding: 0.75rem;
   }
 
+  
   .avatarContainer {
     width: 50px;
     height: 50px;
@@ -285,16 +291,10 @@
     font-size: 0.85rem;
   }
 
-  .acceptButton,
-  .rejectButton,
-  .messageButton {
-    padding: 0.35rem 0.7rem;
-    font-size: 0.85rem;
-  }
-
   .showMoreButton {
     padding: 0.5rem;
     font-size: 0.9rem;
+    background-color: transparent;
   }
 }
 
@@ -316,30 +316,70 @@
   }
 }
 
-@media (max-width: 480px) {
-  .friendsGrid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 640px) {
+
+.section {
+  padding: 0;
+  border-radius: 0;
+}
+
+.requestCard {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  /* background-color: red; */
+  flex-wrap: wrap;
+}
+.requestActions {
+  flex-direction: row;
+}
+.requestsGrid {
+    grid-template-columns: repeat(1, 1fr);
   }
 
-  .friendsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .friendCard {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    transition: transform 0.2s ease;
-    width: fit-content;
-    position: relative;
-    width: 100%;
-    padding: 0 10px 0 10px;
-    z-index: 1;
-  }
+  .acceptButton,
+.rejectButton,
+.messageButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  height: fit-content;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  flex: 1;
 }
+
+.friendsGrid {
+  display: grid;
+  /* flex-direction: column; */
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.friendsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.friendCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 0.2s ease;
+  position: relative;
+  /* width: fit-content; */
+  /* width: 100%; */
+  padding: 16px;
+  z-index: 0;
+  background-color: #f1f1f1;
+}
+}
+
 
 /* Masquer les amis au-delà de 12 par défaut */
 .friendsGrid > *:nth-child(n+13) {

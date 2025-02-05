@@ -679,7 +679,7 @@ export default function Profile() {
             {profile.coverPhoto ? (
               <Image
                 src={
-                  profile.coverPhoto
+                  profile?.coverPhoto
                     ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
                     : "/images/default-cover.jpg"}
                 alt="Cover photo"
@@ -718,7 +718,7 @@ export default function Profile() {
                 >
                   <Image
                     src={
-                      profile.avatar
+                      profile?.avatar
                         ? `${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`
                         : "/images/default-avatar.jpg"
                     }
