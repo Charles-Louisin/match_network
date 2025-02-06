@@ -10,20 +10,26 @@ import { getImageUrl } from '@/utils/constants';
 import { useNotifications } from '@/hooks/useNotifications';
 import styles from './Navbar.module.css';
 
-export default function Navbar() {
+export default function Navbar({ user, posts }) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
-  const [user, setUser] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [pendingRequests, setPendingRequests] = useState(0);
   const { unreadCount, fetchUnreadCount } = useNotifications();
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     setMounted(true);
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        console.log('Navbar - User data loaded:', userData);
+        setCurrentUser(userData);
+      } catch (e) {
+        console.error('Navbar - Error parsing user data:', e);
+      }
     }
   }, []);
 
@@ -36,7 +42,7 @@ export default function Navbar() {
         const userData = JSON.parse(userStr);
         console.log('Navbar - Données utilisateur parsées:', userData);
         console.log('Navbar - Avatar de l\'utilisateur:', userData.avatar);
-        setUser(userData);
+        setCurrentUser(userData);
       }
     };
 
@@ -70,10 +76,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleAvatarUpdate = (event) => {
       const { avatar } = event.detail;
-      setUser(prev => ({
-        ...prev,
-        avatar
-      }));
+      // setUser(prev => ({ ...prev, avatar }));
     };
 
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
@@ -122,6 +125,10 @@ export default function Navbar() {
     localStorage.removeItem('user');
     router.push('/login');
   };
+
+  // Trouver le dernier post de l'utilisateur actuel pour obtenir ses informations à jour
+  const userPost = posts?.find(post => user && post.user._id === user._id);
+  const userInfo = userPost?.user || user;
 
   if (!mounted) return null;
 
@@ -178,16 +185,17 @@ export default function Navbar() {
           >
             {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
           </button>
-          {user && (
+          {currentUser && (
             <>
-              <Link href={`/profile/${user.id}`} className={styles.iconButton}>
-                {console.log('Navbar - Rendu de l\'avatar:', user.avatar)}
+              <Link href={`/profile/${currentUser.id}`} className={styles.iconButton}>
                 <Image
-                  src={getImageUrl(user.avatar)}
-                  alt={user.username}
-                  width={32}
-                  height={32}
+                  src={currentUser.avatar ? getImageUrl(currentUser.avatar) : '/images/default-avatar.jpg'}
+                  alt={currentUser.username || 'Avatar utilisateur'}
+                  width={42}
+                  height={42}
                   className={styles.avatar}
+                  priority={true}
+                  unoptimized={true}
                 />
               </Link>
               <button onClick={handleLogout} className={styles.iconButton}>
@@ -251,12 +259,11 @@ export default function Navbar() {
             <FiMessageCircle size={20} />
             <span>Messagerie</span>
           </Link>
-          {user && (
-            <Link href={`/profile/${user.id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
-              {console.log('Navbar - Rendu de l\'avatar:', user.avatar)}
+          {currentUser && (
+            <Link href={`/profile/${currentUser._id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
               <Image
-                src={getImageUrl(user.avatar)}
-                alt={user.username}
+                src={currentUser.avatar ? getImageUrl(currentUser.avatar) : '/images/default-avatar.jpg'}
+                alt={currentUser.username || 'Avatar utilisateur'}
                 width={24}
                 height={24}
                 className={styles.avatar}

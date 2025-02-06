@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import Navbar from '@/components/layout/Navbar';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -18,6 +18,7 @@ const authPages = ['/login', '/register', '/forgot-password', '/reset-password']
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const isAuthPage = authPages.includes(pathname);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     // Nettoyer les URLs dans le localStorage au démarrage
@@ -52,23 +53,38 @@ export default function RootLayout({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    // Charger les posts de l'utilisateur connecté
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/user/${userData._id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setPosts(data.posts);
+          }
+        })
+        .catch(err => console.error('Erreur lors du chargement des posts:', err));
+    }
+  }, []);
+
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <ThemeProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <SessionProvider>
             <NotificationProvider>
               <Toaster
-                position="top-right"
+                position="top-center"
                 toastOptions={{
-                  duration: 3000,
                   style: {
                     background: '#333',
                     color: '#fff',
                   },
                 }}
               />
-              {!isAuthPage && <Navbar />}
+              {!isAuthPage && <Navbar posts={posts} />}
               <main className="container">
                 {children}
               </main>

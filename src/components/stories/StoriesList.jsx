@@ -213,7 +213,7 @@ const StoriesList = ({ stories, currentUser }) => {
           <div className={styles.createStoryPreview}>
             <div className={styles.createStoryPreviewInner}>
               <Image
-                src={getMediaUrl(currentUser?.avatar)}
+                src={currentUser?.avatar ? getMediaUrl(currentUser.avatar) : '/public/images/default-avatar.jpg'}
                 alt={currentUser.username}
                 width={80}
                 height={80}
@@ -221,7 +221,7 @@ const StoriesList = ({ stories, currentUser }) => {
               />
               <div className={styles.plusIcon}>
                 <BsPlusCircleFill size={20} />
-              </div>
+            </div>
             </div>
           </div>
           <span className={styles.storyUsername}>
