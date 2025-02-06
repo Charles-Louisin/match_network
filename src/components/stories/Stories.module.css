@@ -248,7 +248,7 @@
 .storiesContainer {
   display: flex;
   gap: 5px;
-  padding: 16px;
+  padding: 0;
   overflow-x: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -279,8 +279,8 @@
 }
 
 .storyPreview {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   position: relative;
   border-radius: 50%;
   padding: 2px;
