@@ -26,46 +26,124 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   const [likeCount, setLikeCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(null);
+  const videoRef = useRef(null);
+  const watchedVideos = useRef(new Set());
 
   const currentStory = storyData[activeIndex];
   const isCurrentUser = currentStory?.user?._id === currentUser?.id;
-  const videoRef = useRef(null);
+
+  // Fonction pour mettre à jour la progression de la vidéo
+  const updateVideoProgress = useCallback(() => {
+    if (videoRef.current && videoDuration) {
+      const currentTime = videoRef.current.currentTime * 1000;
+      const percentage = (currentTime / videoDuration) * 100;
+      setProgress(percentage);
+    }
+  }, [videoDuration]);
 
   useEffect(() => {
-    if (!currentStory) return;
+    if (!currentStory) {
+      console.log('Pas de story courante');
+      return;
+    }
+
+    console.log('Story courante:', {
+      storyId: currentStory._id,
+      userId: currentStory.user._id,
+      currentUserId: currentUser?.id,
+      viewers: currentStory.viewers
+    });
 
     setProgress(0);
     setLiked(currentStory.likes?.some?.(like => like?._id === currentUser?.id) || false);
     setViewCount(currentStory.viewers?.length || 0);
     setLikeCount(currentStory.likes?.length || 0);
-    setIsLoading(currentStory.type === 'video');
-    setVideoDuration(null);
 
-    let timer;
-    if (!isPaused) {
-      const duration = currentStory.type === 'video' ? videoDuration : STORY_DURATION;
-      if (duration) {
-        timer = setInterval(() => {
-          setProgress((prev) => {
-            if (prev >= 100) {
-              if (activeIndex < storyData.length - 1) {
-                setActiveIndex(activeIndex + 1);
-                return 0;
-              } else {
-                clearInterval(timer);
-                onClose();
-                return 100;
-              }
-            }
-            return prev + (100 / (duration / 100));
+    // Enregistrer la vue si ce n'est pas notre story
+    const recordView = async () => {
+      console.log('=== Début enregistrement vue ===');
+      
+      try {
+        // Vérification de l'utilisateur courant
+        if (!currentUser) {
+          console.log('Pas d\'utilisateur connecté');
+          return;
+        }
+
+        // Vérification de la story
+        if (!currentStory) {
+          console.log('Pas de story à voir');
+          return;
+        }
+
+        // Vérification si c'est notre story
+        if (currentStory.user._id === currentUser.id) {
+          console.log('C\'est notre story, pas d\'enregistrement de vue');
+          return;
+        }
+
+        // Vérification du token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('Token non trouvé');
+          return;
+        }
+
+        console.log('Préparation de la requête:', {
+          url: `${process.env.NEXT_PUBLIC_API_URL}/api/stories/${currentStory._id}/view`,
+          method: 'PUT',
+          userId: currentUser.id
+        });
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/${currentStory._id}/view`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Statut de la réponse:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('Erreur de la réponse:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorText
           });
-        }, 100);
-      }
-    }
+          throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
+        }
 
-    return () => clearInterval(timer);
-  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser, isPaused, videoDuration]);
+        const updatedStory = await response.json();
+        console.log('Story mise à jour:', {
+          viewersCount: updatedStory.viewers?.length,
+          viewers: updatedStory.viewers
+        });
+        
+        setViewCount(updatedStory.viewers?.length || 0);
+      } catch (error) {
+        console.error('Erreur détaillée lors de l\'enregistrement de la vue:', {
+          message: error.message,
+          stack: error.stack
+        });
+      }
+
+      console.log('=== Fin enregistrement vue ===');
+    };
+
+    recordView();
+  }, [currentStory?._id, currentUser]);
+
+  useEffect(() => {
+    if (currentStory?.type === 'video' && videoRef.current && !isLoading) {
+      const video = videoRef.current;
+      video.addEventListener('timeupdate', updateVideoProgress);
+      return () => video.removeEventListener('timeupdate', updateVideoProgress);
+    }
+  }, [currentStory, isLoading, updateVideoProgress]);
 
   useEffect(() => {
     if (showLikes || showViews) {
@@ -155,6 +233,17 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     setShowViews(!showViews);
   };
 
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+    } catch (error) {
+      return '';
+    }
+  };
+
   if (!currentStory) return null;
 
   return (
@@ -199,10 +288,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
           <div className={styles.userDetails}>
             <span className={styles.username}>{currentStory.user?.username}</span>
             <span className={styles.storyTime}>
-              {formatDistanceToNow(new Date(currentStory.createdAt), {
-                addSuffix: true,
-                locale: fr
-              })}
+              {formatDate(currentStory.createdAt)}
             </span>
           </div>
         </div>
@@ -237,30 +323,39 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
                   )}
                   <video
                     ref={videoRef}
-                    src={getMediaUrl(currentStory.media)}
                     className={styles.storyMedia}
-                    autoPlay
                     playsInline
-                    muted={false}
-                    onLoadedMetadata={(e) => {
+                    preload="auto"
+                    onLoadedData={(e) => {
                       const video = e.target;
-                      setVideoDuration(video.duration * 1000); // Convertir en millisecondes
-                      video.play();
+                      setVideoDuration(video.duration * 1000);
+                      watchedVideos.current.add(currentStory._id);
                     }}
-                    onLoadStart={() => setIsLoading(true)}
+                    onProgress={(e) => {
+                      if (!watchedVideos.current.has(currentStory._id)) {
+                        const video = e.target;
+                        if (video.buffered.length > 0) {
+                          const buffered = video.buffered.end(video.buffered.length - 1);
+                          const duration = video.duration || 0;
+                          if (duration > 0) {
+                            const progress = Math.min((buffered / duration) * 100, 100);
+                            setLoadingProgress(progress);
+                          }
+                        }
+                      }
+                    }}
                     onCanPlay={() => {
                       setIsLoading(false);
-                      setIsPaused(false);
-                    }}
-                    onPlay={() => {
-                      setIsPaused(false);
-                    }}
-                    onPause={() => {
-                      setIsPaused(true);
+                      if (videoRef.current) {
+                        videoRef.current.play().catch(console.error);
+                      }
                     }}
                     onEnded={() => {
-                      setIsPaused(false);
-                      handleNext();
+                      if (activeIndex < storyData.length - 1) {
+                        setActiveIndex(activeIndex + 1);
+                      } else {
+                        onClose();
+                      }
                     }}
                   />
                   {currentStory.caption && (
@@ -338,6 +433,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
               viewers={currentStory.viewers}
               onClose={() => setShowViews(false)}
               onNavigateToProfile={onNavigateToProfile}
+              formatDate={formatDate}
             />
           )}
           {showLikes && (
@@ -345,6 +441,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
               likes={currentStory.likes}
               onClose={() => setShowLikes(false)}
               onNavigateToProfile={onNavigateToProfile}
+              formatDate={formatDate}
             />
           )}
         </AnimatePresence>
@@ -353,7 +450,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   );
 };
 
-const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile }) => {
+const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile, formatDate }) => {
   return (
     <motion.div
       className={styles.interactionModalOverlay}
@@ -396,10 +493,7 @@ const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile }) => {
                     <div className={styles.modalItemInfo}>
                       <span className={styles.modalItemUsername}>{viewer.username || 'Utilisateur'}</span>
                       <span className={styles.modalItemTime}>
-                        {formatDistanceToNow(new Date(viewer.viewedAt || viewer.createdAt || new Date()), {
-                          addSuffix: true,
-                          locale: fr
-                        })}
+                        {formatDate(viewer.viewedAt)}
                       </span>
                     </div>
                   </div>
@@ -413,7 +507,7 @@ const ViewersModal = ({ viewers = [], onClose, onNavigateToProfile }) => {
   );
 };
 
-const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => {
+const LikesModal = ({ likes = [], onClose, onNavigateToProfile, formatDate }) => {
   return (
     <motion.div
       className={styles.interactionModalOverlay}
@@ -455,6 +549,9 @@ const LikesModal = ({ likes = [], onClose, onNavigateToProfile }) => {
                     />
                     <div className={styles.modalItemInfo}>
                       <span className={styles.modalItemUsername}>{like.username || 'Utilisateur'}</span>
+                      <span className={styles.modalItemTime}>
+                        {formatDate(like.likedAt || like.createdAt)}
+                      </span>
                     </div>
                   </div>
                 </div>

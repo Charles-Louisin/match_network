@@ -278,83 +278,109 @@ video.storyMedia::-webkit-media-controls-enclosure {
 
 .storiesContainer {
   display: flex;
-  gap: 5px;
-  padding: 0;
+  gap: 15px;
+  padding: 15px;
   overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
   width: 100%;
 }
 
 .storiesContainer::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
 }
 
 .storyButton {
-  position: relative;
-  border: none;
-  background: none;
-  padding: 4px;
-  gap: 5px;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-
-.viewedStory .storyPreview::before {
-  border-color: #808080 !important;
+  gap: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 80px;
+  position: relative;
 }
 
 .storyPreview {
+  position: relative;
   width: 80px;
   height: 80px;
-  position: relative;
   border-radius: 50%;
-  padding: 2px;
-}
-
-.storyPreview::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  /* border: 2px solid; */
-  /* border-color: #FF385C; */
   padding: 3px;
 }
 
+.currentUserStory {
+  background: none !important;
+  padding: 0 !important;
+}
+
+.friendStory {
+  background: none !important;
+  padding: 0 !important;
+}
+
+.currentUserStory .storyPreviewInner,
+.friendStory .storyPreviewInner {
+  border: none;
+}
+
 .storyPreviewInner {
+  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  border: 5px solid #ccc; /* Gris par défaut */
-  position: relative;
-}
-
-.unseen .storyPreviewInner {
-  border: 5px solid #0095f6; /* Bleu pour les stories non vues */
+  background: white;
 }
 
 .userAvatarList {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
-
 
 .storyUsername {
   font-size: 12px;
   color: #262626;
-  margin: 0;
+  margin-top: 4px;
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.storiesContainer {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow-x: auto;
+  padding-bottom: 10px; /* Espace pour le scroll */
+}
+
+.storiesContainer::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.storiesContainer {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.storyButton {
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.storyButton:last-child {
+  margin-right: 0;
 }
 
 /* Modal Styles */
@@ -669,32 +695,59 @@ video.storyMedia::-webkit-media-controls-enclosure {
   z-index: 1000;
 }
 
-.loadingSpinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #1877f2;
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.loadingProgress {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .storyIndicator {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 4px 8px;
-  border-radius: 12px;
+  background-color: #1877f2;
   color: white;
-  font-size: 12px;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid white;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translate(30%, -30%);
 }
 
 .storyProgress {
@@ -787,6 +840,115 @@ video.storyMedia::-webkit-media-controls-enclosure {
   background: #D8DADF;
 }
 
+.interactionModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.modalHeader {
+  padding: 16px;
+  border-bottom: 1px solid #dbdbdb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #262626;
+}
+
+.modalList {
+  max-height: calc(80vh - 60px);
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.modalItem {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.modalItem:hover {
+  background-color: #fafafa;
+}
+
+.modalItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.modalItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modalItemUsername {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+}
+
+.modalItemTime {
+  font-size: 12px;
+  color: #8e8e8e;
+}
+
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: #8e8e8e;
+  font-size: 14px;
+}
+
+.currentUserStory {
+  background: none !important;
+  padding: 0 !important;
+}
+
+.currentUserStory .storyPreviewInner {
+  border: none;
+}
+
 .viewersModal,
 .likesModal {
   position: absolute;
@@ -856,20 +1018,13 @@ video.storyMedia::-webkit-media-controls-enclosure {
   object-fit: cover;
 }
 
-.emptyState {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-/* Overlay pour les modals de likes et vues */
+/* Overlay pour les modales de likes et vues */
 .interactionModalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  bottom: -150px;
+  bottom: 0;
   background: transparent;
   display: flex;
   justify-content: center;
@@ -1207,4 +1362,69 @@ video.storyMedia::-webkit-media-controls-enclosure {
   font-size: 14px;
   text-align: center;
   padding: 0 16px;
+}
+
+.currentUserStory {
+  background: none !important;
+  padding: 0 !important;
+}
+
+.currentUserStory .storyPreviewInner {
+  border: none;
+}
+
+.viewersList,
+.likesList {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 0 15px;
+}
+
+.viewersList h3,
+.likesList h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.viewerItem,
+.likeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.viewerInfo,
+.likeInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.viewerAvatar,
+.likeAvatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.viewerUsername,
+.likeUsername {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.viewTime,
+.likeTime {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
 }
