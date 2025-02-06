@@ -213,7 +213,7 @@ const StoriesList = ({ stories, currentUser }) => {
           <div className={styles.createStoryPreview}>
             <div className={styles.createStoryPreviewInner}>
               <Image
-                src={getMediaUrl(currentUser.avatar)}
+                src={getMediaUrl(currentUser?.avatar)}
                 alt={currentUser.username}
                 width={80}
                 height={80}

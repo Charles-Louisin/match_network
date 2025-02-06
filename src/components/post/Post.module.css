@@ -30,6 +30,10 @@
   flex-direction: column;
 }
 
+.userAvatar {
+  object-fit: cover;
+}
+
 .username {
   font-weight: 600;
   color: #1a1a1a;

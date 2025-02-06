@@ -8,6 +8,7 @@ import TagFriendsModal from "../modals/TagFriendsModal";
 import styles from "./CreatePost.module.css";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { getImageUrl } from '@/utils/constants';
 
 export default function CreatePost({ onPostCreated }) {
   const [content, setContent] = useState("");
@@ -20,10 +21,43 @@ export default function CreatePost({ onPostCreated }) {
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    const handleStorageChange = () => {
+      console.log('CreatePost - handleStorageChange appelé');
+      const userStr = localStorage.getItem('user');
+      console.log('CreatePost - Données utilisateur du localStorage:', userStr);
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        console.log('CreatePost - Données utilisateur parsées:', userData);
+        console.log('CreatePost - Avatar de l\'utilisateur:', userData.avatar);
+        setUser(userData);
+      }
+    };
+
+    // Initial load
+    handleStorageChange();
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for avatar updates
+    const handleAvatarUpdate = (event) => {
+      console.log('CreatePost - Mise à jour de l\'avatar détectée:', event.detail);
+      handleStorageChange();
+    };
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+    // Nouvel événement pour le rafraîchissement des images
+    const handleImageRefresh = (event) => {
+      console.log('CreatePost - Rafraîchissement des images détecté:', event.detail);
+      handleStorageChange();
+    };
+    window.addEventListener('refreshUserImages', handleImageRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('refreshUserImages', handleImageRefresh);
+    };
   }, []);
 
   useEffect(() => {
@@ -65,6 +99,9 @@ export default function CreatePost({ onPostCreated }) {
     }
 
     try {
+      console.log('CreatePost - Début création du post:', { content, selectedImage });
+      console.log('CreatePost - Envoi à:', `${process.env.NEXT_PUBLIC_API_URL}/api/posts`);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts`,
         {
@@ -76,11 +113,13 @@ export default function CreatePost({ onPostCreated }) {
         }
       );
 
+      console.log('CreatePost - Réponse serveur:', response.status);
+      const newPost = await response.json();
+      console.log('CreatePost - Données reçues:', newPost);
+
       if (!response.ok) {
         throw new Error("Failed to create post");
       }
-
-      const newPost = await response.json();
 
       // Créer des notifications pour les amis tagués
       if (taggedFriends.length > 0) {
@@ -112,6 +151,7 @@ export default function CreatePost({ onPostCreated }) {
       }
       toast.success("Post créé avec succès!");
     } catch (error) {
+      console.error('CreatePost - Erreur:', error);
       console.error("Error creating post:", error);
       setError(error.message);
       toast.error(error.message);
@@ -145,13 +185,10 @@ export default function CreatePost({ onPostCreated }) {
   return (
     <div className={styles.createPost}>
       <div className={styles.createPostHeader}>
+        {console.log('CreatePost - Rendu de l\'avatar:', user?.avatar)}
         <Image
-          src={
-            user?.avatar
-              ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`
-              : "/images/default-cover.jpg"
-          }
-          alt="User Avatar"
+          src={user?.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
+          alt={user?.username}
           width={40}
           height={40}
           className={styles.avatar}
@@ -259,5 +296,3 @@ export default function CreatePost({ onPostCreated }) {
     </div>
   );
 }
-
-// export default CreatePost;

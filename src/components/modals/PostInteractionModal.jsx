@@ -9,6 +9,7 @@ import * as timeago from 'timeago.js'
 import fr from 'timeago.js/lib/lang/fr'
 import styles from './PostInteractionModal.module.css'
 import { toast } from 'react-hot-toast'
+import { getImageUrl } from '@/utils/constants';
 
 // Enregistrer le français comme langue
 timeago.register('fr', fr)
@@ -722,7 +723,7 @@ const PostInteractionModal = ({
                       className={styles.userItem}
                     >
                       <Image
-                        src={user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+                        src={getImageUrl(user.avatar)}
                         alt={user.username}
                         width={40}
                         height={40}
@@ -752,7 +753,7 @@ const PostInteractionModal = ({
                         className={styles.userInfo}
                       >
                         <Image
-                          src={comment.user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
+                          src={getImageUrl(comment.user.avatar)}
                           alt={comment.user.username}
                           width={32}
                           height={32}
@@ -855,7 +856,7 @@ const PostInteractionModal = ({
                         onChange={() => handleFriendSelect(friend)}
                       />
                       <Image
-                        src={friend.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${friend.avatar}` : "/images/default-avatar.jpg"}
+                        src={getImageUrl(friend.avatar)}
                         alt={friend.username}
                         width={24}
                         height={24}
@@ -907,7 +908,7 @@ const PostInteractionModal = ({
                   className={styles.likeItem}
                 >
                   <Image
-                    src={user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "/images/default-avatar.jpg"}
+                    src={getImageUrl(user.avatar)}
                     alt={user.username}
                     width={40}
                     height={40}
