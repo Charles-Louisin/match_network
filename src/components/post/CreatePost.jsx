@@ -10,52 +10,43 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { getImageUrl } from '@/utils/constants';
 
-export default function CreatePost({ onPostCreated }) {
+export default function CreatePost({ posts, userId, onPostCreated }) {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showTagModal, setShowTagModal] = useState(false);
   const [taggedFriends, setTaggedFriends] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      console.log('CreatePost - handleStorageChange appelé');
-      const userStr = localStorage.getItem('user');
-      console.log('CreatePost - Données utilisateur du localStorage:', userStr);
-      if (userStr) {
-        const userData = JSON.parse(userStr);
-        console.log('CreatePost - Données utilisateur parsées:', userData);
-        console.log('CreatePost - Avatar de l\'utilisateur:', userData.avatar);
-        setUser(userData);
-      }
-    };
+    // Récupérer l'utilisateur actuel depuis le localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      setCurrentUser(userData);
+    }
+  }, []);
 
-    // Initial load
-    handleStorageChange();
+  // Trouver le premier post de l'utilisateur actuel pour obtenir ses informations
+  const userPost = posts?.find(post => post.user._id === userId);
+  const userInfo = userPost?.user || currentUser;
 
-    // Listen for storage changes
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Custom event for avatar updates
-    const handleAvatarUpdate = (event) => {
-      console.log('CreatePost - Mise à jour de l\'avatar détectée:', event.detail);
-      handleStorageChange();
-    };
-    window.addEventListener('avatarUpdated', handleAvatarUpdate);
-
-    // Nouvel événement pour le rafraîchissement des images
+  useEffect(() => {
     const handleImageRefresh = (event) => {
       console.log('CreatePost - Rafraîchissement des images détecté:', event.detail);
-      handleStorageChange();
+      if (event.detail && event.detail.type === 'avatar') {
+        // setUser(prev => prev ? {
+        //   ...prev,
+        //   avatar: event.detail.path
+        // } : prev);
+      }
     };
     window.addEventListener('refreshUserImages', handleImageRefresh);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
       window.removeEventListener('refreshUserImages', handleImageRefresh);
     };
   }, []);
@@ -135,7 +126,7 @@ export default function CreatePost({ onPostCreated }) {
                 type: "POST_TAG",
                 recipient: friend._id,
                 postId: newPost._id,
-                text: `${user.username} vous a mentionné dans sa publication`,
+                text: `${userInfo.username} vous a mentionné dans sa publication`,
               }),
             })
           )
@@ -185,22 +176,23 @@ export default function CreatePost({ onPostCreated }) {
   return (
     <div className={styles.createPost}>
       <div className={styles.createPostHeader}>
-        {console.log('CreatePost - Rendu de l\'avatar:', user?.avatar)}
-        <Image
-          src={user?.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
-          alt={user?.username}
-          width={40}
-          height={40}
-          className={styles.avatar}
-        />
+        {userInfo && (
+          <Image
+            src={userInfo.avatar ? getImageUrl(userInfo.avatar) : '/images/default-avatar.jpg'}
+            alt={userInfo.username || 'Avatar utilisateur'}
+            width={40}
+            height={40}
+            className={styles.avatar}
+            priority={true}
+            unoptimized={true}
+          />
+        )}
         <textarea
-          placeholder={`Que voulez-vous partager ${user?.username} ?`}
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value);
-            autoResizeTextArea(e);
-          }}
           className={styles.input}
+          placeholder={`Que voulez vous partager, ${userInfo?.username} ?`}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onInput={autoResizeTextArea}
           rows={1}
         />
       </div>
@@ -275,15 +267,15 @@ export default function CreatePost({ onPostCreated }) {
             <span>Taguer</span>
           </button>
         </div>
-      <button
-        onClick={createPost}
-        disabled={isLoading || (!content && !selectedImage)}
-        className={`${styles.submitButton} ${
-          isLoading ? styles.loading : ""
-        }`}
-      >
-        {isLoading ? "Publication..." : "Publier"}
-      </button>
+        <button
+          onClick={createPost}
+          disabled={isLoading || (!content && !selectedImage)}
+          className={`${styles.submitButton} ${
+            isLoading ? styles.loading : ""
+          }`}
+        >
+          {isLoading ? "Publication..." : "Publier"}
+        </button>
       </div>
 
       <div>

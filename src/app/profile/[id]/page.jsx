@@ -825,7 +825,7 @@ export default function Profile() {
           </div>
 
           <div className={styles.mainColumn}>
-            {isCurrentUser && <CreatePost onPostCreated={fetchProfilePosts} />}
+            {isCurrentUser && <CreatePost posts={posts} userId={profile._id} onPostCreated={fetchProfilePosts} />}
             <ProfilePosts posts={posts} userId={profile._id} onPostClick={handlePostClick} postsRef={postsRef} />
           </div>
         </div>
