@@ -19,6 +19,7 @@ import styles from "./Post.module.css";
 import { toast } from "react-hot-toast";
 import frenchStrings from "react-timeago/lib/language-strings/fr";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
+import { getImageUrl } from '@/utils/constants';
 
 const formatter = buildFormatter(frenchStrings);
 
@@ -30,8 +31,8 @@ const Post = ({
   onPostClick,
 }) => {
   const [isClient, setIsClient] = useState(false);
-  const [user, setUser] = useState(null);
-  const [postUser, setPostUser] = useState(post.user || null);
+  const [postData, setPostData] = useState(post);
+  const [currentUserState, setCurrentUser] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
@@ -47,25 +48,94 @@ const Post = ({
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const isAuthor = currentUser?.id === post.user?.id;
+  const isAuthor = currentUserState?.id === postData.user?.id;
 
   useEffect(() => {
     setIsClient(true);
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const userData = JSON.parse(userStr);
-      setUser(userData);
+      setCurrentUser(userData);
       setIsLiked(post.likes?.includes(userData.id));
       setLikesCount(post.likes?.length || 0);
     }
   }, []);
 
   useEffect(() => {
-    if (user && post._id) {
-      setIsLiked(post.likes?.includes(user.id));
-      setLikesCount(post.likes?.length || 0);
+    if (currentUserState && postData._id) {
+      setIsLiked(postData.likes?.includes(currentUserState.id));
+      setLikesCount(postData.likes?.length || 0);
     }
-  }, [post._id]);
+  }, [postData._id]);
+
+  useEffect(() => {
+    console.log('Post - Données du post:', post);
+    if (post.image) {
+      console.log('Post - Image du post avant traitement:', post.image);
+      const processedImageUrl = getImageUrl(post.image);
+      console.log('Post - Image du post après traitement:', processedImageUrl);
+    }
+    if (post.user?.avatar) {
+      console.log('Post - Avatar de l\'utilisateur avant traitement:', post.user.avatar);
+      const processedAvatarUrl = getImageUrl(post.user.avatar);
+      console.log('Post - Avatar de l\'utilisateur après traitement:', processedAvatarUrl);
+    }
+  }, [post]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setCurrentUser(userData);
+        
+        // Si le post appartient à l'utilisateur courant, mettre à jour son avatar
+        if (userData._id === post.user._id) {
+          setPostData(prev => ({
+            ...prev,
+            user: {
+              ...prev.user,
+              avatar: userData.avatar
+            }
+          }));
+        }
+      }
+    };
+
+    // Initial load
+    handleStorageChange();
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for avatar updates
+    const handleAvatarUpdate = () => {
+      console.log('Post - Mise à jour de l\'avatar détectée');
+      handleStorageChange();
+    };
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+    // Nouvel événement pour le rafraîchissement des images
+    const handleImageRefresh = (event) => {
+      console.log('Post - Rafraîchissement des images détecté:', event.detail);
+      if (event.detail.type === 'avatar' && currentUserState?._id === post.user._id) {
+        setPostData(prev => ({
+          ...prev,
+          user: {
+            ...prev.user,
+            avatar: event.detail.path
+          }
+        }));
+      }
+    };
+    window.addEventListener('refreshUserImages', handleImageRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('refreshUserImages', handleImageRefresh);
+    };
+  }, [post.user._id, currentUserState?._id]);
 
   const checkIfLiked = useCallback((currentUser, postLikes) => {
     if (!currentUser || !postLikes) return false;
@@ -89,7 +159,7 @@ const Post = ({
       e.stopPropagation();
     }
 
-    if (!user) {
+    if (!currentUserState) {
       toast.error("Vous devez être connecté pour aimer un post");
       return;
     }
@@ -103,7 +173,7 @@ const Post = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/like`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postData._id}/like`,
         {
           method: "POST",
           headers: {
@@ -127,7 +197,7 @@ const Post = ({
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postData._id}`,
         {
           method: "DELETE",
           headers: {
@@ -138,7 +208,7 @@ const Post = ({
 
       if (!response.ok) throw new Error("Erreur lors de la suppression");
 
-      onPostDelete(post._id);
+      onPostDelete(postData._id);
       toast.success("Post supprimé avec succès");
     } catch (error) {
       console.error("Erreur suppression:", error);
@@ -153,7 +223,7 @@ const Post = ({
       setIsSubmitting(true);
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postData._id}`,
         {
           method: "PUT",
           headers: {
@@ -193,7 +263,7 @@ const Post = ({
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}/comment`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postData._id}/comment`,
         {
           method: "POST",
           headers: {
@@ -238,7 +308,7 @@ const Post = ({
         if (!token) return;
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${post._id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postData._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -264,7 +334,7 @@ const Post = ({
     };
 
     fetchComments();
-  }, [post._id, showComments]);
+  }, [postData._id, showComments]);
 
   const handleCommentUpdate = (updatedComment) => {
     setComments((prevComments) =>
@@ -294,13 +364,13 @@ const Post = ({
   const handleCommentClick = (e) => {
     e.stopPropagation();
     if (onPostClick) {
-      onPostClick(post._id);
+      onPostClick(postData._id);
     }
   };
 
   const handlePostClick = () => {
     if (onPostClick) {
-      onPostClick(post._id);
+      onPostClick(postData._id);
     }
   };
 
@@ -311,39 +381,29 @@ const Post = ({
   return (
     <div
       className={styles.post}
-      id={`post-${post._id}`}
+      id={`post-${postData._id}`}
       onClick={handlePostClick}
       style={{ cursor: "pointer" }}
     >
       {/* En-tête du post */}
       <div className={styles.postHeader}>
-        <div className={styles.userInfo}>
-          <Link href={`/profile/${postUser?._id}`}>
+        <Link href={`/profile/${postData.user._id}`} className={styles.userInfo}>
+          <div className={styles.avatarContainer}>
             <Image
-              src={
-                postUser?.avatar
-                  ? `${process.env.NEXT_PUBLIC_API_URL}${postUser.avatar}`
-                  : "/images/default-cover.jpg"
-              }
-              alt={postUser?.username}
+              src={postData.user.avatar ? getImageUrl(postData.user.avatar) : '/images/default-avatar.jpg'}
+              alt={postData.user.username}
               width={40}
               height={40}
               className={styles.avatar}
             />
-          </Link>
-          <div className={styles.userMeta}>
+          </div>
+          <div className={styles.userText}>
             <div className={styles.nameAndTags}>
-              <Link
-                href={`/profile/${postUser?._id}`}
-                className={styles.username}
-              >
-                {postUser?.username}
-              </Link>
-              {post.taggedUsers && post.taggedUsers.length > 0 && (
+              <span className={styles.username}>{postData.user.username}</span>
+              {postData.taggedUsers && postData.taggedUsers.length > 0 && (
                 <span className={styles.taggedUsers}>
-                  {" "}
-                  est avec{" "}
-                  {post.taggedUsers.map((taggedUser, index) => (
+                  {" "}est avec{" "}
+                  {postData.taggedUsers.map((taggedUser, index) => (
                     <span key={taggedUser._id}>
                       <Link
                         href={`/profile/${taggedUser._id}`}
@@ -352,15 +412,15 @@ const Post = ({
                       >
                         @{taggedUser.username}
                       </Link>
-                      {index < post.taggedUsers.length - 1 && ", "}
+                      {index < postData.taggedUsers.length - 1 && ", "}
                     </span>
                   ))}
                 </span>
               )}
             </div>
-            <TimeAgo date={post.createdAt} formatter={formatter} />
+            <TimeAgo date={postData.createdAt} formatter={formatter} />
           </div>
-        </div>
+        </Link>
         {/* Menu du post */}
         {isAuthor && (
           <div className={styles.postMenu}>
@@ -428,26 +488,20 @@ const Post = ({
       ) : (
         <div className={styles.postContent}>
           <p className={styles.text} style={{ whiteSpace: "pre-wrap" }}>
-            {post.content}
+            {postData.content}
           </p>
-          {post.image && (
-            <div
-              className={styles.imageContainer}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedImage(
-                  `${process.env.NEXT_PUBLIC_API_URL}${post.image}`
-                );
-                setShowImageViewer(true);
-              }}
-              style={{ cursor: "pointer" }}
-            >
+          {postData.image && (
+            <div className={styles.imageContainer}>
               <Image
-                src={`${process.env.NEXT_PUBLIC_API_URL}${post.image}`}
-                alt="Image du post"
+                src={getImageUrl(postData.image)}
+                alt="Post image"
                 width={500}
                 height={300}
                 className={styles.postImage}
+                onClick={() => {
+                  setSelectedImage(getImageUrl(postData.image));
+                  setShowImageViewer(true);
+                }}
               />
             </div>
           )}
@@ -459,11 +513,11 @@ const Post = ({
           onClick={() => openModal("likes")}
           className={styles.statsButton}
         >
-          {post.likes.length === 0
+          {postData.likes.length === 0
             ? "Aucun like"
-            : post.likes.length === 1
+            : postData.likes.length === 1
             ? "1 like"
-            : `${post.likes.length} likes`}
+            : `${postData.likes.length} likes`}
         </button>
         <span className={styles.statsDivider}>•</span>
         <button
@@ -494,8 +548,8 @@ const Post = ({
         <PostInteractionModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          postId={post._id}
-          currentUser={currentUser}
+          postId={postData._id}
+          currentUser={currentUserState}
           initialTab={modalInitialTab}
           onPostUpdate={(updatedPost) => {
             if (updatedPost.likes) {
@@ -507,7 +561,7 @@ const Post = ({
             onPostUpdate(updatedPost);
           }}
           initialComments={comments}
-          initialLikes={post.likes}
+          initialLikes={postData.likes}
         />
         {showImageViewer && (
           <ImageViewerModal

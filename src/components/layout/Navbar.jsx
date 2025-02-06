@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { FiHome, FiUsers, FiBell, FiMessageCircle, FiLogOut, FiSun, FiMoon } from 'react-icons/fi';
-import { getImageUrl } from '@/utils/imageUtils';
+import { getImageUrl } from '@/utils/constants';
 import { useNotifications } from '@/hooks/useNotifications';
 import styles from './Navbar.module.css';
 
@@ -25,6 +25,59 @@ export default function Navbar() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('Navbar - handleStorageChange appelé');
+      const userStr = localStorage.getItem('user');
+      console.log('Navbar - Données utilisateur du localStorage:', userStr);
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        console.log('Navbar - Données utilisateur parsées:', userData);
+        console.log('Navbar - Avatar de l\'utilisateur:', userData.avatar);
+        setUser(userData);
+      }
+    };
+
+    // Initial load
+    handleStorageChange();
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for avatar updates
+    const handleAvatarUpdate = (event) => {
+      console.log('Navbar - Mise à jour de l\'avatar détectée:', event.detail);
+      handleStorageChange();
+    };
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+    // Nouvel événement pour le rafraîchissement des images
+    const handleImageRefresh = (event) => {
+      console.log('Navbar - Rafraîchissement des images détecté:', event.detail);
+      handleStorageChange();
+    };
+    window.addEventListener('refreshUserImages', handleImageRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('refreshUserImages', handleImageRefresh);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleAvatarUpdate = (event) => {
+      const { avatar } = event.detail;
+      setUser(prev => ({
+        ...prev,
+        avatar
+      }));
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
   }, []);
 
   useEffect(() => {
@@ -128,12 +181,13 @@ export default function Navbar() {
           {user && (
             <>
               <Link href={`/profile/${user.id}`} className={styles.iconButton}>
+                {console.log('Navbar - Rendu de l\'avatar:', user.avatar)}
                 <Image
-                  src={user.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
-                  alt="Profile"
+                  src={getImageUrl(user.avatar)}
+                  alt={user.username}
                   width={32}
                   height={32}
-                  className={styles.profileImage}
+                  className={styles.avatar}
                 />
               </Link>
               <button onClick={handleLogout} className={styles.iconButton}>
@@ -199,12 +253,13 @@ export default function Navbar() {
           </Link>
           {user && (
             <Link href={`/profile/${user.id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
+              {console.log('Navbar - Rendu de l\'avatar:', user.avatar)}
               <Image
-                src={user.avatar ? getImageUrl(user.avatar) : '/images/default-avatar.jpg'}
-                alt="Profile"
+                src={getImageUrl(user.avatar)}
+                alt={user.username}
                 width={24}
                 height={24}
-                className={styles.profileImage}
+                className={styles.avatar}
               />
               <span>Profil</span>
             </Link>

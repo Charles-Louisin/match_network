@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { getImageUrl } from '@/utils/constants';
 import styles from './PhotoNotificationModal.module.css';
 
 const PhotoNotificationModal = ({ notification, onClose }) => {
   const isProfilePhoto = notification.type === 'PROFILE_PHOTO_UPDATED';
-  const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${notification.reference}`;
+  const imageUrl = getImageUrl(notification.reference);
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -12,9 +13,7 @@ const PhotoNotificationModal = ({ notification, onClose }) => {
         <div className={styles.header}>
           <Link href={`/profile/${notification.sender._id}`} className={styles.userInfo}>
             <Image
-              src={notification.sender.avatar 
-                ? `${process.env.NEXT_PUBLIC_API_URL}${notification.sender.avatar}` 
-                : '/images/default-avatar.jpg'}
+              src={getImageUrl(notification.sender.avatar)}
               alt={notification.sender.username}
               width={40}
               height={40}

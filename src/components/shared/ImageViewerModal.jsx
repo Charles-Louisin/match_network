@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AiOutlineClose } from 'react-icons/ai';
 import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import Image from 'next/image';
+import { getImageUrl } from '@/utils/constants';
 import styles from './ImageViewerModal.module.css';
 
 const ImageViewerModal = ({ isOpen, onClose, imageUrl }) => {
@@ -30,7 +31,7 @@ const ImageViewerModal = ({ isOpen, onClose, imageUrl }) => {
 
           <div className={styles.imageContainer}>
             <Image
-              src={imageUrl}
+              src={getImageUrl(imageUrl)}
               alt="Image en plein écran"
               fill
               style={{ objectFit: 'contain' }}

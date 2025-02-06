@@ -11,6 +11,7 @@ import FriendActionButtons from '@/components/friend/FriendActionButtons';
 import LocationIcon from "@/components/icons/LocationIcon";
 import CalendarIcon from "@/components/icons/CalendarIcon";
 import formatDate from "@/utils/formatDate";
+import { getImageUrl } from '@/utils/constants';
 import styles from "./profile.module.css";
 import Navbar from "@/components/layout/Navbar";
 import CreatePost from "@/components/post/CreatePost";
@@ -93,7 +94,7 @@ export default function Profile() {
   };
 
   const fetchProfileData = useCallback(async () => {
-    // Éviter les appels multiples pendant le chargement
+    console.log('Profile - Début fetchProfileData');
     if (loadingRef.current) return;
     loadingRef.current = true;
 
@@ -102,10 +103,12 @@ export default function Profile() {
       const token = localStorage.getItem("token");
 
       if (!token) {
+        console.log('Profile - Pas de token');
         toast.error("Veuillez vous connecter pour voir ce profil");
         return;
       }
 
+      console.log('Profile - Récupération du profil pour:', params.id);
       const profileResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/users/profile/${params.id}`,
         {
@@ -116,8 +119,10 @@ export default function Profile() {
         }
       );
 
+      console.log('Profile - Statut de la réponse:', profileResponse.status);
       if (!profileResponse.ok) {
         const error = await profileResponse.text();
+        console.error('Profile - Erreur réponse:', error);
         try {
           const jsonError = JSON.parse(error);
           throw new Error(jsonError.message || "Profil non trouvé");
@@ -127,6 +132,8 @@ export default function Profile() {
       }
 
       const profileData = await profileResponse.json();
+      console.log('Profile - Données du profil reçues:', profileData);
+      
       if (!profileData) {
         throw new Error("Profil non trouvé");
       }
@@ -140,10 +147,9 @@ export default function Profile() {
         setFriendshipStatus('self');
       }
 
-      // Réinitialiser le flag d'erreur si le chargement réussit
       errorToastShown.current = false;
     } catch (error) {
-      console.error("Error loading profile:", error);
+      console.error('Profile - Erreur complète:', error);
       if (!errorToastShown.current) {
         toast.error(error.message || "Erreur lors du chargement du profil");
         errorToastShown.current = true;
@@ -225,100 +231,68 @@ export default function Profile() {
     }
   };
 
-  const handleUpdateAvatar = async (file) => {
+  const handleUpdateAvatar = async (result) => {
+    console.log('Profile - handleUpdateAvatar - Résultat reçu:', result);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Veuillez vous reconnecter");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("image", file);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/upload-avatar`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        // Mettre à jour le localStorage avec la nouvelle photo
+      if (result && result.avatar) {
+        console.log('Profile - Mise à jour de l\'avatar avec:', result.avatar);
+        const newAvatar = result.avatar.startsWith('/uploads/') ? result.avatar : `/uploads/${result.avatar.split('/uploads/')[1]}`;
+        console.log('Profile - Chemin de l\'avatar normalisé:', newAvatar);
+        
+        setProfile(prev => ({
+          ...prev,
+          avatar: newAvatar
+        }));
+        
+        // Mise à jour du localStorage
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const userData = JSON.parse(userStr);
           const updatedUser = {
             ...userData,
-            avatar: result.avatar
+            avatar: newAvatar
           };
+          console.log('Profile - Mise à jour du localStorage avec:', updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
         }
         
-        toast.success("Photo de profil mise à jour avec succès");
-        // Forcer le rafraîchissement de la page pour mettre à jour tous les composants
-        window.location.reload();
-      } else {
-        const error = await response.text();
-        console.error("Erreur upload avatar:", error);
-        toast.error("Erreur lors de la mise à jour de la photo de profil");
+        fetchProfileData(); // Rafraîchir les données du profil
       }
     } catch (error) {
-      console.error("Error updating avatar:", error);
+      console.error('Profile - Erreur mise à jour avatar:', error);
       toast.error("Erreur lors de la mise à jour de la photo de profil");
     }
   };
 
-  const handleUpdateCoverPhoto = async (file) => {
+  const handleUpdateCoverPhoto = async (result) => {
+    console.log('Profile - handleUpdateCoverPhoto - Résultat reçu:', result);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Veuillez vous reconnecter");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("image", file);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/upload-coverPhoto`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        // Mettre à jour le localStorage avec la nouvelle photo de couverture
+      if (result && result.coverPhoto) {
+        console.log('Profile - Mise à jour de la photo de couverture avec:', result.coverPhoto);
+        const newCoverPhoto = result.coverPhoto.startsWith('/uploads/') ? result.coverPhoto : `/uploads/${result.coverPhoto.split('/uploads/')[1]}`;
+        console.log('Profile - Chemin de la photo de couverture normalisé:', newCoverPhoto);
+        
+        setProfile(prev => ({
+          ...prev,
+          coverPhoto: newCoverPhoto
+        }));
+        
+        // Mise à jour du localStorage
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const userData = JSON.parse(userStr);
           const updatedUser = {
             ...userData,
-            coverPhoto: result.coverPhoto
+            coverPhoto: newCoverPhoto
           };
+          console.log('Profile - Mise à jour du localStorage avec:', updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
         }
         
-        toast.success("Photo de couverture mise à jour avec succès");
-        // Forcer le rafraîchissement de la page pour mettre à jour tous les composants
-        window.location.reload();
-      } else {
-        const error = await response.text();
-        console.error("Erreur upload cover:", error);
-        toast.error("Erreur lors de la mise à jour de la photo de couverture");
+        fetchProfileData(); // Rafraîchir les données du profil
       }
     } catch (error) {
-      console.error("Error updating cover photo:", error);
+      console.error('Profile - Erreur mise à jour photo de couverture:', error);
       toast.error("Erreur lors de la mise à jour de la photo de couverture");
     }
   };
@@ -431,9 +405,15 @@ export default function Profile() {
   };
 
   const fetchProfilePosts = async () => {
+    console.log('Profile - Début fetchProfilePosts');
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.log('Profile - Pas de token pour les posts');
+        return;
+      }
 
+      console.log('Profile - Récupération des posts pour:', params.id);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/posts/user/${params.id}`,
         {
@@ -444,28 +424,34 @@ export default function Profile() {
         }
       );
 
+      console.log('Profile - Statut de la réponse des posts:', response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch posts");
       }
 
       const data = await response.json();
-      // S'assurer que chaque post a les informations complètes de l'utilisateur
-      const postsWithUser = data.map((post) => ({
-        ...post,
-        user: {
-          _id: profile._id,
-          username: profile.username,
-          avatar: profile.avatar,
-          // Ajouter d'autres champs du profil si nécessaire
-          email: profile.email,
-          bio: profile.bio,
-        },
-      }));
+      console.log('Profile - Posts reçus:', data);
 
+      // S'assurer que chaque post a les informations complètes de l'utilisateur
+      const postsWithUser = data.map(post => {
+        console.log('Profile - Traitement du post:', post._id);
+        return {
+          ...post,
+          user: {
+            _id: profile._id,
+            username: profile.username,
+            avatar: profile.avatar,
+            email: profile.email,
+            bio: profile.bio,
+          },
+        };
+      });
+
+      console.log('Profile - Posts avec informations utilisateur:', postsWithUser);
       setPosts(postsWithUser);
       setPostsLoaded(true);
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error('Profile - Erreur lors de la récupération des posts:', error);
     }
   };
 
@@ -670,7 +656,7 @@ export default function Profile() {
             className={styles.coverPhotoContainer}
             onClick={() => {
               if (profile.coverPhoto) {
-                setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`);
+                setSelectedImage(getImageUrl(profile.coverPhoto));
                 setShowImageViewer(true);
               }
             }}
@@ -678,14 +664,11 @@ export default function Profile() {
           >
             {profile.coverPhoto ? (
               <Image
-                src={
-                  profile?.coverPhoto
-                    ? `${process.env.NEXT_PUBLIC_API_URL}${profile.coverPhoto}`
-                    : "/images/default-cover.jpg"}
-                alt="Cover photo"
-                width={1200}
-                height={300}
-                className={styles.coverPhoto}
+                src={getImageUrl(profile.coverPhoto)}
+                alt="Cover"
+                priority
+                fill
+                className={styles.coverImage}
               />
             ) : (
               <div className={styles.defaultCover} />
@@ -710,19 +693,15 @@ export default function Profile() {
                   className={styles.avatarContainer}
                   onClick={() => {
                     if (profile.avatar) {
-                      setSelectedImage(`${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`);
+                      setSelectedImage(getImageUrl(profile.avatar));
                       setShowImageViewer(true);
                     }
                   }}
                   style={{ cursor: profile.avatar ? 'pointer' : 'default' }}
                 >
                   <Image
-                    src={
-                      profile?.avatar
-                        ? `${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`
-                        : "/images/default-avatar.jpg"
-                    }
-                    alt="Profile"
+                    src={getImageUrl(profile.avatar)}
+                    alt={profile.username}
                     width={150}
                     height={150}
                     className={styles.avatar}

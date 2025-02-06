@@ -7,6 +7,7 @@ import { FaThumbsUp, FaReply, FaEllipsisV, FaTrash, FaPencilAlt } from 'react-ic
 import TimeAgo from '../utils/TimeAgo'
 import styles from './Comment.module.css'
 import { toast } from 'react-hot-toast'
+import { getImageUrl } from '@/utils/constants';
 
 export default function Comment({ comment, postId, currentUser, onCommentUpdate, onCommentDelete }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -213,7 +214,7 @@ export default function Comment({ comment, postId, currentUser, onCommentUpdate,
       <div className={styles.commentMain}>
         <Link href={`/profile/${comment.user?._id}`} className={styles.avatar}>
           <Image
-            src={comment.user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${comment.user.avatar}` : "/images/default-avatar.jpg"}
+            src={getImageUrl(comment.user?.avatar)}
             alt={comment.user?.username || "Utilisateur"}
             width={40}
             height={40}
@@ -320,7 +321,7 @@ export default function Comment({ comment, postId, currentUser, onCommentUpdate,
         <div className={styles.replyContainer}>
           <div className={styles.replyForm}>
             <Image
-              src={currentUser?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${currentUser.avatar}` : "/images/default-avatar.jpg"}
+              src={getImageUrl(currentUser?.avatar)}
               alt="Votre avatar"
               width={32}
               height={32}
