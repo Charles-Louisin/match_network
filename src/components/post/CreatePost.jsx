@@ -238,8 +238,6 @@ export default function CreatePost({ onPostCreated }) {
             <span>Taguer</span>
           </button>
         </div>
-      </div>
-
       <button
         onClick={createPost}
         disabled={isLoading || (!content && !selectedImage)}
@@ -249,6 +247,8 @@ export default function CreatePost({ onPostCreated }) {
       >
         {isLoading ? "Publication..." : "Publier"}
       </button>
+      </div>
+
       <div>
         <TagFriendsModal 
           isOpen={showTagModal} 

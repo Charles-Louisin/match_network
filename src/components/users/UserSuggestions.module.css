@@ -160,3 +160,18 @@
   text-align: center;
   padding: 20px;
 }
+
+
+@media (max-width: 640px) {
+  .header h1 {
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .card {
+    flex-direction: row;
+  }
+}

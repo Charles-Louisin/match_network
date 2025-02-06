@@ -1,6 +1,7 @@
 .storiesContainer {
   padding: 1rem 0.5rem;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
+  /* background: red; */
 }
 
 .storiesList {

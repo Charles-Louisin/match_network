@@ -18,7 +18,7 @@ const FriendsPage = () => {
   const [newRequests, setNewRequests] = useState(false);
   const [lastRequestCount, setLastRequestCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [visibleFriends, setVisibleFriends] = useState(12);
+  const [visibleFriends, setVisibleFriends] = useState(6);
   const [visibleRequests, setVisibleRequests] = useState(12);
   const [visibleSuggestions, setVisibleSuggestions] = useState(21);
 
@@ -275,7 +275,7 @@ const FriendsPage = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setVisibleFriends(12);
+                setVisibleFriends(6);
               }}
               className={styles.searchInput}
             />
@@ -308,12 +308,12 @@ const FriendsPage = () => {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setVisibleFriends(12);
+              setVisibleFriends(6);
             }}
             className={styles.searchInput}
           />
         </div>
-        <div className={`${styles.friendsGrid} ${visibleFriends > 12 ? styles.showAll : ''} ${styles.responsiveGrid}`}>
+        <div className={`${styles.friendsGrid} ${visibleFriends > 6 ? styles.showAll : ''} ${styles.responsiveGrid}`}>
           {displayedFriends.map((friend) => (
             <div key={friend._id} className={styles.friendCard}>
               <Link href={`/profile/${friend._id}`} className={styles.userInfo}>
@@ -334,7 +334,7 @@ const FriendsPage = () => {
             </div>
           ))}
         </div>
-        {filteredFriends.length > 12 && visibleFriends <= 12 && (
+        {filteredFriends.length > 6 && visibleFriends <= 6 && (
           <button
             onClick={() => setVisibleFriends(filteredFriends.length)}
             className={styles.showMoreButton}

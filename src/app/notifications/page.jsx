@@ -174,7 +174,10 @@ export default function Notifications() {
         </div>
 
         {isLoading ? (
+          <>
+          <Navbar/>
           <div className={styles.loading}>Chargement...</div>
+          </>
         ) : notifications.length === 0 ? (
           <div className={styles.noNotifications}>
             Aucune notification pour le moment

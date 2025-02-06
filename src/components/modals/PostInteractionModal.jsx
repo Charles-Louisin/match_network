@@ -369,10 +369,10 @@ const PostInteractionModal = ({
     const afterTag = newComment.substring(tagPosition + 1)
     
     const tags = selectedFriends
-      .map(friend => `@{${friend.username}}`)
+      .map(friend => `@${friend.username}`)
       .join(' ')
     
-    const newValue = beforeTag + tags + ' ' + afterTag
+    const newValue = beforeTag +'' + tags + ' ' + afterTag
     console.log('Nouveau commentaire:', newValue)
     
     setNewComment(newValue)
@@ -608,8 +608,8 @@ const PostInteractionModal = ({
     return (
       <span className={styles.commentContent}>
         {parts.map((part, index) => {
-          if (part.startsWith('@{') && part.endsWith('}')) {
-            const username = part.slice(2, -1);
+          if (part.startsWith('@')) {
+            const username = part.slice(1);
             const taggedUser = friends.find(f => f.username === username);
             return (
               <Link 
@@ -634,14 +634,14 @@ const PostInteractionModal = ({
     
     const parts = content.split(/(@\{[^}]+\})/g);
     return parts.map((part, index) => {
-      if (part.startsWith('@{') && part.endsWith('}')) {
-        const username = part.slice(2, -1);
+      if (part.startsWith('@')) {
+        const username = part.slice(0);
         return (
           <span 
             key={index}
             className={styles.inputTaggedText}
           >
-            @{username}
+           @{username}
           </span>
         );
       }
@@ -688,7 +688,7 @@ const PostInteractionModal = ({
               <FaThumbsUp className={styles.tabIcon} />
               <span className={styles.tabText}>
               {post?.likes?.length || 0}
-                Likes
+                <p>Likes</p>
               </span>
             </button>
             <button
@@ -698,7 +698,7 @@ const PostInteractionModal = ({
               <FaComment className={styles.tabIcon} />
               <span className={styles.tabText}>
               {comments.length}
-                Commentaires
+                <p>Commentaires</p>
               </span>
             </button>
           </div>
