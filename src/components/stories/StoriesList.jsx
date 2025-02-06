@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BsPlusCircleFill } from 'react-icons/bs';
@@ -21,6 +21,80 @@ const StoriesList = ({ stories, currentUser }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [viewedStories, setViewedStories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('viewedStories');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Sauvegarder les stories vues dans le localStorage
+  useEffect(() => {
+    localStorage.setItem('viewedStories', JSON.stringify(viewedStories));
+  }, [viewedStories]);
+
+  // Marquer une story comme vue
+  const markStoryAsViewed = useCallback((storyId) => {
+    setViewedStories(prev => ({
+      ...prev,
+      [storyId]: true
+    }));
+  }, []);
+
+  // Calculer le nombre de stories non vues pour un utilisateur
+  const getUnviewedCount = useCallback((userStories) => {
+    return userStories.reduce((count, story) => {
+      return count + (viewedStories[story._id] ? 0 : 1);
+    }, 0);
+  }, [viewedStories]);
+
+  // Trier les stories pour mettre celles de l'utilisateur en premier
+  const sortedStories = useMemo(() => {
+    if (!stories || !currentUser) return stories;
+    
+    return [...stories].sort((a, b) => {
+      const isACurrentUser = a.user._id === currentUser.id;
+      const isBCurrentUser = b.user._id === currentUser.id;
+      
+      if (isACurrentUser && !isBCurrentUser) return -1;
+      if (!isACurrentUser && isBCurrentUser) return 1;
+      return 0;
+    });
+  }, [stories, currentUser]);
+
+  // Grouper les stories par utilisateur
+  const storiesByUser = useMemo(() => {
+    if (!sortedStories) return new Map();
+    
+    const groupedStories = new Map();
+    sortedStories.forEach(story => {
+      if (!story || !story.user || !story.user._id) return; // Ignorer les stories invalides
+      
+      const userId = story.user._id;
+      if (!groupedStories.has(userId)) {
+        groupedStories.set(userId, {
+          user: story.user,
+          stories: []
+        });
+      }
+      groupedStories.get(userId).stories.push(story);
+    });
+    
+    return groupedStories;
+  }, [sortedStories]);
+
+  // Trier les stories pour avoir les non vues en premier
+  const sortedStoriesByUser = useMemo(() => {
+    if (!storiesByUser) return [];
+
+    return Array.from(storiesByUser.values()).sort((a, b) => {
+      const aUnviewed = getUnviewedCount(a.stories);
+      const bUnviewed = getUnviewedCount(b.stories);
+      return bUnviewed - aUnviewed;
+    });
+  }, [storiesByUser, getUnviewedCount]);
 
   const handleCreateStory = async (data) => {
     console.log('=== DÉBUT UPLOAD STORY ===');
@@ -119,20 +193,6 @@ const StoriesList = ({ stories, currentUser }) => {
     window.location.href = `/profile/${userId}`;
   }, []);
 
-  // Trier les stories pour mettre celles de l'utilisateur en premier
-  const sortedStories = useMemo(() => {
-    if (!stories || !currentUser) return stories;
-    
-    return [...stories].sort((a, b) => {
-      const isACurrentUser = a.user._id === currentUser.id;
-      const isBCurrentUser = b.user._id === currentUser.id;
-      
-      if (isACurrentUser && !isBCurrentUser) return -1;
-      if (!isACurrentUser && isBCurrentUser) return 1;
-      return 0;
-    });
-  }, [stories, currentUser]);
-
   // Vérifier si toutes les stories d'un utilisateur ont été vues
   const areAllStoriesViewed = useCallback((userStories) => {
     if (!currentUser || !userStories) return false;
@@ -142,27 +202,6 @@ const StoriesList = ({ stories, currentUser }) => {
       return story.viewers.some(viewer => viewer._id === currentUser.id);
     });
   }, [currentUser]);
-
-  // Grouper les stories par utilisateur
-  const storiesByUser = useMemo(() => {
-    if (!sortedStories) return new Map();
-    
-    const groupedStories = new Map();
-    sortedStories.forEach(story => {
-      if (!story || !story.user || !story.user._id) return; // Ignorer les stories invalides
-      
-      const userId = story.user._id;
-      if (!groupedStories.has(userId)) {
-        groupedStories.set(userId, {
-          user: story.user,
-          stories: []
-        });
-      }
-      groupedStories.get(userId).stories.push(story);
-    });
-    
-    return groupedStories;
-  }, [sortedStories]);
 
   return (
     <div className={styles.storiesContainer}>
@@ -191,33 +230,34 @@ const StoriesList = ({ stories, currentUser }) => {
         </button>
       )}
 
-      {Array.from(storiesByUser.values()).map(({ user, stories: userStories }) => (
-        <button
-          key={user._id}
-          className={`${styles.storyButton} ${
-            areAllStoriesViewed(userStories) ? styles.viewedStory : ''
-          }`}
-          onClick={() => {
-            const firstStoryIndex = sortedStories.findIndex(s => s.user._id === user._id);
-            setSelectedStoryIndex(firstStoryIndex);
-          }}
-        >
-          <div className={styles.storyPreview}>
-            <div className={styles.storyPreviewInner}>
-              <Image
-                src={getMediaUrl(user.avatar)}
-                alt={user.username}
-                width={80}
-                height={80}
-                className={styles.userAvatarList}
-              />
+      {sortedStoriesByUser.map(({ user, stories: userStories }, index) => {
+        const unviewedCount = getUnviewedCount(userStories);
+        return (
+          <button
+            key={user._id}
+            className={styles.storyButton}
+            onClick={() => {
+              const firstStoryIndex = sortedStories.findIndex(s => s.user._id === user._id);
+              setSelectedStoryIndex(firstStoryIndex);
+            }}
+          >
+            <div className={`${styles.storyPreview} ${user._id === currentUser?.id ? styles.currentUserStory : styles.friendStory}`}>
+              <div className={styles.storyPreviewInner}>
+                <Image
+                  src={getMediaUrl(user.avatar)}
+                  alt={user.username}
+                  width={80}
+                  height={80}
+                  className={styles.userAvatarList}
+                />
+              </div>
             </div>
-          </div>
-          <span className={styles.storyUsername}>
-            {user.username}
-          </span>
-        </button>
-      ))}
+            <span className={styles.storyUsername}>
+              {user.username}
+            </span>
+          </button>
+        );
+      })}
 
       <AnimatePresence>
         {showCreateModal && (
@@ -234,6 +274,7 @@ const StoriesList = ({ stories, currentUser }) => {
             onClose={() => setSelectedStoryIndex(null)}
             currentUser={currentUser}
             onNavigateToProfile={handleNavigateToProfile}
+            onStoryViewed={markStoryAsViewed}
           />
         )}
       </AnimatePresence>
