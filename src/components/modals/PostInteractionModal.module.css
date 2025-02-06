@@ -354,6 +354,21 @@
   font-weight: 500;
 }
 
+.taggedText {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.taggedText:hover {
+  text-decoration: underline;
+}
+
+.inputTaggedText {
+  color: #1a73e8;
+  font-weight: 500;
+}
+
 .taggedUser {
   color: #1da1f2;
   font-weight: 500;
@@ -568,7 +583,10 @@
   height: 16px;
 }
 
-.friendAvatar {
+.friendAvatar,
+.likeUserAvatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -649,10 +667,9 @@
 }
 
 .taggedText {
-  color: #1da1f2;
+  color: #1a73e8;
   text-decoration: none;
   font-weight: 500;
-  margin: 0 3px;
 }
 
 .taggedText:hover {
@@ -660,10 +677,8 @@
 }
 
 .inputTaggedText {
-  color: #1da1f2 !important;
-  background-color: blue !important;
-  text-decoration: none;
-  cursor: pointer;
+  color: #1a73e8;
+  font-weight: 500;
 }
 
 .commentOverlay {

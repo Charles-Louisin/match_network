@@ -84,6 +84,31 @@ export default function Navbar({ user, posts }) {
   }, []);
 
   useEffect(() => {
+    const loadUnreadCount = async () => {
+      if (currentUser) {
+        await fetchUnreadCount();
+      }
+    };
+
+    loadUnreadCount();
+
+    // Mettre à jour toutes les 30 secondes
+    const interval = setInterval(loadUnreadCount, 30000);
+
+    // Écouter les événements de notification
+    const handleNewNotification = () => {
+      loadUnreadCount();
+    };
+
+    window.addEventListener('newNotification', handleNewNotification);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('newNotification', handleNewNotification);
+    };
+  }, [currentUser, fetchUnreadCount]);
+
+  useEffect(() => {
     const fetchPendingRequests = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -111,14 +136,6 @@ export default function Navbar({ user, posts }) {
       return () => clearInterval(interval);
     }
   }, [user]);
-
-  useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
-      const interval = setInterval(fetchUnreadCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user, fetchUnreadCount]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

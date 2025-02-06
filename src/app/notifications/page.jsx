@@ -195,7 +195,8 @@ export default function Notifications() {
               >
                 <div className={styles.notificationContent}>
                   <Image
-                    src={notification.sender?.avatar || '/images/default-avatar.jpg'}
+                    // src={notification.sender?.avatar || '/images/default-avatar.jpg'}
+                    src={notification?.sender?.avatar ? notification.sender.avatar : '/images/default-avatar.jpg'}
                     alt={notification.sender?.username}
                     width={40}
                     height={40}
