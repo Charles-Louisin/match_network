@@ -25,8 +25,6 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   const [viewCount, setViewCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [showFullText, setShowFullText] = useState(false);
-  const [showFullCaption, setShowFullCaption] = useState(false);
 
   const currentStory = storyData[activeIndex];
   const isCurrentUser = currentStory?.user?._id === currentUser?.id;
@@ -35,9 +33,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     if (!currentStory) return;
 
     setProgress(0);
-    // Vérifier si les likes existent avant d'utiliser some
     setLiked(currentStory.likes?.some?.(like => like?._id === currentUser?.id) || false);
-    // Vérifier si viewers existe
     setViewCount(currentStory.viewers?.length || 0);
     setLikeCount(currentStory.likes?.length || 0);
 
@@ -93,7 +89,6 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser, isPaused]);
 
   useEffect(() => {
-    // Mettre en pause quand un modal est ouvert
     if (showLikes || showViews) {
       setIsPaused(true);
     } else {
@@ -117,7 +112,6 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
       
       if (response.ok) {
         const updatedStory = await response.json();
-        // Mettre à jour le tableau des stories avec la story mise à jour
         setStoryData(prevStories => {
           const newStories = [...prevStories];
           newStories[activeIndex] = updatedStory;
@@ -163,8 +157,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   }, [handleNext, handlePrev, onClose]);
 
   const handleImageClick = (e) => {
-    e.stopPropagation(); // Empêche la propagation au parent
-    // Si une modale est ouverte, on la ferme
+    e.stopPropagation();
     if (showLikes || showViews) {
       setShowLikes(false);
       setShowViews(false);
@@ -181,18 +174,6 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     e.stopPropagation();
     setShowLikes(false);
     setShowViews(!showViews);
-  };
-
-  const toggleFullText = (e) => {
-    e.stopPropagation();
-    setShowFullText(!showFullText);
-    setIsPaused(!showFullText); // Met en pause pendant la lecture
-  };
-
-  const toggleFullCaption = (e) => {
-    e.stopPropagation();
-    setShowFullCaption(!showFullCaption);
-    setIsPaused(!showFullCaption); // Met en pause pendant la lecture
   };
 
   if (!currentStory) return null;
@@ -212,7 +193,7 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => !showFullText && !showFullCaption && setIsPaused(false)}
+        onMouseLeave={() => setIsPaused(false)}
       >
         <div className={styles.progressContainer}>
           {storyData.map((_, index) => (
@@ -255,29 +236,15 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
           {currentStory.type === 'text' ? (
             <div className={styles.storyContainer}>
               <div 
-                className={`${styles.textContent} ${showFullText ? styles.expanded : ''}`}
+                className={styles.textContent}
                 style={{ 
                   background: currentStory.textContent?.background || '#000000',
                   color: currentStory.textContent?.color || '#ffffff'
                 }}
               >
-                {currentStory.textContent?.text}
-                {currentStory.textContent?.text.length > 100 && !showFullText && (
-                  <button 
-                    className={styles.showMoreButton}
-                    onClick={toggleFullText}
-                  >
-                    Voir plus
-                  </button>
-                )}
-                {showFullText && (
-                  <button 
-                    className={styles.showLessButton}
-                    onClick={toggleFullText}
-                  >
-                    Voir moins
-                  </button>
-                )}
+                <span className={styles.textWrapper}>
+                  {currentStory.textContent?.text}
+                </span>
               </div>
             </div>
           ) : (
@@ -291,24 +258,8 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
                 unoptimized
               />
               {currentStory.caption && (
-                <div className={`${styles.caption} ${showFullCaption ? styles.expanded : ''}`}>
+                <div className={styles.caption}>
                   {currentStory.caption}
-                  {currentStory.caption.length > 100 && !showFullCaption && (
-                    <button 
-                      className={styles.showMoreButton}
-                      onClick={toggleFullCaption}
-                    >
-                      Voir plus
-                    </button>
-                  )}
-                  {showFullCaption && (
-                    <button 
-                      className={styles.showLessButton}
-                      onClick={toggleFullCaption}
-                    >
-                      Voir moins
-                    </button>
-                  )}
                 </div>
               )}
             </div>
