@@ -12,7 +12,7 @@ import {
   FaPencilAlt,
 } from "react-icons/fa";
 import TimeAgo from "../utils/TimeAgo";
-import Comment from "./Comment";
+// import Comment from "./Comment";
 import PostInteractionModal from "../modals/PostInteractionModal";
 import ImageViewerModal from "../shared/ImageViewerModal";
 import styles from "./Post.module.css";

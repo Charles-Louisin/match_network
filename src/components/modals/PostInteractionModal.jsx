@@ -373,7 +373,7 @@ const PostInteractionModal = ({
       .map(friend => `@${friend.username}`)
       .join(' ')
     
-    const newValue = beforeTag +'' + tags + ' ' + afterTag
+    const newValue = beforeTag +' ' + tags + ' ' + afterTag
     console.log('Nouveau commentaire:', newValue)
     
     setNewComment(newValue)
@@ -498,9 +498,15 @@ const PostInteractionModal = ({
                 reference: newCommentData._id,
                 postId: postId,
                 commentId: newCommentData._id,
+                sender: {
+                  _id: userData._id,
+                  username: userData.username,
+                  avatar: userData.avatar
+                },
                 additionalData: {
                   commentContent: newComment.trim(),
-                  postId: postId
+                  postId: postId,
+                  senderAvatar: userData.avatar
                 }
               }, token);
             } else {
@@ -633,7 +639,7 @@ const PostInteractionModal = ({
   const formatInputContent = (content) => {
     if (!content) return '';
     
-    const parts = content.split(/(@\{[^}]+\})/g);
+    const parts = content.split(/(@[\w]+)/g);
     return parts.map((part, index) => {
       if (part.startsWith('@')) {
         const username = part.slice(0);
