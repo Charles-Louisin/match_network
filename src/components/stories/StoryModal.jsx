@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -25,9 +25,12 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
   const [viewCount, setViewCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(null);
 
   const currentStory = storyData[activeIndex];
   const isCurrentUser = currentStory?.user?._id === currentUser?.id;
+  const videoRef = useRef(null);
 
   useEffect(() => {
     if (!currentStory) return;
@@ -36,57 +39,33 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
     setLiked(currentStory.likes?.some?.(like => like?._id === currentUser?.id) || false);
     setViewCount(currentStory.viewers?.length || 0);
     setLikeCount(currentStory.likes?.length || 0);
-
-    const recordView = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/${currentStory._id}/view`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-        });
-        
-        if (response.ok) {
-          const updatedStory = await response.json();
-          if (updatedStory) {
-            setViewCount(updatedStory.viewers?.length || 0);
-          }
-        }
-      } catch (error) {
-        console.error('Erreur lors de l\'enregistrement de la vue:', error);
-      }
-    };
-
-    if (!isCurrentUser) {
-      recordView();
-    }
+    setIsLoading(currentStory.type === 'video');
+    setVideoDuration(null);
 
     let timer;
     if (!isPaused) {
-      timer = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            if (activeIndex < storyData.length - 1) {
-              setActiveIndex(activeIndex + 1);
-              return 0;
-            } else {
-              clearInterval(timer);
-              onClose();
-              return 100;
+      const duration = currentStory.type === 'video' ? videoDuration : STORY_DURATION;
+      if (duration) {
+        timer = setInterval(() => {
+          setProgress((prev) => {
+            if (prev >= 100) {
+              if (activeIndex < storyData.length - 1) {
+                setActiveIndex(activeIndex + 1);
+                return 0;
+              } else {
+                clearInterval(timer);
+                onClose();
+                return 100;
+              }
             }
-          }
-          return prev + (100 / (STORY_DURATION / 100));
-        });
-      }, 100);
+            return prev + (100 / (duration / 100));
+          });
+        }, 100);
+      }
     }
 
     return () => clearInterval(timer);
-  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser, isPaused]);
+  }, [activeIndex, currentStory, storyData.length, onClose, currentUser, isCurrentUser, isPaused, videoDuration]);
 
   useEffect(() => {
     if (showLikes || showViews) {
@@ -249,17 +228,62 @@ const StoryModal = ({ stories, currentIndex = 0, onClose, currentUser, onNavigat
             </div>
           ) : (
             <div className={styles.mediaContainer}>
-              <Image
-                src={getMediaUrl(currentStory.media)}
-                alt="Story media"
-                fill
-                className={styles.storyMedia}
-                priority
-                unoptimized
-              />
-              {currentStory.caption && (
-                <div className={styles.caption}>
-                  {currentStory.caption}
+              {currentStory.type === 'video' ? (
+                <div>
+                  {isLoading && (
+                    <div className={styles.loader}>
+                      <div className={styles.spinner}></div>
+                    </div>
+                  )}
+                  <video
+                    ref={videoRef}
+                    src={getMediaUrl(currentStory.media)}
+                    className={styles.storyMedia}
+                    autoPlay
+                    playsInline
+                    muted={false}
+                    onLoadedMetadata={(e) => {
+                      const video = e.target;
+                      setVideoDuration(video.duration * 1000); // Convertir en millisecondes
+                      video.play();
+                    }}
+                    onLoadStart={() => setIsLoading(true)}
+                    onCanPlay={() => {
+                      setIsLoading(false);
+                      setIsPaused(false);
+                    }}
+                    onPlay={() => {
+                      setIsPaused(false);
+                    }}
+                    onPause={() => {
+                      setIsPaused(true);
+                    }}
+                    onEnded={() => {
+                      setIsPaused(false);
+                      handleNext();
+                    }}
+                  />
+                  {currentStory.caption && (
+                    <div className={styles.caption}>
+                      {currentStory.caption}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.mediaContainer}>
+                  <Image
+                    src={getMediaUrl(currentStory.media)}
+                    alt="Story media"
+                    fill
+                    className={styles.storyMedia}
+                    priority
+                    unoptimized
+                  />
+                  {currentStory.caption && (
+                    <div className={styles.caption}>
+                      {currentStory.caption}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
