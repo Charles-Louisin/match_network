@@ -277,7 +277,7 @@ export default function Navbar({ user, posts }) {
             <span>Messagerie</span>
           </Link>
           {currentUser && (
-            <Link href={`/profile/${currentUser._id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
+            <Link href={`/profile/${currentUser.id}`} className={`${styles.navLink} ${pathname === '/profile' ? styles.active : ''}`}>
               <Image
                 src={currentUser.avatar ? getImageUrl(currentUser.avatar) : '/images/default-avatar.jpg'}
                 alt={currentUser.username || 'Avatar utilisateur'}
